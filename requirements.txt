@@ -1,0 +1,29 @@
+# Librerías del curso Analítica de Datos (709749) — semestre 2026-2.
+#
+# Instalación, con el entorno virtual activo:
+#     pip install -r requirements.txt
+#
+# Sin versiones fijas a propósito: el curso no fija ninguna, y clavar versiones que nadie eligió
+# genera conflictos de instalación que no aportan nada pedagógicamente. Requiere Python 3.10 o
+# superior.
+
+# Manipulación y análisis
+pandas
+numpy
+
+# Visualización estática
+matplotlib
+seaborn
+
+# Visualización interactiva y dashboards (clase 10 en adelante)
+plotly
+streamlit
+
+# Estadística inferencial y machine learning (clases 13 y 14)
+scipy
+scikit-learn
+
+# Entorno de notebooks. ipykernel es lo que VSCode necesita para ejecutar los .ipynb;
+# jupyterlab es la alternativa si prefiere trabajar en el navegador.
+ipykernel
+jupyterlab

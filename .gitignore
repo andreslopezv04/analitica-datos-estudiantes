@@ -1,0 +1,26 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+
+# Salidas que generan los notebooks al ejecutarse.
+# Los datos de entrada de datos/ sí se versionan; lo que produzcan los notebooks, no.
+*_limpio.csv
+*_procesado.csv
