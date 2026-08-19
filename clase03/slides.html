@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 03 · Limpieza de datos | Analítica de Datos</title>
+<meta name="description" content="Clase 3 de Analítica de Datos: los cinco problemas de calidad de datos, qué es NaN y el marco de decisión de nulos; demo guiado de limpieza sobre estadísticas de educación y reto sobre indicadores de salud materno-infantil.">
+<style>
+/* ============================================================================
+   CLASE 03 — "CUADERNO DE LAVANDERÍA"
+   Estética documentada en clase03/slides/ESTETICA.md
+   Contrato invariante: design/CONTRATO.md (9 invariantes)
+
+   Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
+   Todo el CSS, el JS y el diagrama (SVG inline) viven en este archivo.
+
+   Motivo rector: la hoja rayada del cuaderno de la lavandería, con la pestaña
+   de sección al borde derecho. El deck arranca con el margen "sucio" (rojo
+   óxido) y el acento limpio (verde jabón) va tomando el mando bloque a bloque.
+   La regla del bloque 1 se respeta por construcción: `pre` y `code` solo
+   aparecen en slides con data-block="2" o "3". En el bloque 1 los nombres de
+   funciones van con `.term`, que es texto corrido, no un bloque de código.
+   ========================================================================= */
+
+/* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
+:root{
+  --bg:#F6F1E6;          /* papel crema */
+  --surface:#FFFDF7;     /* ficha */
+  --surface-2:#EDE6D6;   /* ficha atenuada */
+  --line:#D8CFB9;        /* borde */
+  --rule:#E4DBC7;        /* rayado del cuaderno */
+  --fg:#1B1F1C;          /* tinta */
+  --muted:#4A524F;       /* texto secundario (AA sobre --bg) */
+  --accent:#0E6B5E;      /* verde jabón: lo limpio */
+  --accent-ink:#FFFDF7;  /* texto sobre el verde */
+  --dirty:#A83F1B;       /* rojo óxido: lo sucio, la advertencia */
+  --code-bg:#152220;     /* el editor */
+  --code-fg:#EFE9DA;
+
+  --font-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* Escala tipográfica. El piso del invariante 6 no se negocia. */
+  --fs-title:clamp(1.9rem,5.2vw,4.2rem);
+  --fs-h2:clamp(1.5rem,3.2vw,2.7rem);
+  --fs-h3:clamp(1.05rem,1.9vw,1.5rem);
+  --fs-body:clamp(0.95rem,1.55vw,1.4rem);
+  --fs-small:clamp(0.78rem,1.02vw,0.95rem);
+  --fs-micro:clamp(0.66rem,0.85vw,0.8rem);
+  --fs-code:clamp(0.78rem,1.15vw,1.05rem);
+
+  --pad:clamp(1.4rem,3.6vw,4rem);
+  --gap:clamp(0.55rem,1.4vw,1.4rem);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+body{
+  height:100%;overflow-x:hidden;
+  background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);font-size:var(--fs-body);line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+/* Invariante 6: piso absoluto de 22px reales a 1280x720 en adelante. */
+@media (min-width:1200px){body{font-size:max(22px,var(--fs-body))}}
+
+/* ---- Invariante 9: viewport fitting. Nunca hay scroll dentro de una slide ---- */
+.slide{
+  width:100vw;height:100vh;height:100dvh;overflow:hidden;
+  padding:var(--pad) calc(var(--pad) + 2.6rem) calc(var(--pad) + 1.1rem) calc(var(--pad) + .6rem);
+  scroll-snap-align:start;
+  display:flex;flex-direction:column;justify-content:center;gap:var(--gap);
+  position:relative;
+  /* El rayado del cuaderno: motivo rector, dibujado con un degradado repetido */
+  background-image:repeating-linear-gradient(to bottom,
+    transparent 0 calc(2.4rem - 1px), var(--rule) calc(2.4rem - 1px) 2.4rem);
+}
+/* El margen del cuaderno */
+.slide::before{content:"";position:absolute;left:var(--pad);top:0;bottom:0;width:2px;
+  background:var(--dirty);opacity:.3}
+.slide > *{max-width:100%}
+.slide > :not(.slide-footer){position:relative;z-index:1}
+
+/* Marcado institucional (invariante 7). Lo inyecta el JS en TODAS las slides. */
+.slide-footer{
+  position:absolute;left:calc(var(--pad) + .6rem);right:calc(var(--pad) + 2rem);
+  bottom:calc(var(--pad)/2.2);
+  display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  font-family:var(--font-mono);
+  font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+}
+.slide-footer .fb{color:var(--accent)}
+
+/* ---- Tipografía ---- */
+h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:700;
+   line-height:1.02;letter-spacing:-.015em;max-width:17ch}
+h1 em{font-style:italic;color:var(--accent)}
+h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:700;line-height:1.08}
+h3{font-family:var(--font-body);font-size:var(--fs-h3);font-weight:700;letter-spacing:-.005em}
+p{max-width:62ch}
+strong{color:var(--accent);font-weight:700}
+.kicker{font-family:var(--font-mono);font-size:var(--fs-small);letter-spacing:.2em;
+  text-transform:uppercase;color:var(--dirty)}
+.lead{color:var(--muted);max-width:58ch}
+.rule{height:5px;width:clamp(80px,14vw,190px);background:var(--dirty);flex:none}
+.claim{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em;
+  font-size:clamp(1.6rem,4.2vw,3.4rem);line-height:1.08;max-width:21ch}
+.claim span{color:var(--accent);font-style:italic}
+/* Nombres de funciones dentro de texto corrido. NO es un bloque de código:
+   se usa también en el bloque 1, donde el contrato lo permite explícitamente. */
+/* El chip trae su propio fondo Y su propia tinta. Si solo declarara el fondo, heredaria
+   el color del contexto: sobre las slides de fondo oscuro y dentro de las divisorias
+   quedaba texto claro sobre chip claro (1,02:1) e ilegible. Al fijar la tinta, el chip se
+   lee igual sobre el papel, sobre el verde de la divisoria y sobre la hoja impresa. */
+.term{font-family:var(--font-mono);font-size:.86em;background:var(--surface-2);color:var(--fg);
+  border:1px solid var(--line);padding:.02em .32em;border-radius:3px;white-space:nowrap}
+
+/* ---- Portada ---- */
+.cover .who{color:var(--muted);font-size:var(--fs-small);letter-spacing:.1em;text-transform:uppercase}
+.cover .who b{color:var(--fg);font-weight:600}
+
+/* ---- Pestaña de sección: el motivo rector, fija al borde derecho ---- */
+.block-tab{
+  position:fixed;right:0;top:clamp(1.5rem,7vh,5rem);z-index:120;
+  writing-mode:vertical-rl;
+  background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);border-right:0;
+  border-radius:6px 0 0 6px;padding:1em .5em;
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.2em;text-transform:uppercase;
+}
+.block-tab[hidden]{display:none}
+
+/* ---- Listas ---- */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.4rem,1.1vh,.95rem)}
+/* El item es un bloque, no un flex container: con display:flex cada nodo de texto
+   y cada <strong> del item se vuelve un flex item independiente y el contenido se
+   compone en columnas en vez de fluir inline. El marcador es un inline-block, que
+   conserva la alineacion por baseline, y la sangria francesa (padding-left mas
+   text-indent negativo del mismo valor) reproduce el ancho del marcador mas su
+   separacion, de modo que la composicion no cambia.
+   1.2em = .5em de marcador mas .7em de separacion. */
+ul.bullets li{display:block;max-width:62ch;padding-left:1.2em;text-indent:-1.2em}
+ul.bullets li::before{content:"";display:inline-block;width:.5em;height:.5em;margin-right:.7em;
+  border-radius:50%;background:var(--accent);transform:translateY(-.1em)}
+ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.85rem)}
+/* El contador en un ::before inline-block reporta ancho 0 en Chrome: hay que darselo
+   explicito. 1.205em y 1em van en la escala del marcador (.85em); 1.874em va en la
+   del item y es donde arranca el texto. */
+ol.steps li{counter-increment:s;display:block;max-width:65ch;padding-left:1.874em;
+  text-indent:-1.874em}
+ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-mono);
+  color:var(--dirty);font-size:.85em;display:inline-block;width:1.205em;margin-right:1em}
+
+/* ---- Fichas ---- */
+.cards{display:grid;gap:clamp(.4rem,.9vw,.95rem);
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.cards.c4{grid-template-columns:repeat(4,1fr)}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.cards.c2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line);
+  border-radius:2px;padding:clamp(.55rem,1.1vw,1.15rem);display:flex;flex-direction:column;
+  gap:.45em;min-width:0}
+.card.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.card.on h3,.card.on .k{color:var(--accent-ink)}
+.card.on p{color:#D6E9E4}
+.card.on p b{color:var(--accent-ink)}
+.card.warn{border-top-color:var(--dirty)}
+.card.good{border-top-color:var(--accent)}
+.card .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent)}
+.card.warn .k{color:var(--dirty)}
+.card p{font-size:clamp(.76rem,1.12vw,1.02rem);color:var(--muted);line-height:1.35;max-width:none}
+.card p b{color:var(--fg)}
+
+/* ---- Tablas ---- */
+.table-wrap{flex:1;min-height:0;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:clamp(.72rem,1.06vw,1rem);line-height:1.32;
+  background:var(--surface);border:1px solid var(--line)}
+caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:var(--fs-micro);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:.6em}
+th,td{border-bottom:1px solid var(--line);padding:clamp(.28rem,.68vw,.62rem) clamp(.35rem,.7vw,.8rem);
+  text-align:left;vertical-align:top}
+thead th{font-family:var(--font-mono);font-weight:500;font-size:.86em;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent);border-bottom:2px solid var(--accent)}
+tbody th{font-weight:700;color:var(--fg)}
+tbody th .mono,td .mono{font-family:var(--font-mono);font-size:.92em}
+tbody tr.on td,tbody tr.on th{background:#E4EFEC}
+td em{font-style:normal;color:var(--muted)}
+td b{color:var(--fg)}
+
+/* ---- Nota al margen / advertencia ---- */
+.callout{border-left:5px solid var(--accent);background:var(--surface);
+  padding:clamp(.65rem,1.4vw,1.2rem) clamp(.85rem,1.7vw,1.5rem);max-width:68ch}
+.callout.warn{border-left-color:var(--dirty)}
+.callout p{max-width:none}
+.callout p b{color:var(--fg)}
+
+/* ---- Contador de rondas: 122 -> 41 -> 34 -> 33 ---- */
+.counters{display:flex;flex-wrap:wrap;align-items:center;gap:clamp(.4rem,1.4vw,1.4rem);
+  font-family:var(--font-mono)}
+.counters .n{background:var(--surface);border:1px solid var(--line);border-radius:2px;
+  padding:.25em .7em;font-size:clamp(1rem,2.2vw,1.9rem);color:var(--dirty)}
+.counters .n.done{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.counters .arr{color:var(--muted);font-size:clamp(.9rem,1.6vw,1.3rem)}
+
+/* ---- Código (solo bloques 2 y 3) ---- */
+pre{background:var(--code-bg);color:var(--code-fg);border-left:5px solid var(--accent);
+  border-radius:0 4px 4px 0;
+  padding:clamp(.6rem,1.35vw,1.2rem) clamp(.85rem,1.7vw,1.5rem);overflow:hidden;
+  font-family:var(--font-mono);font-size:var(--fs-code);line-height:1.5;max-width:min(100%,82ch)}
+pre code{font:inherit;color:inherit;background:none}
+pre .c{color:#8EA09B}      /* comentario */
+pre .k{color:#8FD4C4}      /* palabra clave o función incorporada */
+pre .s{color:#E7C07B}      /* cadena */
+pre .n{color:#F0A48A}      /* número */
+pre .e{color:#FF8E7A}      /* lo que revienta */
+.err{font-family:var(--font-mono);font-size:clamp(.72rem,1vw,.9rem);color:var(--dirty);
+  background:var(--surface);border:1px dashed var(--dirty);padding:.35em .7em;max-width:74ch}
+
+/* ---- Divisorias de bloque (invariante 3) ---- */
+/* El pie lo inyecta el JS como <p>, asi que .divider p{max-width:NNch} tambien lo
+   alcanzaba y lo estrangulaba a ~275px: en las divisorias el pie se partia en dos
+   lineas mientras en el resto del deck iba en una. Dos clases ganan en especificidad
+   a clase+tipo, de modo que el pie recupera el ancho completo sin tocar el parrafo. */
+.divider .slide-footer{max-width:none}
+.divider{background:var(--accent);color:var(--accent-ink);justify-content:center;
+  gap:clamp(.4rem,1vw,1rem);
+  background-image:repeating-linear-gradient(to bottom,
+    transparent 0 calc(2.4rem - 1px), rgba(255,253,247,.13) calc(2.4rem - 1px) 2.4rem)}
+.divider::before{background:var(--accent-ink);opacity:.45}
+.divider .n{font-family:var(--font-display);font-weight:700;line-height:.8;
+  font-size:clamp(4rem,15vw,13rem);color:var(--accent-ink);opacity:.22}
+.divider h2{font-size:clamp(1.7rem,4.6vw,3.6rem);color:var(--accent-ink)}
+/* Verdes subidos: sobre el verde #0E6B5E, #CFE6E0 daba 4,89:1 en el cuerpo y #AFD2CA
+   daba 3,93:1 en el pie, por debajo del minimo para texto pequeno y lavado en proyector. */
+.divider p{color:#DDEEEA;max-width:46ch}
+.divider .kicker{color:#DDEEEA}
+/* El chip translucido daba 4,48:1 sobre la divisoria. Se retira el override: el chip
+   solido de .term (tinta propia sobre fondo claro) rinde muy por encima y es el mismo
+   objeto que el estudiante ya vio en el resto del deck. */
+.divider .slide-footer{color:#D2E8E2}
+.divider .slide-footer .fb{color:var(--accent-ink)}
+
+/* ---- Diagrama SVG ---- */
+.fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+svg.fig{width:100%;height:auto;max-height:52vh;display:block}
+svg.fig .band{stroke:var(--line);stroke-width:2}
+svg.fig .band.lo{fill:#DDEAE6}
+svg.fig .band.mid{fill:#F3E4D4}
+svg.fig .band.hi{fill:#EFD9CE}
+svg.fig .t{font-family:var(--font-body);font-size:22px;fill:var(--fg)}
+svg.fig .t.small{font-size:19px;fill:var(--muted)}
+svg.fig .lbl{font-family:var(--font-mono);font-size:20px;fill:var(--accent);letter-spacing:.08em}
+svg.fig .lbl.warn{fill:var(--dirty)}
+svg.fig .axis{stroke:var(--fg);stroke-width:2}
+svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
+
+/* ---- Navegación (invariante 1) ---- */
+.progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
+  z-index:130;transition:width .3s var(--ease)}
+.nav-dots{position:fixed;right:clamp(.4rem,1vw,.9rem);top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:clamp(3px,.45vh,6px);z-index:130}
+.nav-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--muted);
+  background:transparent;cursor:pointer}
+.nav-dots button[aria-current="true"]{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
+.nav-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Índice de slides (Esc) */
+.slide-index{position:fixed;inset:0;z-index:200;background:rgba(246,241,230,.98);
+  padding:clamp(1.2rem,4vw,3rem);overflow:auto;display:none}
+.slide-index.open{display:block}
+.slide-index h2{margin-bottom:1rem;color:var(--accent)}
+.slide-index ol{list-style:none;columns:2;column-gap:2.5rem;font-size:clamp(.78rem,1.05vw,.95rem)}
+.slide-index li{break-inside:avoid;margin-bottom:.35em}
+.slide-index button{background:none;border:0;color:var(--fg);font:inherit;text-align:left;
+  cursor:pointer;padding:.15em 0;width:100%}
+.slide-index button:hover,.slide-index button:focus-visible{color:var(--accent)}
+.slide-index .ix{font-family:var(--font-mono);color:var(--muted);margin-right:.6em}
+.slide-index .bk{color:var(--dirty);font-family:var(--font-mono);font-size:.8em;
+  letter-spacing:.16em;text-transform:uppercase;margin:1.2em 0 .4em;break-after:avoid}
+
+/* ---- Animaciones de entrada ---- */
+.reveal{opacity:0;transform:translateY(20px);
+  transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.slide.in-view .reveal{opacity:1;transform:none}
+.slide.in-view .reveal:nth-child(1){transition-delay:.05s}
+.slide.in-view .reveal:nth-child(2){transition-delay:.12s}
+.slide.in-view .reveal:nth-child(3){transition-delay:.19s}
+.slide.in-view .reveal:nth-child(4){transition-delay:.26s}
+.slide.in-view .reveal:nth-child(5){transition-delay:.33s}
+.slide.in-view .reveal:nth-child(6){transition-delay:.40s}
+/* Las rondas de estandarización se encienden una por una, como el conteo real */
+.counters .n{transition:background .4s var(--ease),color .4s var(--ease)}
+.slide.in-view .counters .n:nth-child(1){transition-delay:.25s}
+.slide.in-view .counters .n:nth-child(3){transition-delay:.45s}
+.slide.in-view .counters .n:nth-child(5){transition-delay:.65s}
+.slide.in-view .counters .n:nth-child(7){transition-delay:.85s}
+
+/* ---- Breakpoints obligatorios de alto (invariante 9) ---- */
+@media (max-height:700px){
+  :root{--pad:clamp(1rem,2.4vw,2rem);--gap:clamp(.4rem,1vw,.9rem)}
+  .slide{background-size:auto 2rem}
+}
+@media (max-height:600px){
+  :root{--fs-title:clamp(1.6rem,4.2vw,2.8rem);--fs-h2:clamp(1.2rem,2.9vw,2rem);
+        --fs-h3:clamp(.95rem,1.6vw,1.2rem)}
+  .divider .n{display:none}
+}
+@media (max-height:500px){
+  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-code:clamp(.72rem,1vw,.9rem)}
+  .nav-dots{display:none}
+}
+@media (max-width:900px){.cards.c4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){
+  .cards.c4,.cards.c3,.cards.c2{grid-template-columns:1fr}
+  .slide-index ol{columns:1}
+}
+
+/* ---- prefers-reduced-motion (invariante 9) ---- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+
+/* ============================================================================
+   IMPRESIÓN A PDF (invariante 5) — idéntica en los 16 decks.
+   Una slide por página, horizontal, fondo claro, sin dots ni barra.
+   El bloque de código pasa de fondo oscuro a fondo claro: en papel, negro
+   sólido es tóner y es ilegible.
+   ========================================================================= */
+@media print{
+  @page{size:landscape;margin:0}
+  :root{--bg:#fff;--surface:#fff;--surface-2:#f0ede4;--line:#c9c9c9;--rule:#e8e8e8;
+        --fg:#111;--muted:#444;--accent:#0A544A;--accent-ink:#fff;
+        --dirty:#8C3416;--code-bg:#f4f3ef;--code-fg:#111}
+  html,body{height:auto;background:#fff!important;color:#111!important}
+  .slide{height:100vh;page-break-after:always;break-after:page;
+    background:#fff!important;color:#111!important;background-image:none!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .divider{background:#fff!important;color:#111!important;background-image:none!important;
+    border-top:8px solid #0A544A}
+  .divider h2,.divider .n{color:#111!important}
+  .divider .n{opacity:.14}
+  .divider p,.divider .kicker,.divider .slide-footer{color:#444!important}
+  /* En pantalla el nombre del bloque va en tinta clara porque la divisoria es de color.
+     En papel la divisoria se vuelve blanca y esa tinta clara desaparecia (1:1, invisible):
+     la regla de arriba oscurece el pie pero no alcanza a .fb, que es mas especifica. */
+  .divider .slide-footer .fb{color:var(--accent)!important}
+  .divider .term{background:#f0ede4!important;border-color:#c9c9c9!important;color:#111!important}
+  .card.on{background:#dfeeea!important;color:#111!important}
+  .card.on h3,.card.on p,.card.on .k{color:#111!important}
+  .counters .n.done{background:#dfeeea!important;color:#111!important;border-color:#0A544A}
+  pre{background:#f4f3ef!important;color:#111!important;border:1px solid #c9c9c9;border-left:5px solid #0A544A}
+  pre .c{color:#666!important} pre .k{color:#0A544A!important} pre .s{color:#8A5A00!important}
+  pre .n{color:#8C3416!important} pre .e{color:#8C3416!important}
+  svg.fig .band.lo{fill:#eef4f2} svg.fig .band.mid{fill:#f5efe6} svg.fig .band.hi{fill:#f3e6e0}
+  .progress-bar,.nav-dots,.slide-index,.block-tab{display:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" role="presentation"></div>
+<nav class="nav-dots" aria-label="Navegación de diapositivas"></nav>
+<div class="block-tab" hidden></div>
+
+<div class="slide-index" role="dialog" aria-label="Índice de diapositivas" aria-modal="true">
+  <h2>Índice</h2>
+  <ol></ol>
+</div>
+
+<main>
+
+<!-- ======================= PORTADA ======================= -->
+<section class="slide cover" data-title="Portada">
+  <p class="kicker reveal">Analítica de Datos &middot; Clase 03 &middot; Momento 1</p>
+  <div class="rule reveal"></div>
+  <h1 class="reveal">Limpieza <em>de datos</em></h1>
+  <p class="lead reveal">Cinco problemas, cinco pasos, y una decisión escrita detrás de cada uno. Es la clase que sostiene todo lo que viene después.</p>
+  <p class="who reveal"><b>Julián Garzón</b> &middot; Ingeniería de Sistemas &middot; Universidad Cooperativa de Colombia</p>
+</section>
+
+<!-- ======================= OBJETIVOS ======================= -->
+<section class="slide" data-title="Objetivos de la clase">
+  <p class="kicker reveal">Al terminar hoy, usted debe poder hacer esto solo</p>
+  <h2 class="reveal">Objetivos de la clase</h2>
+  <ol class="steps reveal">
+    <li><b>Enumerar los cinco problemas de calidad</b> y dar un ejemplo de cada uno.</li>
+    <li><b>Explicar qué es un valor nulo</b>, de dónde sale, y por qué no es lo mismo que cero ni que texto vacío.</li>
+    <li><b>Ejecutar el ritual de inspección</b> y escribir un diagnóstico <b>antes</b> de tocar nada.</li>
+    <li><b>Aplicar el marco de decisión de nulos</b> justificando cada decisión por escrito.</li>
+    <li><b>Convertir tipos, eliminar duplicados y estandarizar texto</b>, sabiendo por qué el orden importa.</li>
+    <li><b>Recorrer el workflow completo</b> sobre un dataset que no vio antes.</li>
+  </ol>
+  <p class="lead reveal">El entregable es el cuaderno del último bloque. Y una advertencia que vale para todo el semestre: aquí el código correcto sin la justificación escrita no alcanza.</p>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
+<section class="slide divider" data-block="1" data-title="Divisoria · Bloque 1">
+  <span class="n">01</span>
+  <p class="kicker">Bloque uno</p>
+  <h2>Teoría &middot; Las ideas antes de la sintaxis</h2>
+  <p>Cero código en pantalla. Aquí nadie va adelantado ni atrasado: lo que se entienda en este bloque hace trivial el siguiente.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Dónde vamos: segunda de cuatro">
+  <p class="kicker reveal">El arco del EDA &middot; dónde estamos parados</p>
+  <h2 class="reveal">Segunda de cuatro: el verbo de hoy es limpiar y organizar</h2>
+  <div class="cards c3 reveal">
+    <article class="card on"><span class="k">Por qué hoy</span><h3>Porque ya <i>entendieron</i> qué hay</h3>
+      <p>La clase 2 fue el primer verbo del EDA, entender. Lo primero que se ve al mirar de verdad es que <b>el archivo está sucio</b>: por eso limpiar viene justo después y no antes.</p></article>
+    <article class="card warn"><span class="k">Qué se rompe si no</span><h3>Toda cuenta hecha antes miente</h3>
+      <p>Un promedio sobre datos sucios no sale mal escrito: sale mal. Y <b>no avisa</b>. Si esto se hiciera después de las clases 4 y 5, habría que rehacer todo lo que se calculó.</p></article>
+    <article class="card good"><span class="k">Qué habilita</span><h3>Describir y relacionar, las clases 4 y 5</h3>
+      <p>De aquí en adelante nadie vuelve a preguntar si la tabla es confiable: se asume. Y el Momento 1 exige que la limpieza esté <b>documentada</b>, no solo hecha.</p></article>
+  </div>
+  <p class="lead reveal">Seguimos en el mismo oficio de la clase pasada: <strong>EDA</strong>, análisis exploratorio de datos, cuyos cuatro verbos son entender, limpiar y organizar, describir y relacionar. Hoy no preguntamos por qué pasó ni qué va a pasar; eso llega en las clases 13 y 14.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Deuda de la clase 2: dos formas de filtrar">
+  <p class="kicker reveal">Antes de empezar &middot; lo que quedó pendiente de la clase pasada</p>
+  <h2 class="reveal">Dos herramientas de filtrado que faltaban</h2>
+  <div class="cards c2 reveal">
+    <article class="card"><span class="k">Uno</span><h3><span class="term">.str.contains()</span></h3>
+      <p>Responde "¿esta celda <b>contiene</b> este fragmento?". Sirve para lo que la igualdad no puede: encontrar los dos departamentos cuyo nombre lleva SANTANDER, o los registros de un año cuando la fecha está guardada como texto.</p></article>
+    <article class="card"><span class="k">Dos</span><h3><span class="term">.query()</span></h3>
+      <p>La misma condición escrita como una frase entre comillas, sin repetir el nombre de la tabla. Ahí sí se usan las palabras <b>y</b> y <b>o</b>. Es más corto de leer, y cuando falla el mensaje de error es peor. Por eso se aprende segundo.</p></article>
+  </div>
+  <div class="callout warn reveal"><p><strong>La pregunta incómoda de la primera:</strong> ¿qué debe responder una búsqueda de texto en una fila que <b>no tiene texto sino un hueco</b>? Ni sí ni no. Por eso existe <span class="term">na=False</span>, que significa "lo que falta cuenta como que no". No se escribe para esquivar un error: se escribe para <b>decidir usted</b> qué pasa con lo que falta, en vez de heredar el criterio de la versión instalada.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Hook: la lavandería">
+  <p class="kicker reveal">La analogía madre de toda la clase</p>
+  <p class="claim reveal">Limpiar datos <span>es hacer la lavandería</span>.</p>
+  <ul class="bullets reveal">
+    <li>Nadie mete la ropa a la lavadora sin mirar. Primero se vacía la bolsa: separar colores, sacar la moneda del bolsillo. Eso es la <b>inspección</b>, y es el paso que todo el mundo se salta.</li>
+    <li>Después se lava, y <b>cada problema tiene su tratamiento</b>: la mancha no se trata igual que el botón suelto.</li>
+    <li>Y al doblar, uno descubre que faltan medias. Siempre faltan medias. Los datos también llegan con medias faltantes.</li>
+  </ul>
+</section>
+
+<section class="slide" data-block="1" data-title="El 80 por ciento del oficio">
+  <p class="kicker reveal">La frase que va al tablero y se queda ahí</p>
+  <p class="claim reveal">El analista pasa el 80% del tiempo limpiando <span>y el 20% analizando</span>.</p>
+  <p class="lead reveal">No es un defecto del oficio: es el oficio. Un modelo entrenado con datos sucios produce conclusiones sucias, y <strong>nadie va a auditar el modelo: van a auditar la conclusión</strong>.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Los cinco problemas de calidad">
+  <p class="kicker reveal">La bolsa de ropa, vaciada sobre la mesa</p>
+  <h2 class="reveal">Los cinco problemas de calidad</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Cada problema, con su imagen en la lavandería y su ejemplo colombiano</caption>
+      <thead><tr><th scope="col">Problema</th><th scope="col">La imagen</th><th scope="col">El ejemplo</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1 &middot; Valores nulos</th><td>Faltan medias del par</td><td>La tasa de deserción de Vaupés no se reportó en 2019</td></tr>
+        <tr><th scope="row">2 &middot; Tipos incorrectos</th><td>Un zapato en la pila de camisas</td><td>La población llega como texto, <span class="mono">394,574</span>, porque trae coma</td></tr>
+        <tr><th scope="row">3 &middot; Duplicados</th><td>Contar dos veces la misma camisa</td><td>El mismo departamento, el mismo año, dos filas idénticas</td></tr>
+        <tr class="on"><th scope="row">4 &middot; Texto inconsistente</th><td>Etiquetas que dicen "Azul", "AZUL", "&nbsp;azul&nbsp;"</td><td><em>Antioquia</em>, <em>ANTIOQUIA</em> y <em>&nbsp;antioquia&nbsp;</em> son tres departamentos distintos</td></tr>
+        <tr><th scope="row">5 &middot; Inválidos de dominio</th><td>Una camisa talla &minus;3 y otra talla 250</td><td>Una cobertura educativa del 118% o una deserción negativa</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-block="1" data-title="Los tres que no avisan">
+  <p class="kicker reveal">Dos de los cinco no producen ningún error, y son los peores</p>
+  <h2 class="reveal">El código corre perfecto y el resultado está mal</h2>
+  <div class="cards c3 reveal">
+    <article class="card warn"><span class="k">Problema 3</span><h3>Los duplicados pesan doble</h3>
+      <p>Si Antioquia aparece dos veces en 2023, <b>Antioquia pesa el doble</b> en todo promedio nacional que usted calcule. Inflan conteos y arrastran promedios, y nadie lo va a notar mirando el resultado.</p></article>
+    <article class="card warn"><span class="k">Problema 4</span><h3>El texto reparte los números</h3>
+      <p>Es el más traicionero porque <b>no produce ningún error</b>. Si agrupa por departamento y hay tres escrituras del mismo, obtiene tres filas donde debería haber una y los números quedan repartidos.</p></article>
+    <article class="card on"><span class="k">Problema 5</span><h3>Solo lo ve el dominio</h3>
+      <p>pandas no tiene idea de que un porcentaje no puede pasar de 100 ni ser negativo. <b>Solo usted lo sabe.</b> Esta es la parte del trabajo que no se automatiza, hoy ni en diez años.</p></article>
+  </div>
+</section>
+
+<section class="slide" data-block="1" data-title="Qué es un nulo: el cajón de las medias">
+  <p class="kicker reveal">La segunda analogía &middot; y la que más plata cuesta cuando no se entiende</p>
+  <p class="claim reveal">Meta la mano en el cajón. <span>No hay ninguna media.</span></p>
+  <div class="cards c3 reveal">
+    <article class="card on"><span class="k">Nulo</span><h3>Desconocido</h3>
+      <p>No hay dato. <b>Nadie contó.</b> En pandas se ve escrito como <span class="term">NaN</span>.</p></article>
+    <article class="card"><span class="k">Cero</span><h3>Un dato</h3>
+      <p>Usted contó y el resultado fue cero. Es una afirmación, no una ausencia.</p></article>
+    <article class="card"><span class="k">Texto vacío</span><h3>Una etiqueta en blanco</h3>
+      <p>La etiqueta existe pero no dice nada. Un nulo es que <b>no hay etiqueta</b>.</p></article>
+  </div>
+  <div class="callout warn reveal"><p><strong>La consecuencia práctica, dicha sin rodeos:</strong> si rellena una tasa de deserción faltante con cero, <b>acaba de afirmar que en ese departamento nadie desertó</b>. Es una afirmación fuerte, probablemente falsa, y se va a arrastrar hasta la conclusión final del informe.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="De dónde sale un nulo">
+  <p class="kicker reveal">Cuatro orígenes, y el cuarto es el de hoy</p>
+  <h2 class="reveal">De dónde sale un nulo</h2>
+  <ul class="bullets reveal">
+    <li><b>Nunca se recolectó.</b> La pregunta de la encuesta quedó en blanco; el municipio no reportó ese año.</li>
+    <li><b>Se perdió.</b> El sensor se cayó, el archivo se cortó, alguien borró una celda.</li>
+    <li><b>No aplica.</b> Número de hijos de una persona que no tiene hijos: el dato no existe conceptualmente.</li>
+    <li><b>Lo creó pandas.</b> Al unir dos tablas donde una no tenía la fila correspondiente, o al convertir a número un texto que decía <span class="term">sin dato</span>.</li>
+  </ul>
+  <div class="callout reveal"><p><strong>El cuarto caso es el del bloque 2:</strong> hoy vamos a <b>crear nulos a propósito</b> al convertir texto sucio en número. Convertir no borra el problema: <b>lo hace visible y contable</b>.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="El marco de decisión de nulos">
+  <p class="kicker reveal">El concepto que se evalúa &middot; no es un código, es un criterio</p>
+  <h2 class="reveal">Cuántos faltan decide qué se hace</h2>
+  <div class="fig-wrap reveal">
+    <svg class="fig" viewBox="0 0 1000 330" role="img"
+         aria-label="Barra horizontal que representa el porcentaje de nulos de una columna, de 0 a 100 por ciento, dividida en tres bandas. De 0 a 5 por ciento: eliminar las filas afectadas, porque se pierde poquísimo y no se inventa nada. De 5 a 50 por ciento: rellenar con criterio de dominio, la zona donde vive el criterio profesional. Más de 50 por ciento: considerar eliminar la columna, porque hay más huecos que datos.">
+      <rect class="band lo"  x="40"  y="70" width="90"  height="86"></rect>
+      <rect class="band mid" x="130" y="70" width="380" height="86"></rect>
+      <rect class="band hi"  x="510" y="70" width="450" height="86"></rect>
+
+      <line class="axis" x1="40" y1="166" x2="960" y2="166"></line>
+      <text class="tick" x="34"  y="196">0%</text>
+      <text class="tick" x="112" y="196">5%</text>
+      <text class="tick" x="490" y="196">50%</text>
+      <text class="tick" x="918" y="196">100%</text>
+
+      <text class="lbl" x="40"  y="56">MENOS DE 5%</text>
+      <text class="lbl" x="130" y="56">ENTRE 5% Y 50%</text>
+      <text class="lbl warn" x="510" y="56">MÁS DE 50%</text>
+
+      <text class="t" x="40"  y="240">Elimine las filas</text>
+      <text class="t small" x="40" y="268">Pierde poquísimo</text>
+      <text class="t small" x="40" y="292">y no inventa nada</text>
+
+      <text class="t" x="130" y="240">Rellene, y el con qué depende del dominio</text>
+      <text class="t small" x="130" y="268">Perder ese porcentaje de filas es demasiado:</text>
+      <text class="t small" x="130" y="292">hay que estimar, y hay que declararlo</text>
+
+      <text class="t" x="510" y="240">Considere eliminar la columna</text>
+      <text class="t small" x="510" y="268">Más huecos que datos. Cualquier cosa</text>
+      <text class="t small" x="510" y="292">que rellene es invento, no dato</text>
+    </svg>
+  </div>
+</section>
+
+<section class="slide" data-block="1" data-title="Tres advertencias sobre el marco">
+  <p class="kicker reveal">Lo que hay que entender antes de aplicarlo</p>
+  <h2 class="reveal">Tres advertencias</h2>
+  <div class="cards c3 reveal">
+    <article class="card warn"><span class="k">Uno</span><h3>Son umbrales orientativos, no leyes</h3>
+      <p>Una columna con muchísimos huecos que es <b>el corazón de su pregunta</b> no se bota: se busca otra fuente. Una columna casi completa pero irrelevante se puede botar entera sin drama.</p></article>
+    <article class="card"><span class="k">Dos</span><h3>La zona del medio es criterio profesional</h3>
+      <p>Rellenar con la mediana no es "la respuesta correcta", es una decisión. Se prefiere sobre el promedio porque <b>un solo valor extremo arrastra el promedio y no arrastra la mediana</b>: es el salario del CEO otra vez.</p></article>
+    <article class="card on"><span class="k">Tres</span><h3>Toda decisión se escribe</h3>
+      <p>No en un comentario críptico: en una celda de texto, en español, diciendo qué hizo y por qué. <b>Es lo que separa una limpieza defendible de una limpieza mágica</b>, y en el Momento 1 se califica.</p></article>
+  </div>
+</section>
+
+<section class="slide" data-block="1" data-title="Resumen del bloque 1">
+  <p class="kicker reveal">Lo que se lleva de este bloque</p>
+  <h2 class="reveal">Cuatro ideas, cero sintaxis</h2>
+  <ol class="steps reveal">
+    <li><b>Cinco problemas, y dos de ellos no avisan.</b> Duplicados y texto inconsistente corren sin error y devuelven números equivocados.</li>
+    <li><b>Un nulo es desconocido</b>, no cero y no vacío. Rellenar con cero es afirmar algo que probablemente es falso.</li>
+    <li><b>Cuántos faltan decide qué se hace</b>, y los umbrales orientan; no deciden por usted.</li>
+    <li><b>Limpiar es iterativo.</b> Arreglar una cosa destapa otra, y por eso se vuelve a verificar después de cada paso.</li>
+  </ol>
+  <p class="lead reveal">Todo lo que sigue es aprender cómo se escribe esto. Si el bloque 1 quedó claro, el bloque 2 es teclear con criterio.</p>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 2 ======================= -->
+<section class="slide divider" data-block="2" data-title="Divisoria · Bloque 2">
+  <span class="n">02</span>
+  <p class="kicker">Bloque dos</p>
+  <h2>Demo &middot; Lo recorre usted</h2>
+  <p>Abra <span class="term">demo/demo.ipynb</span> y avance solo, a su ritmo. <b>El código ya está escrito:</b> se corre, se entiende y se responden las preguntas de interpretación. Nadie lo va a dictar desde aquí. Yo camino por el salón resolviendo dudas.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="Tres reglas antes de abrir el cuaderno">
+  <p class="kicker reveal">Lo único que se dice desde aquí &middot; después, a leer y ejecutar</p>
+  <h2 class="reveal">Tres reglas de la casa</h2>
+  <div class="cards c3 reveal">
+    <article class="card warn"><span class="k">Uno</span><h3>La ruta</h3>
+      <p>En el demo el dataset es <b>compartido</b> y vive en la raíz del repositorio: la ruta sube <b>dos</b> niveles. En el reto sube <b>uno</b>. Está escrita en el tablero toda la sesión y es el error número uno.</p></article>
+    <article class="card"><span class="k">Dos</span><h3>Cómo está armado</h3>
+      <p>Concepto antes que código, y <b>todo el código ya escrito</b>: aquí se corre y se entiende, no se teclea. Lo que aporta usted son las preguntas de interpretación y las cajas "Para entender qué está pasando", que traen el fundamento de programación.</p></article>
+    <article class="card on"><span class="k">Tres</span><h3>De arriba a abajo, una sola vez</h3>
+      <p>Las celdas modifican la misma tabla una encima de la otra. <b>Repetir una celda cambia los números</b> y de pronto nada cuadra con lo que dice el texto. Si se enreda: Kernel &rarr; Restart and Run All.</p></article>
+  </div>
+</section>
+
+<section class="slide" data-block="2" data-title="El dataset del demo">
+  <p class="kicker reveal">Regla de la casa: nunca se ejecuta nada sobre un dataset que no se sabe qué es</p>
+  <h2 class="reveal">Estadísticas de educación por departamento</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>datasets/educacion_estadisticas.csv &middot; 482 filas x 37 columnas &middot; Ministerio de Educación, vía datos.gov.co</caption>
+      <thead><tr><th scope="col">Qué</th><th scope="col">Detalle</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Una fila</th><td>Un departamento en un año, de 2011 a 2024</td></tr>
+        <tr><th scope="row">Columnas clave</th><td><span class="mono">departamento</span>, <span class="mono">ano</span>, <span class="mono">poblacion_5_16</span>, coberturas, deserciones, aprobación y reprobación</td></tr>
+        <tr class="on"><th scope="row">Se reutiliza</th><td>Es <b>el mismo dataset de la clase 13</b>, cuando lleguemos a estadística inferencial. La limpieza de hoy no es un ejercicio desechable: es trabajo que se guarda</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">Un archivo del Estado casi nunca llega listo. Este trae los cinco problemas, todos a la vez.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="Qué tiene de sucio">
+  <p class="kicker reveal">El diagnóstico, antes de tocar una sola celda</p>
+  <h2 class="reveal">Los cinco problemas, aquí adentro</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Lo que va a encontrar cuando inspeccione</caption>
+      <thead><tr><th scope="col">Problema</th><th scope="col">Dónde exactamente</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Nulos</th><td>Doce columnas afectadas. Las dos peores están <b>justo en el borde del marco de decisión</b>, y por eso hay que decidir mirando, no aplicando la regla de memoria</td></tr>
+        <tr><th scope="row">Tipos</th><td><span class="mono">ano</span> es decimal: los años salen como <span class="mono">2023.0</span>. <span class="mono">poblacion_5_16</span> es texto: trae comas de miles y el literal <span class="mono">sin dato</span></td></tr>
+        <tr><th scope="row">Duplicados</th><td>Nueve filas idénticas de entrada. Y ocho más que <b>solo aparecen después</b> de estandarizar el texto</td></tr>
+        <tr class="on"><th scope="row">Texto</th><td><span class="mono">departamento</span> tiene <b>122 valores únicos donde deberían ser 33</b>: mayúsculas, espacios, tildes inconsistentes y comas donde van puntos</td></tr>
+        <tr><th scope="row">Inválidos</th><td>Veintiocho valores fuera de rango en las columnas de porcentaje: unos negativos y otros por encima de 100</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-block="2" data-title="El recorrido, a nivel general">
+  <p class="kicker reveal">Lo que van a hacer en los próximos noventa minutos, sin desarrollarlo aquí</p>
+  <h2 class="reveal">Seis pasos, en este orden y no en otro</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>El ritual de limpieza del cuaderno &middot; cada paso viene explicado allá, celda por celda</caption>
+      <thead><tr><th scope="col">Paso</th><th scope="col">De qué se ocupa</th><th scope="col">Por qué va en ese puesto</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1. Inspeccionar</th><td>Cinco comandos, siempre los mismos</td><td>Nadie limpia lo que no ha mirado</td></tr>
+        <tr><th scope="row">2. Nulos</th><td>Decidir, y dejar la decisión escrita</td><td>Antes de convertir tipos: un hueco rompe la conversión</td></tr>
+        <tr><th scope="row">3. Tipos</th><td>Texto que debía ser número</td><td>Sin tipo correcto no se puede comparar ni ordenar</td></tr>
+        <tr><th scope="row">4. Duplicados</th><td>Eliminar y contar</td><td>Un duplicado cuenta doble en todo lo que venga después</td></tr>
+        <tr class="on"><th scope="row">5. Texto</th><td>Tres rondas: espacios, mayúsculas, tildes</td><td><b>Va después de duplicados, y ahí está la lección del día</b></td></tr>
+        <tr><th scope="row">6. Dominio</th><td>Valores imposibles según el negocio</td><td>Solo se detecta cuando ya se sabe qué mide la columna</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p><strong>El momento del día está en el paso 5, y no lo voy a arruinar contándolo:</strong> limpiar el texto <b>crea duplicados nuevos</b> que el paso 4 no podía ver. Cuando les pase, van a entender por qué limpiar no es una lista de tareas sino un ciclo.</p></div>
+</section>
+
+<section class="slide" data-block="2" data-title="Cómo se recorre el cuaderno">
+  <p class="kicker reveal">Se lee antes de ejecutar &middot; nadie va adelantado ni atrasado</p>
+  <h2 class="reveal">Cómo se recorre el cuaderno</h2>
+  <div class="cards c3 reveal">
+    <article class="card"><span class="k">Uno</span><h3>Todo el código está escrito</h3>
+      <p>Aquí no se teclea nada. Se ejecuta celda por celda y <b>se lee la explicación antes de ejecutar</b>, que está justo encima. Escribir código es el bloque 3.</p></article>
+    <article class="card on"><span class="k">Dos</span><h3>Preguntas de interpretación</h3>
+      <p>Marcadas <b>Tu respuesta:</b>. Se escribe en español qué significa lo que acaba de salir, <b>antes</b> de abrir la respuesta esperada. <b>Justificar la decisión vale más que escribir la línea.</b></p></article>
+    <article class="card"><span class="k">Tres</span><h3>Las cajas de fundamento</h3>
+      <p>"Para entender qué está pasando" explica el piso de programación que hay debajo. Si ya programó, sáltelas; si no, son la diferencia entre entender y copiar.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Si algo no cuadra, la respuesta casi siempre está escrita una celda más arriba.</strong> Yo estoy circulando: levante la mano en el momento en que se atasque, no al final del bloque.</p></div>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 3 ======================= -->
+<section class="slide divider" data-block="3" data-title="Divisoria · Bloque 3">
+  <span class="n">03</span>
+  <p class="kicker">Bloque tres</p>
+  <h2>Reto &middot; Ahora usted, con datos nuevos</h2>
+  <p>Abra <span class="term">reto/reto_starter.ipynb</span>. Once tareas, otro dataset, los mismos cinco problemas. Cada tarea trae la pregunta, el concepto, los comandos y lo que decide usted. Yo sigo circulando. <b>Esto es lo que se entrega.</b></p>
+</section>
+
+<section class="slide" data-block="3" data-title="El dataset del reto">
+  <p class="kicker reveal">Ministerio de Salud &middot; publicado en datos.gov.co</p>
+  <h2 class="reveal">Salud materno-infantil por municipio</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>clase03/data/indicadores_salud.csv &middot; 532 filas x 15 columnas &middot; una fila = un municipio en un año, de 2005 a 2020</caption>
+      <thead><tr><th scope="col">Columna</th><th scope="col">Qué es</th><th scope="col">Unidad</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="mono">departamento</span> &middot; <span class="mono">municipio</span></th><td>Dónde</td><td>texto</td></tr>
+        <tr><th scope="row"><span class="mono">cod_municipio</span> &middot; <span class="mono">ano</span></th><td>Código DANE y año</td><td>llegan como texto y como decimal</td></tr>
+        <tr class="on"><th scope="row"><span class="mono">bajo_peso_nacer</span> &middot; <span class="mono">partos_cesarea</span> &middot; <span class="mono">partos_institucionales</span></th><td>Los tres únicos porcentajes</td><td><b>porcentaje, de 0 a 100</b></td></tr>
+        <tr><th scope="row"><span class="mono">mortalidad_infantil</span> &middot; <span class="mono">mortalidad_neonatal</span> &middot; <span class="mono">mortalidad_fetal</span></th><td>Mortalidad</td><td>tasa por mil</td></tr>
+        <tr><th scope="row"><span class="mono">mortalidad_materna</span></th><td>Mortalidad materna</td><td>tasa por cien mil</td></tr>
+        <tr><th scope="row"><span class="mono">controles_prenatales</span> &middot; <span class="mono">fecundidad_adolescente</span></th><td>Promedio de controles y fecundidad</td><td>número de controles &middot; tasa por mil</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-block="3" data-title="Tres cosas antes de la primera línea">
+  <p class="kicker reveal">Léalas antes de escribir nada</p>
+  <h2 class="reveal">Tres cosas que hay que saber</h2>
+  <div class="cards c3 reveal">
+    <article class="card warn"><span class="k">Uno</span><h3>La ruta sube un solo nivel</h3>
+      <p>Es <span class="term">../datos/indicadores_salud.csv</span>, no dos niveles como el demo. El dataset del demo es compartido; este es propio de la clase.</p></article>
+    <article class="card warn"><span class="k">Dos</span><h3>Mortalidad no es un porcentaje</h3>
+      <p>Solo tres columnas están acotadas entre 0 y 100. Las de mortalidad son <b>tasas por mil o por cien mil</b>: una materna de 422 es un dato válido. Si las valida contra 0-100, va a "corregir" datos perfectos, <b>y el destrozo no deja rastro</b>.</p></article>
+    <article class="card on"><span class="k">Tres</span><h3><span class="term">municipio</span> no se limpia</h3>
+      <p>Compruébelo usted en la parte 5: ya está consistente. Estandarizar por reflejo una columna que no lo necesita es <b>tan mal criterio</b> como no estandarizar la que sí.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Y la frase de la clase:</strong> el workflow se copia, <b>la lista de columnas no</b>. Aquí no existe <span class="term">desercion</span>. Si copia la lista del demo, va a ver un error con el nombre de una columna que no existe, y va a ser lo mejor que le pase hoy.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Las tareas: partes 1 a 4">
+  <p class="kicker reveal">Estas partes se terminan en el salón &middot; cada tarea se comprueba sola</p>
+  <h2 class="reveal">El mismo workflow, otro dataset</h2>
+  <ol class="steps reveal">
+    <li><b>Inspección.</b> El ritual completo antes de tocar nada, y el <b>diagnóstico escrito</b> de los cinco problemas: dónde está cada uno y con qué comando lo detectó.</li>
+    <li><b>Valores nulos.</b> Las filas sin departamento, y las tasas rellenadas con su propia mediana. Aviso honesto: aquí ninguna columna pasa del 50%; si concluye que hay que eliminar una entera, revise la cuenta.</li>
+    <li><b>Tipos.</b> El año a entero, y el código de municipio de texto a entero: trae comas de miles y el literal <span class="term">sin dato</span>. Un código DANE en cero no existe: decida qué hace y escríbalo.</li>
+    <li><b>Duplicados.</b> Contar, ver con <span class="term">keep=False</span> y eliminar. Y responder: si una fila es un municipio en un año, ¿un duplicado aquí siempre es un error?</li>
+  </ol>
+</section>
+
+<section class="slide" data-block="3" data-title="Las tareas: partes 5 a 7">
+  <p class="kicker reveal">La parte 5 se termina aquí &middot; la 6 se empieza &middot; la 7 es para la casa</p>
+  <h2 class="reveal">Donde el criterio pesa más que el código</h2>
+  <div class="cards c3 reveal">
+    <article class="card"><span class="k">Parte 5</span><h3>Texto, y sus consecuencias</h3>
+      <p>Estandarizar <span class="term">departamento</span> e <b>imprimir la lista final</b> para saber cuántos deberían ser: este dataset no cubre el país entero, así que no copie el número del demo. Después, contar y borrar los duplicados que acaba de crear.</p></article>
+    <article class="card warn"><span class="k">Parte 6</span><h3>Dominio</h3>
+      <p>Detectar los valores fuera de 0 a 100 <b>en las tres columnas que sí son porcentajes</b>. Elegir esas tres es toda la tarea. Corregir sin perder filas, por el camino que usted elija, <b>justificado antes de programarlo</b>.</p></article>
+    <article class="card on"><span class="k">Parte 7</span><h3>El ensamblaje es suyo</h3>
+      <p>El antes y el después en seis dimensiones, y los cinco municipios con mayor mortalidad infantil. El cuaderno lista los comandos <b>pero no el orden</b>: en los momentos evaluativos nadie le va a dar la secuencia.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>La pregunta incómoda del final, y la mejor de todo el reto:</strong> ¿cuánto confía en ese ranking, sabiendo que usted mismo rellenó buena parte de esa columna? Contestarla bien vale más que las once comprobaciones en verde.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Si se atasca">
+  <p class="kicker reveal">Antes de levantar la mano, revise esto</p>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Los tropiezos de hoy, en orden de probabilidad</caption>
+      <thead><tr><th scope="col">Síntoma</th><th scope="col">Qué revisar</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">Una comprobación que estaba en verde deja de coincidir</th>
+          <td>Ejecutó dos veces una celda que modifica la tabla. Las tareas se encadenan. <b>Kernel &rarr; Restart and Run All</b>, y es la respuesta a casi todo atasco raro</td></tr>
+        <tr><th scope="row"><span class="mono">FileNotFoundError</span></th>
+          <td>La ruta es <span class="mono">../datos/indicadores_salud.csv</span>, <b>un</b> nivel de subida. Está en el tablero</td></tr>
+        <tr><th scope="row"><span class="mono">KeyError: 'desercion'</span></th>
+          <td>Copió la lista de columnas del demo. El workflow se copia, la lista de columnas no</td></tr>
+        <tr><th scope="row"><span class="mono">IntCastingNaNError</span></th>
+          <td>Está convirtiendo a entero con nulos presentes. Rellene primero, convierta después</td></tr>
+        <tr><th scope="row">El conteo de valores no convertibles se dispara</th>
+          <td>Convirtió antes de quitar las comas, así que los códigos con coma también se volvieron nulos. <b>No da error, y por eso duele</b></td></tr>
+        <tr><th scope="row">La última tarea no coincide y el código se ve bien</th>
+          <td>Estandarizó <span class="mono">municipio</span>, que ya estaba limpio. Verificar antes de tratar</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-block="3" data-title="Cómo se entrega y cómo se valora">
+  <p class="kicker reveal">El entregable de hoy</p>
+  <h2 class="reveal">Cómo se entrega y cómo se valora</h2>
+  <div class="cards c3 reveal">
+    <article class="card good"><span class="k">Saber</span><h3>El diagnóstico y las justificaciones</h3>
+      <p>La parte 1 escrita, y una celda de texto detrás de cada decisión, <b>incluida la de por qué no tocó las columnas de mortalidad</b>.</p></article>
+    <article class="card good"><span class="k">Ser</span><h3>La reflexión</h3>
+      <p>Qué decisión suya podría cambiar una conclusión posterior, y qué problemas espera encontrar en el dataset de su equipo.</p></article>
+    <article class="card good"><span class="k">Hacer</span><h3>Las once tareas y el cuaderno</h3>
+      <p>Las comprobaciones en verde, la parte 7 armada por usted, y el cuaderno corriendo completo de arriba a abajo.</p></article>
+  </div>
+  <div class="callout warn reveal"><p><strong>Código perfecto sin justificaciones escritas le pone techo a Saber</strong>, aunque las once tareas estén en verde. En limpieza de datos el código lo escribe cualquiera; <b>la decisión la defiende usted</b>. Este reto es práctica y no produce nota. Se entrega antes del inicio de la clase 4.</p></div>
+</section>
+
+<!-- ======================= CIERRE ======================= -->
+<section class="slide" data-title="El workflow de 5 pasos">
+  <p class="kicker reveal">Lo que se lleva hoy y va a repetir todo el semestre</p>
+  <h2 class="reveal">El workflow de cinco pasos</h2>
+  <ol class="steps reveal">
+    <li><b>Inspeccionar.</b> Forma, tipos, huecos y estadísticas. Diagnóstico escrito antes de tocar nada.</li>
+    <li><b>Nulos.</b> Porcentaje por columna, marco de decisión, y la justificación al lado.</li>
+    <li><b>Tipos.</b> Convertir con criterio, en el orden correcto, contando lo que se pierde.</li>
+    <li><b>Duplicados.</b> Ver antes de borrar, y volver a mirar después del paso 5.</li>
+    <li><b>Texto y dominio.</b> Estandarizar lo que lo necesita, y validar rangos con conocimiento del negocio.</li>
+  </ol>
+  <p class="lead reveal">Es exactamente el orden con el que arranca el <strong>Momento 1</strong>, sobre el dataset de su equipo. Lo de hoy no es un ensayo: es el primer tercio del entregable.</p>
+</section>
+
+<section class="slide" data-title="Cierre">
+  <p class="kicker reveal">Nos vemos en la clase 4</p>
+  <p class="claim reveal">Ya saben limpiar.<br><span>Ahora hay que preguntar.</span></p>
+  <p class="lead reveal">Con datos limpios se puede empezar a preguntarles cosas: promedios, medianas, agrupaciones por departamento y las primeras distribuciones. Y una advertencia que vale como cierre: <strong>los números de la clase 4 solo valen lo que valga la limpieza de hoy</strong>.</p>
+</section>
+
+</main>
+
+<script>
+/* ============================================================================
+   CONTROLADOR DE DIAPOSITIVAS (invariante 1)
+   Mismos atajos y misma navegación en las 16 clases del curso.
+   Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
+   swipe táctil · rueda del ratón.
+   ========================================================================= */
+class SlidePresentation {
+  constructor(root){
+    this.slides = [...root.querySelectorAll('.slide')];
+    this.i = 0;
+    this.bar = document.querySelector('.progress-bar');
+    this.dotsNav = document.querySelector('.nav-dots');
+    this.tab = document.querySelector('.block-tab');
+    this.index = document.querySelector('.slide-index');
+    this.blockNames = {'1':'Bloque 1 · Teoría','2':'Bloque 2 · Demo guiado','3':'Bloque 3 · Reto'};
+
+    this.buildFooters();
+    this.buildDots();
+    this.buildIndex();
+    this.bindKeys();
+    this.bindPointer();
+    this.observe();
+    this.sync();
+  }
+
+  /* Invariante 7: el marcado institucional va en el pie de TODAS las slides.
+     Se inyecta desde aquí para que no pueda faltar en ninguna. */
+  buildFooters(){
+    this.slides.forEach(s => {
+      const f = document.createElement('p');
+      f.className = 'slide-footer';
+      const b = s.dataset.block;
+      f.innerHTML = '<span>Analítica de Datos · Clase 03 · M1</span>' +
+        (b ? '<span class="fb">Bloque ' + b + '</span>' : '');
+      s.appendChild(f);
+    });
+  }
+
+  buildDots(){
+    this.slides.forEach((s, k) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Ir a la diapositiva ' + (k + 1) + ': ' + (s.dataset.title || ''));
+      b.addEventListener('click', () => this.go(k));
+      this.dotsNav.appendChild(b);
+    });
+    this.dots = [...this.dotsNav.children];
+  }
+
+  buildIndex(){
+    const ol = this.index.querySelector('ol');
+    let lastBlock;
+    this.slides.forEach((s, k) => {
+      const b = s.dataset.block || null;
+      if (b !== lastBlock){
+        const h = document.createElement('li');
+        h.className = 'bk';
+        h.textContent = b ? this.blockNames[b] : (k === 0 ? 'Apertura' : 'Cierre');
+        ol.appendChild(h);
+        lastBlock = b;
+      }
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerHTML = '<span class="ix">' + String(k + 1).padStart(2, '0') + '</span>';
+      btn.appendChild(document.createTextNode(s.dataset.title || ''));
+      btn.addEventListener('click', () => { this.toggleIndex(false); this.go(k); });
+      li.appendChild(btn);
+      ol.appendChild(li);
+    });
+  }
+
+  go(n){
+    this.i = Math.max(0, Math.min(n, this.slides.length - 1));
+    this.slides[this.i].scrollIntoView({behavior: 'smooth', block: 'start'});
+    this.sync();
+  }
+  next(){ this.go(this.i + 1); }
+  prev(){ this.go(this.i - 1); }
+
+  /* La pestaña del borde derecho es el motivo rector y hace de indicador de
+     bloque: dice en qué parte de la clase está, sin decir cuánto dura. */
+  sync(){
+    this.bar.style.width = ((this.i + 1) / this.slides.length * 100) + '%';
+    this.dots.forEach((d, k) => d.setAttribute('aria-current', String(k === this.i)));
+    const slide = this.slides[this.i];
+    const b = slide.dataset.block;
+    if (b && !slide.classList.contains('divider')){
+      this.tab.textContent = 'Bloque ' + b;
+      this.tab.hidden = false;
+    } else {
+      this.tab.hidden = true;
+    }
+  }
+
+  bindKeys(){
+    addEventListener('keydown', e => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const fwd  = ['ArrowRight', 'ArrowDown', ' ', 'Spacebar', 'PageDown'];
+      const back = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+      if (fwd.includes(e.key))       { e.preventDefault(); this.next(); }
+      else if (back.includes(e.key)) { e.preventDefault(); this.prev(); }
+      else if (e.key === 'Home')     { e.preventDefault(); this.go(0); }
+      else if (e.key === 'End')      { e.preventDefault(); this.go(this.slides.length - 1); }
+      else if (e.key === 'Escape')   { e.preventDefault(); this.toggleIndex(); }
+    });
+  }
+
+  bindPointer(){
+    let x0 = null, lock = false;
+    addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, {passive: true});
+    addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) (dx < 0 ? this.next() : this.prev());
+      x0 = null;
+    }, {passive: true});
+    addEventListener('wheel', e => {
+      if (lock || Math.abs(e.deltaY) < 20) return;
+      lock = true;
+      (e.deltaY > 0 ? this.next() : this.prev());
+      setTimeout(() => { lock = false; }, 600);
+    }, {passive: true});
+  }
+
+  toggleIndex(force){
+    const open = force === undefined ? !this.index.classList.contains('open') : force;
+    this.index.classList.toggle('open', open);
+  }
+
+  /* Anima la entrada de cada slide y mantiene la barra y los dots sincronizados
+     cuando se navega con scroll o swipe en vez de con el teclado. */
+  observe(){
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('in-view');
+        const k = this.slides.indexOf(en.target);
+        if (k !== -1 && k !== this.i){ this.i = k; this.sync(); }
+      });
+    }, {threshold: 0.55});
+    this.slides.forEach(s => io.observe(s));
+  }
+}
+
+addEventListener('DOMContentLoaded', () => new SlidePresentation(document.body));
+</script>
+</body>
+</html>

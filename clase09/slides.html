@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 09 · Data storytelling | Analítica de Datos</title>
+<meta name="description" content="Clase 9 de Analítica de Datos: qué distingue una historia de una enumeración de gráficos, cómo se escribe un título que afirma un hallazgo con su cifra, la línea entre analítica y opinión, y el marco contexto - hallazgo - implicación - acción. Demo guiado sobre la ejecución presupuestal nacional y reto de mini-deck sobre el dataset de cada equipo.">
+<style>
+/* ============================================================================
+   CLASE 09 — "SALA OSCURA" (lectura propia de Dark Botanical)
+   Estética documentada en clase09/slides/ESTETICA.md
+   Contrato invariante: design/CONTRATO.md (9 invariantes)
+
+   Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
+   Todo el CSS, el JS y los dos diagramas (SVG inline) viven en este archivo.
+
+   Motivo rector: EL TALLO DE CUATRO NUDOS. Una línea orgánica continua con
+   cuatro nudos — contexto, hallazgo, implicación, acción — que es la estructura
+   de la clase dibujada. Es lo botánico del preset puesto a trabajar: la forma
+   dice que los cuatro bloques están encadenados y que ninguno se puede mover
+   de sitio, que es exactamente el criterio de la clase.
+
+   Restricción del contrato respetada por construcción: el deck no lleva NINGÚN
+   bloque de código, en ningún bloque. Los nombres de funciones se escriben con
+   `.term`, que es texto corrido, y lo que en el reto es un procedimiento se
+   escribe con `.pseudo`, que es una frase en español con tratamiento propio.
+   El código vive en el cuaderno, ya escrito.
+   ========================================================================= */
+
+/* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
+:root{
+  --bg:#0B1410;          /* verde tinta, casi negro */
+  --bg-2:#0F1C16;        /* fondo de divisoria */
+  --surface:#16241E;     /* tarjeta */
+  --surface-2:#1E3129;   /* tarjeta atenuada / la versión débil */
+  --line:#2A3D34;        /* borde */
+  --fg:#EDF2EC;          /* tinta clara */
+  --muted:#A2B8A9;       /* texto secundario (AA sobre --bg) */
+  --accent:#E3B872;      /* oro pálido: la cifra, el titular, lo que afirma */
+  --accent-ink:#0B1410;  /* texto sobre el oro */
+  --accent-2:#7FC69B;    /* brote: lo que sí funciona */
+  --no:#E0806E;          /* la versión débil, la advertencia */
+  --code-bg:#08100C;     /* el editor */
+  --code-fg:#E6EDE6;
+
+  --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* Escala tipográfica. El piso del invariante 6 no se negocia. */
+  --fs-title:clamp(2rem,5.6vw,4.6rem);
+  --fs-h2:clamp(1.5rem,3.4vw,2.9rem);
+  --fs-h3:clamp(1.05rem,1.9vw,1.5rem);
+  --fs-body:clamp(0.95rem,1.55vw,1.4rem);
+  --fs-small:clamp(0.78rem,1.02vw,0.95rem);
+  --fs-micro:clamp(0.66rem,0.85vw,0.8rem);
+  --fs-code:clamp(0.78rem,1.15vw,1.05rem);
+
+  --pad:clamp(1.4rem,3.6vw,4rem);
+  --gap:clamp(0.55rem,1.4vw,1.4rem);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+body{
+  height:100%;overflow-x:hidden;
+  background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);font-size:var(--fs-body);line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+/* Invariante 6: piso absoluto de 22px reales a 1280x720 en adelante. */
+@media (min-width:1200px){body{font-size:max(22px,var(--fs-body))}}
+
+/* ---- Invariante 9: viewport fitting. Nunca hay scroll dentro de una slide ---- */
+.slide{
+  width:100vw;height:100vh;height:100dvh;overflow:hidden;
+  padding:var(--pad) calc(var(--pad) + 1.6rem) calc(var(--pad) + 1.1rem) var(--pad);
+  scroll-snap-align:start;
+  display:flex;flex-direction:column;justify-content:center;gap:var(--gap);
+  position:relative;
+  /* El foco de luz: cae siempre desde el mismo lado, como en una sala. */
+  background:radial-gradient(ellipse 70% 55% at 20% 26%,rgba(227,184,114,.085),transparent 62%),var(--bg);
+}
+.slide > *{max-width:100%}
+
+/* Marcado institucional (invariante 7). Lo inyecta el JS en TODAS las slides. */
+.slide-footer{
+  position:absolute;left:var(--pad);right:var(--pad);bottom:calc(var(--pad)/2.2);
+  display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  font-family:var(--font-mono);
+  font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+}
+.slide-footer .fb{color:var(--accent)}
+
+/* ---- Tipografía ---- */
+h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:400;
+   line-height:1.02;letter-spacing:-.02em;max-width:18ch}
+h1 em{font-style:italic;color:var(--accent)}
+h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:400;
+   line-height:1.1;letter-spacing:-.015em}
+h3{font-family:var(--font-display);font-size:var(--fs-h3);font-weight:700;letter-spacing:-.005em}
+p{max-width:62ch}
+strong{color:var(--accent);font-weight:600}
+.kicker{font-family:var(--font-mono);font-size:var(--fs-small);letter-spacing:.22em;
+  text-transform:uppercase;color:var(--accent-2)}
+.lead{color:var(--muted);max-width:58ch}
+.rule{height:1px;width:clamp(90px,16vw,220px);background:var(--accent);opacity:.85;flex:none}
+.claim{font-family:var(--font-display);font-weight:400;letter-spacing:-.015em;
+  font-size:clamp(1.7rem,4.6vw,3.8rem);line-height:1.08;max-width:21ch}
+.claim span{color:var(--accent);font-style:italic}
+/* Nombres de funciones dentro de texto corrido. NO es un bloque de código:
+   se usa también en el bloque 1, donde el contrato lo permite explícitamente. */
+.term{font-family:var(--font-mono);font-size:.86em;background:var(--surface-2);
+  border:1px solid var(--line);padding:.02em .32em;border-radius:2px;white-space:nowrap;color:var(--fg)}
+.numeral{position:absolute;right:calc(var(--pad)/1.2);top:50%;transform:translateY(-50%);
+  font-family:var(--font-display);font-size:clamp(7rem,24vw,19rem);line-height:1;
+  color:transparent;-webkit-text-stroke:1px var(--line);pointer-events:none;user-select:none;z-index:0}
+.slide > :not(.numeral):not(.slide-footer):not(.stem){position:relative;z-index:1}
+
+/* ---- Portada ---- */
+.cover .who{color:var(--muted);font-size:var(--fs-small);letter-spacing:.1em;text-transform:uppercase}
+.cover .who b{color:var(--fg);font-weight:600}
+
+/* ---- Listas ---- */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.4rem,1.1vh,.95rem)}
+/* El item es un bloque, no un flex container: con display:flex cada nodo de texto
+   y cada <strong> del item se vuelve un flex item independiente y el contenido se
+   compone en columnas en vez de fluir inline. El marcador es un inline-block, que
+   conserva la alineacion por baseline, y la sangria francesa (padding-left mas
+   text-indent negativo del mismo valor) reproduce el ancho del marcador mas su
+   separacion, de modo que la composicion no cambia.
+   1.2em = .5em de marcador mas .7em de separacion. */
+ul.bullets li{display:block;max-width:60ch;padding-left:1.2em;text-indent:-1.2em}
+ul.bullets li::before{content:"";display:inline-block;width:.5em;height:.5em;margin-right:.7em;
+  border-radius:50%;background:var(--accent);transform:translateY(-.12em)}
+ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.85rem)}
+/* El contador en un ::before inline-block reporta ancho 0 en Chrome: hay que darselo
+   explicito. 1.205em y 1.037em van en la escala del marcador (.82em); 1.837em va en
+   la del item y es donde arranca el texto. */
+ol.steps li{counter-increment:s;display:block;max-width:64ch;padding-left:1.837em;
+  text-indent:-1.837em}
+ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-mono);
+  color:var(--accent);font-size:.82em;display:inline-block;width:1.205em;margin-right:1.037em}
+
+/* ---- Tarjetas ---- */
+.cards{display:grid;gap:clamp(.4rem,.9vw,.95rem);
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.cards.c4{grid-template-columns:repeat(4,1fr)}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.cards.c2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--line);
+  padding:clamp(.55rem,1.1vw,1.15rem);display:flex;flex-direction:column;gap:.45em;min-width:0}
+.card.on{border-left-color:var(--accent);background:var(--surface-2)}
+.card.warn{border-left-color:var(--no)}
+.card.good{border-left-color:var(--accent-2)}
+.card .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent-2)}
+.card.on .k{color:var(--accent)} .card.warn .k{color:var(--no)}
+.card p{font-size:clamp(.76rem,1.12vw,1.02rem);color:var(--muted);line-height:1.35;max-width:none}
+.card p b{color:var(--fg)}
+
+/* ---- Tablas ---- */
+.table-wrap{flex:1;min-height:0;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:clamp(.72rem,1.08vw,1rem);line-height:1.32}
+caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:var(--fs-micro);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:.6em}
+th,td{border-bottom:1px solid var(--line);padding:clamp(.3rem,.72vw,.7rem) clamp(.35rem,.7vw,.8rem);
+  text-align:left;vertical-align:top}
+thead th{font-family:var(--font-mono);font-weight:500;font-size:.84em;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent-2);border-bottom:1px solid var(--accent-2)}
+tbody th{font-weight:700;color:var(--fg);font-family:var(--font-display)}
+tbody th .mono,td .mono{font-family:var(--font-mono);font-size:.92em}
+tbody tr.on td,tbody tr.on th{background:rgba(227,184,114,.10)}
+td em{font-style:italic;color:var(--muted)}
+td b{color:var(--fg)}
+td .weak{color:var(--no)}
+td .strong{color:var(--accent)}
+
+/* ---- Cita / advertencia ---- */
+.callout{border-left:4px solid var(--accent);background:var(--surface);
+  padding:clamp(.7rem,1.5vw,1.3rem) clamp(.9rem,1.8vw,1.6rem);max-width:66ch}
+.callout.warn{border-left-color:var(--no)}
+.callout.good{border-left-color:var(--accent-2)}
+.callout p{max-width:none}
+.callout p b{color:var(--fg)}
+
+/* ---- El par débil / fuerte: dos versiones de lo mismo, una atenuada ---- */
+.pair{display:grid;gap:clamp(.5rem,1.1vw,1.1rem);grid-template-columns:1fr 1fr}
+.pair > div{border:1px solid var(--line);padding:clamp(.6rem,1.2vw,1.2rem);
+  display:flex;flex-direction:column;gap:.5em;min-width:0}
+.pair .weak{background:transparent;opacity:.62}
+.pair .weak .t{font-family:var(--font-display);font-size:clamp(.95rem,1.7vw,1.4rem);color:var(--muted)}
+.pair .strong{background:var(--surface);border-color:var(--accent)}
+.pair .strong .t{font-family:var(--font-display);font-size:clamp(1rem,1.9vw,1.6rem);color:var(--accent)}
+.pair .lb{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted)}
+.pair .strong .lb{color:var(--accent-2)}
+.pair p{font-size:clamp(.74rem,1.08vw,.98rem);color:var(--muted);line-height:1.35;max-width:none}
+.pair p b{color:var(--fg)}
+
+/* ---- Pseudocódigo ----
+   NO es un bloque de código: es una frase en español con tratamiento tipográfico
+   propio, sin `pre` ni `code`. Existe para que un procedimiento se vea de un
+   golpe y quepa en la cabeza, sin proyectar sintaxis que ya está escrita en el
+   cuaderno. El tallo del motivo rector, puesto de canto a la izquierda. */
+.pseudo{font-family:var(--font-display);font-size:clamp(1.15rem,2.5vw,2.05rem);
+  line-height:1.22;max-width:36ch;color:var(--fg);
+  border-left:5px solid var(--accent-2);padding:.35em 0 .35em .8em}
+.pseudo b{color:var(--accent);font-weight:400;font-style:italic}
+.pseudo .no{color:var(--no);font-style:italic}
+
+/* ---- Código (solo bloques 2 y 3) ---- */
+pre{background:var(--code-bg);color:var(--code-fg);border-left:4px solid var(--accent-2);
+  padding:clamp(.65rem,1.4vw,1.25rem) clamp(.85rem,1.7vw,1.5rem);overflow:hidden;
+  font-family:var(--font-mono);font-size:var(--fs-code);line-height:1.5;max-width:min(100%,80ch)}
+pre code{font:inherit;color:inherit;background:none}
+pre .c{color:#6E8578}      /* comentario */
+pre .k{color:#7FC69B}      /* palabra clave o función incorporada */
+pre .s{color:#E3B872}      /* cadena */
+pre .n{color:#E8CE9B}      /* número */
+pre .e{color:#E0806E}      /* lo que revienta */
+.err{font-family:var(--font-mono);font-size:clamp(.72rem,1.02vw,.92rem);color:var(--no);
+  background:var(--surface);border:1px dashed var(--no);padding:.4em .7em;max-width:72ch}
+
+/* ---- Divisorias de bloque (invariante 3) ---- */
+/* El pie lo inyecta el JS como <p>, asi que .divider p{max-width:NNch} tambien lo
+   alcanzaba y lo estrangulaba a ~275px: en las divisorias el pie se partia en dos
+   lineas mientras en el resto del deck iba en una. Dos clases ganan en especificidad
+   a clase+tipo, de modo que el pie recupera el ancho completo sin tocar el parrafo. */
+.divider .slide-footer{max-width:none}
+.divider{justify-content:center;gap:clamp(.4rem,1vw,1rem);
+  background:radial-gradient(ellipse 62% 72% at 46% 44%,rgba(127,198,155,.13),transparent 66%),var(--bg-2)}
+.divider .n{font-family:var(--font-display);line-height:.8;
+  font-size:clamp(4.5rem,16vw,13rem);color:transparent;-webkit-text-stroke:1px var(--accent);opacity:.55}
+.divider h2{font-size:clamp(1.8rem,5vw,4rem)}
+.divider p{max-width:46ch}
+
+/* ---- El motivo rector: el tallo de cuatro nudos ---- */
+.stem{position:absolute;right:5.5%;top:50%;transform:translateY(-50%);
+  height:66vh;width:auto;opacity:.95;pointer-events:none;z-index:0}
+.stem .ln{stroke:var(--line);stroke-width:2;fill:none}
+.stem .nd{fill:var(--bg);stroke:var(--accent-2);stroke-width:2}
+.stem .nd.on{fill:var(--accent);stroke:var(--accent)}
+.stem .lf{fill:none;stroke:var(--line);stroke-width:1.5;opacity:.75}
+.stem .tx{font-family:var(--font-mono);font-size:13px;fill:var(--muted);
+  letter-spacing:.14em;text-transform:uppercase}
+
+/* ---- Diagramas SVG ---- */
+.fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+svg.fig{width:100%;height:auto;max-height:52vh;display:block}
+svg.fig .box{fill:var(--surface);stroke:var(--line);stroke-width:2}
+svg.fig .box.sel{fill:var(--surface-2);stroke:var(--accent)}
+svg.fig .t{font-family:var(--font-mono);font-size:20px;fill:var(--fg)}
+svg.fig .t.sm{font-size:17px;fill:var(--muted)}
+svg.fig .lbl{font-family:var(--font-display);font-size:25px;fill:var(--fg)}
+svg.fig .lbl.acc{fill:var(--accent)}
+svg.fig .arrow{stroke:var(--accent-2);stroke-width:3;fill:none}
+svg.fig .arrowhead{fill:var(--accent-2)}
+svg.fig .drop{font-family:var(--font-mono);font-size:18px;fill:var(--no)}
+
+/* ---- Navegación (invariante 1) ---- */
+.progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
+  z-index:120;transition:width .3s var(--ease)}
+.nav-dots{position:fixed;right:clamp(.45rem,1.1vw,1rem);top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:clamp(3px,.45vh,6px);z-index:120}
+.nav-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--muted);
+  background:transparent;cursor:pointer}
+.nav-dots button[aria-current="true"]{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
+.nav-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.block-chip{position:fixed;top:clamp(.6rem,1.6vh,1.2rem);right:clamp(1.4rem,3vw,2.6rem);z-index:120;
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent-ink);background:var(--accent);padding:.35em .8em;border-radius:2px}
+.block-chip[hidden]{display:none}
+
+/* Índice de slides (Esc) */
+.slide-index{position:fixed;inset:0;z-index:200;background:rgba(11,20,16,.985);
+  padding:clamp(1.2rem,4vw,3rem);overflow:auto;display:none}
+.slide-index.open{display:block}
+.slide-index h2{margin-bottom:1rem;color:var(--accent)}
+.slide-index ol{list-style:none;columns:2;column-gap:2.5rem;font-size:clamp(.78rem,1.05vw,.95rem)}
+.slide-index li{break-inside:avoid;margin-bottom:.35em}
+.slide-index button{background:none;border:0;color:var(--fg);font:inherit;text-align:left;
+  cursor:pointer;padding:.15em 0;width:100%}
+.slide-index button:hover,.slide-index button:focus-visible{color:var(--accent)}
+.slide-index .ix{font-family:var(--font-mono);color:var(--muted);margin-right:.6em}
+.slide-index .bk{color:var(--accent-2);font-family:var(--font-mono);font-size:.8em;
+  letter-spacing:.16em;text-transform:uppercase;margin:1.2em 0 .4em;break-after:avoid}
+
+/* ---- Animaciones de entrada ---- */
+.reveal{opacity:0;transform:translateY(20px);
+  transition:opacity .65s var(--ease),transform .65s var(--ease)}
+.slide.in-view .reveal{opacity:1;transform:none}
+.slide.in-view .reveal:nth-child(1){transition-delay:.05s}
+.slide.in-view .reveal:nth-child(2){transition-delay:.12s}
+.slide.in-view .reveal:nth-child(3){transition-delay:.19s}
+.slide.in-view .reveal:nth-child(4){transition-delay:.26s}
+.slide.in-view .reveal:nth-child(5){transition-delay:.33s}
+.slide.in-view .reveal:nth-child(6){transition-delay:.40s}
+/* Los nudos del tallo se encienden en el orden de la historia. */
+.stem .nd{transition:fill .5s var(--ease),stroke .5s var(--ease)}
+.slide.in-view .stem .nd:nth-of-type(1){transition-delay:.30s}
+.slide.in-view .stem .nd:nth-of-type(2){transition-delay:.45s}
+.slide.in-view .stem .nd:nth-of-type(3){transition-delay:.60s}
+.slide.in-view .stem .nd:nth-of-type(4){transition-delay:.75s}
+
+/* ---- Breakpoints obligatorios de alto (invariante 9) ---- */
+@media (max-height:700px){
+  :root{--pad:clamp(1rem,2.4vw,2rem);--gap:clamp(.4rem,1vw,.9rem)}
+}
+@media (max-height:600px){
+  :root{--fs-title:clamp(1.6rem,4.2vw,2.8rem);--fs-h2:clamp(1.2rem,2.9vw,2rem);
+        --fs-h3:clamp(.95rem,1.6vw,1.2rem)}
+  .numeral,.stem{display:none}
+}
+@media (max-height:500px){
+  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-code:clamp(.72rem,1vw,.9rem)}
+  .nav-dots{display:none}
+}
+@media (max-width:900px){
+  .cards.c4{grid-template-columns:repeat(2,1fr)}
+  .stem{display:none}
+}
+@media (max-width:600px){
+  .cards.c4,.cards.c3,.cards.c2,.pair{grid-template-columns:1fr}
+  .slide-index ol{columns:1}
+}
+
+/* ---- prefers-reduced-motion (invariante 9) ---- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+
+/* ============================================================================
+   IMPRESIÓN A PDF (invariante 5) — idéntica en los 16 decks.
+   Una slide por página, horizontal, fondo claro, sin dots ni barra.
+   Este deck es oscuro: aquí se invierte por completo. Sin esta hoja, imprimirlo
+   gasta tóner y no se lee.
+   ========================================================================= */
+@media print{
+  @page{size:landscape;margin:0}
+  :root{--bg:#fff;--bg-2:#fff;--surface:#fff;--surface-2:#f2f2ee;--line:#c9c9c9;
+        --fg:#111;--muted:#444;--accent:#8A5A00;--accent-ink:#fff;--accent-2:#0B5C43;
+        --no:#98281A;--code-bg:#f4f4f2;--code-fg:#111}
+  html,body{height:auto;background:#fff!important;color:#111!important}
+  .slide{height:100vh;page-break-after:always;break-after:page;
+    background:#fff!important;color:#111!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .divider{background:#fff!important;border-top:8px solid #8A5A00}
+  .divider .n{-webkit-text-stroke:1px #8A5A00;opacity:.35}
+  .card,.callout,.pair > div{background:#fff!important}
+  .card.on,.pair .strong{background:#f6f1e6!important}
+  .pair .weak{opacity:1;border-style:dashed}
+  pre{background:#f4f4f2!important;color:#111!important;border:1px solid #c9c9c9;border-left:4px solid #0B5C43}
+  pre .c{color:#666!important} pre .k{color:#0B5C43!important} pre .s{color:#8A5A00!important}
+  pre .n{color:#8A5A00!important} pre .e{color:#98281A!important}
+  tbody tr.on td,tbody tr.on th{background:#f6f1e6!important}
+  svg.fig .box{fill:#fff} svg.fig .box.sel{fill:#f6f1e6}
+  .stem .nd{fill:#fff} .stem .nd.on{fill:#8A5A00}
+  .numeral{display:none}
+  .progress-bar,.nav-dots,.slide-index,.block-chip{display:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" role="presentation"></div>
+<nav class="nav-dots" aria-label="Navegación de diapositivas"></nav>
+<div class="block-chip" hidden></div>
+
+<div class="slide-index" role="dialog" aria-label="Índice de diapositivas" aria-modal="true">
+  <h2>Índice</h2>
+  <ol></ol>
+</div>
+
+<main>
+
+<!-- ======================= PORTADA ======================= -->
+<section class="slide cover" data-title="Portada">
+  <p class="kicker reveal">Analítica de Datos &middot; Clase 09 &middot; Momento 2</p>
+  <div class="rule reveal"></div>
+  <h1 class="reveal">Data storytelling: <em>del número a la frase que alguien recuerda</em></h1>
+  <p class="who reveal"><b>Julián Garzón</b> &middot; Ingeniería de Sistemas &middot; Universidad Cooperativa de Colombia</p>
+</section>
+
+<!-- ======================= OBJETIVOS ======================= -->
+<section class="slide" data-title="Objetivos de la clase">
+  <p class="kicker reveal">Al terminar hoy, usted debe poder hacer esto solo</p>
+  <h2 class="reveal">Objetivos de la clase</h2>
+  <ol class="steps reveal">
+    <li><b>Explicar por qué un análisis correcto fracasa</b> frente a una audiencia, nombrando al menos dos causas distintas.</li>
+    <li><b>Reescribir una apertura</b> que empieza por el proceso en una que empieza por la respuesta.</li>
+    <li><b>Adaptar el mismo hallazgo a tres audiencias</b>: ejecutivo, gerente de área y técnico.</li>
+    <li><b>Convertir un título descriptivo en un título que afirma</b> un hallazgo con su cifra.</li>
+    <li><b>Aplicar el marco</b> contexto &rarr; hallazgo &rarr; implicación &rarr; acción sobre su propio proyecto.</li>
+    <li><b>Sostener un pitch corto sin leer las slides</b> y dar feedback estructurado a otro equipo.</li>
+  </ol>
+  <p class="lead reveal">Hoy hay entregable: el mini-deck de cuatro slides de su proyecto. Y es el ensayo directo de la sustentación del Momento 2.</p>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
+<section class="slide divider" data-block="1" data-title="Divisoria · Bloque 1">
+  <span class="n">01</span>
+  <p class="kicker">Bloque uno</p>
+  <h2>Teoría &middot; Por qué una historia no es una lista</h2>
+  <p class="lead">Cero código en pantalla. Aquí no se calcula nada: se decide qué se dice, en qué orden y a quién.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Hook: el mismo hallazgo, dicho dos veces">
+  <span class="numeral">?</span>
+  <p class="kicker reveal">El mismo dato, correcto las dos veces</p>
+  <div class="pair reveal">
+    <div class="weak">
+      <span class="lb">Versión uno</span>
+      <p class="t">"Se corrió una agrupación por sector sobre la ejecución presupuestal y se calculó el cociente entre pagos y compromisos, obteniendo un ratio agregado de 0,274."</p>
+    </div>
+    <div class="strong">
+      <span class="lb">Versión dos</span>
+      <p class="t">"El Estado se comprometió a gastar 92 billones de pesos. Pagó 25."</p>
+    </div>
+  </div>
+  <p class="lead reveal">Las dos son verdad y salen del mismo archivo. Levante la mano quien entendió la primera. Y ahora dígame: <strong>¿cuál de las dos le cambia lo que cree sobre el país?</strong></p>
+</section>
+
+<section class="slide" data-block="1" data-title="La analogía del radiólogo">
+  <p class="kicker reveal">La analogía de la clase</p>
+  <p class="claim reveal">El radiólogo que entrega la placa <span>sin decir nada</span> no le sirve al paciente.</p>
+  <p class="lead reveal">Puede leer la radiografía perfectamente y señalar la fractura. Si no dice la frase, el paciente sale igual de ignorante que entró.</p>
+  <div class="callout reveal"><p><b>El análisis no fracasa por ser incorrecto. Fracasa porque termina en la placa y no en la frase.</b> Todo lo de hoy es sobre la frase.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Las cuatro causas de fracaso">
+  <p class="kicker reveal">Cuatro maneras de perder a la audiencia con datos correctos</p>
+  <h2 class="reveal">Dónde se rompe</h2>
+  <div class="cards c4 reveal">
+    <article class="card"><span class="k">Uno</span><h3>Empieza por el proceso</h3>
+      <p>La primera frase habla de <b>cómo se hizo</b>, no de qué se encontró.</p></article>
+    <article class="card"><span class="k">Dos</span><h3>Audiencia equivocada</h3>
+      <p>El nivel de detalle es el de quien lo hizo, no el de <b>quien decide</b>.</p></article>
+    <article class="card on"><span class="k">Tres</span><h3>Los títulos describen</h3>
+      <p>Rotulan el gráfico en vez de <b>afirmar el hallazgo</b>. Es la más común de las cuatro.</p></article>
+    <article class="card"><span class="k">Cuatro</span><h3>Termina en descripción</h3>
+      <p>Cierra con "gracias, ¿preguntas?" y <b>nadie hace nada distinto</b> el lunes.</p></article>
+  </div>
+</section>
+
+<section class="slide" data-block="1" data-title="Empezar por la respuesta, no por el proceso">
+  <p class="kicker reveal">Analogía del noticiero</p>
+  <p class="claim reveal">Ningún noticiero abre diciendo <span>"hoy salimos a las cinco de la mañana e hicimos doce entrevistas"</span>.</p>
+  <p class="lead reveal">Abre con lo que pasó. El método va después, y solo si sobra tiempo. Un informe de datos funciona igual: la metodología es la nota al pie, no el titular.</p>
+  <div class="callout reveal"><p><b>La primera frase de su presentación es su conclusión, no su metodología.</b></p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Ejercicio: reescriba esta apertura">
+  <p class="kicker reveal">Ejercicio en voz alta &middot; nadie escribe código todavía</p>
+  <h2 class="reveal">Reescriba esta apertura</h2>
+  <div class="callout warn reveal"><p>"Buenas tardes. Descargamos el dataset, hicimos la limpieza, quitamos nulos, normalizamos las columnas de valores y después construimos varias visualizaciones para explorar el comportamiento del gasto."</p></div>
+  <ul class="bullets reveal">
+    <li>La versión buena tiene forma de <b>afirmación con cifra</b>.</li>
+    <li>No dice de dónde salió el archivo. Todavía no le interesa a nadie.</li>
+    <li>Cabe en una respiración. Si necesita dos, sobra una oración.</li>
+  </ul>
+  <p class="lead reveal">Recojo dos o tres versiones y marcamos la que gana. Pista: empieza por lo que el país hizo, no por lo que ustedes hicieron.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Historia o lista: la prueba del intercambio">
+  <p class="kicker reveal">La prueba que decide si hay narrativa</p>
+  <p class="claim reveal">Si intercambia dos diapositivas y la presentación <span>funciona igual</span>, no tiene una historia: tiene una lista.</p>
+  <p class="lead reveal">Es el criterio que usa este curso, y es mecánico: no depende del gusto de nadie. En una lista el orden es arbitrario. En una historia cada slide existe porque la anterior la hizo necesaria.</p>
+  <svg class="stem" viewBox="0 0 200 520" aria-hidden="true">
+    <path class="ln" d="M100 20 C 60 130, 140 200, 100 300 C 70 380, 130 440, 100 500"/>
+    <path class="lf" d="M100 130 C 140 110, 165 130, 158 165 C 125 175, 103 158, 100 130Z"/>
+    <path class="lf" d="M100 330 C 60 312, 36 332, 43 366 C 76 376, 98 358, 100 330Z"/>
+    <circle class="nd on" cx="88" cy="90" r="9"/><text class="tx" x="112" y="95">Contexto</text>
+    <circle class="nd on" cx="112" cy="230" r="9"/><text class="tx" x="10" y="235">Hallazgo</text>
+    <circle class="nd on" cx="86" cy="370" r="9"/><text class="tx" x="110" y="375">Implicación</text>
+    <circle class="nd on" cx="106" cy="490" r="9"/><text class="tx" x="18" y="495">Acción</text>
+  </svg>
+</section>
+
+<section class="slide" data-block="1" data-title="Tensión que se resuelve">
+  <p class="kicker reveal">Qué tiene una historia que una enumeración no tiene</p>
+  <h2 class="reveal">Tensión que se resuelve</h2>
+  <div class="cards c3 reveal">
+    <article class="card"><span class="k">Se instala</span><h3>Una pregunta abierta</h3>
+      <p>El contexto deja al que escucha <b>queriendo saber algo</b>. No anuncia un tema: abre una duda.</p></article>
+    <article class="card on"><span class="k">Se tensa</span><h3>El hallazgo incomoda</h3>
+      <p>Lo que aparece <b>no era lo que se esperaba</b>, o confirma con evidencia algo que era solo intuición.</p></article>
+    <article class="card good"><span class="k">Se resuelve</span><h3>Alguien puede actuar</h3>
+      <p>La tensión se cierra con una consecuencia y una acción, <b>no con un resumen</b>.</p></article>
+  </div>
+  <div class="callout reveal"><p><b>Enumerar gráficos no genera tensión.</b> Cinco gráficos correctos, uno tras otro, dejan a la audiencia esperando el sexto. Cuatro bloques encadenados la dejan esperando la conclusión, que es lo que usted quiere.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="La misma verdad, tres audiencias">
+  <p class="kicker reveal">Analogía de la receta médica: paciente, familiar y colega</p>
+  <h2 class="reveal">Un hallazgo, tres versiones</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>No es mentir tres veces: son tres niveles de detalle sobre un solo hecho</caption>
+      <thead><tr><th>Audiencia</th><th>Qué le importa</th><th>Cómo se dice el mismo hallazgo</th></tr></thead>
+      <tbody>
+        <tr><th>Ejecutivo</th><td><em>La decisión y el riesgo</em></td>
+          <td>"Estamos comprometiendo tres veces más de lo que pagamos. Si el ritmo sigue, cerramos el año con la mayor parte de la ejecución sin materializar."</td></tr>
+        <tr class="on"><th>Gerente de área</th><td><em>Dónde actuar y con qué recursos</em></td>
+          <td>"Educación concentra 20 de los 67 billones de brecha. Ahí es donde primero hay que revisar el proceso de pago."</td></tr>
+        <tr><th>Técnico</th><td><em>Cómo se calculó y qué tan confiable es</em></td>
+          <td>"Sumé compromisos y pagos por sector sobre 3.645 registros, sin nulos. La brecha es la resta directa; no ajusté por vigencias futuras."</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal"><strong>Una presentación, una audiencia principal.</strong> Un deck que les sirve a las tres las aburre a las tres, en momentos distintos.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Este salón es una audiencia mixta">
+  <p class="kicker reveal">El caso concreto de este salón</p>
+  <p class="claim reveal">Aquí hay Ingeniería de Sistemas <span>e Ingeniería Industrial</span> al mismo tiempo.</p>
+  <p class="lead reveal">Un mismo hallazgo sobre consumo de agua se cuenta distinto si el que escucha optimiza la red de distribución o si diseña el sistema que la monitorea. Ninguno de los dos es la audiencia "correcta": lo que no se puede es no elegir.</p>
+  <div class="callout reveal"><p><b>Regla operativa:</b> escriba para el más alto en la cadena de decisión y tenga el respaldo técnico listo para las preguntas. Si se lo piden, se ve preparado; si no, no gastó tiempo de nadie.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="El título de la slide es el mensaje">
+  <p class="kicker reveal">Ningún periódico titula "cifras de accidentalidad del trimestre"</p>
+  <h2 class="reveal">El título es el mensaje</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>El título ya le dice qué pensar; el cuerpo solo lo sostiene</caption>
+      <thead><tr><th>Título descriptivo &middot; débil</th><th>Título con mensaje &middot; fuerte</th></tr></thead>
+      <tbody>
+        <tr><td><span class="weak">"Compromisos y pagos por sector"</span></td>
+            <td><span class="strong">"Educación concentra un tercio de la brecha"</span></td></tr>
+        <tr class="on"><td><span class="weak">"Distribución del gasto"</span></td>
+            <td><span class="strong">"Nueve de cada diez pesos comprometidos siguen sin pagarse"</span></td></tr>
+        <tr><td><span class="weak">"Análisis de correlación"</span></td>
+            <td><span class="strong">"Más presupuesto no está produciendo más ejecución"</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">El de la izquierda rotula el gráfico. El de la derecha afirma el hallazgo. Solo uno de los dos sobrevive si se apaga el proyector.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Anatomía de un título que afirma">
+  <p class="kicker reveal">Cómo se escribe uno, pieza por pieza</p>
+  <h2 class="reveal">Afirmación, cifra, recorte</h2>
+  <div class="cards c3 reveal">
+    <article class="card on"><span class="k">Uno</span><h3>Un verbo que afirma</h3>
+      <p>"Concentra", "sigue sin pagarse", "no está produciendo". Si el título no tiene verbo, es una etiqueta.</p></article>
+    <article class="card"><span class="k">Dos</span><h3>Una cifra, no tres</h3>
+      <p>La cifra hace la afirmación verificable. <b>Tres cifras en un título no es rigor: es indecisión.</b></p></article>
+    <article class="card"><span class="k">Tres</span><h3>Un recorte con nombre</h3>
+      <p>De qué población, de qué año, de qué sector. Una cifra sin su recorte no significa nada.</p></article>
+  </div>
+  <div class="callout reveal"><p><b>La prueba de los títulos:</b> lea en voz alta solo los títulos de su deck, seguidos y sin el cuerpo. Si esa secuencia ya cuenta la historia completa, el deck está bien. Si suena a índice, está mal, y no se salva con diseño.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Antes y después de una slide con foco">
+  <p class="kicker reveal">Es un ejercicio de resta, no de diseño</p>
+  <div class="pair reveal">
+    <div class="weak">
+      <span class="lb">Antes</span>
+      <p class="t">"Distribución del gasto"</p>
+      <p>Cuatro gráficos, una tabla, un logo, la fuente en letra pequeña y una leyenda con doce categorías. Todo cierto, nada dicho.</p>
+    </div>
+    <div class="strong">
+      <span class="lb">Después</span>
+      <p class="t">"Nueve de cada diez pesos comprometidos siguen sin pagarse"</p>
+      <p>Un gráfico. Dos categorías resaltadas y el resto en gris. Una anotación que señala el punto exacto del que habla el título.</p>
+    </div>
+  </div>
+  <p class="lead reveal">Pregunta honesta: si le tapo la pantalla, <strong>¿cuál de las dos me puede explicar de memoria?</strong> Es el data-ink ratio de la clase 8 otra vez, con la narrativa como criterio de qué borrar.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="La línea entre analítica y opinión">
+  <p class="kicker reveal">La frase más peligrosa de la clase</p>
+  <p class="claim reveal">El dato sostiene la descripción. <span>No sostiene la intención.</span></p>
+  <div class="pair reveal">
+    <div class="strong">
+      <span class="lb">Lo que el dato aguanta</span>
+      <p class="t">"Hay 67 billones en contratos firmados cuyos pagos no se han ejecutado."</p>
+    </div>
+    <div class="weak">
+      <span class="lb">Lo que no aguanta</span>
+      <p class="t">"Se robaron la plata." &middot; "Primero pagan lo que les conviene."</p>
+    </div>
+  </div>
+  <p class="lead reveal">Puede ser corrupción, puede ser lentitud administrativa, puede ser que el archivo esté cortado a mitad de año. Storytelling <strong>no es maquillar</strong>: es elegir el orden en que se dicen números verdaderos. La prueba es si puede mostrar el cálculo cuando se lo pidan.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="El marco de cuatro slides">
+  <p class="kicker reveal">Lo que se construye en el bloque 2 y se replica en el bloque 3</p>
+  <h2 class="reveal">Contexto &rarr; hallazgo &rarr; implicación &rarr; acción</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Cuatro slides, siempre en ese orden. Ni tres ni seis</caption>
+      <thead><tr><th>Slide</th><th>La pregunta que responde</th><th>El error típico</th></tr></thead>
+      <tbody>
+        <tr><th>1 &middot; Contexto</th><td>¿De qué hablamos y por qué ahora?</td><td><em>Convertirlo en la agenda de la presentación</em></td></tr>
+        <tr class="on"><th>2 &middot; Hallazgo</th><td>¿Qué encontramos, en una frase con cifra?</td><td><em>Meter tres hallazgos</em></td></tr>
+        <tr><th>3 &middot; Implicación</th><td>¿Y eso qué significa para quien decide?</td><td><em>Repetir el hallazgo con otras palabras</em></td></tr>
+        <tr><th>4 &middot; Acción</th><td>¿Qué hay que hacer, quién y cuándo?</td><td><em>Terminar con "gracias, ¿preguntas?"</em></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">Este marco se queda escrito en el tablero toda la clase. Los cuatro nudos del tallo son estos cuatro.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Resumen del bloque 1">
+  <p class="kicker reveal">Cinco ideas, cero sintaxis</p>
+  <h2 class="reveal">Lo que se lleva de este bloque</h2>
+  <ul class="bullets reveal">
+    <li>La primera frase es <b>la conclusión</b>, no la metodología.</li>
+    <li>Una presentación, <b>una audiencia principal</b>.</li>
+    <li>El título <b>afirma un hallazgo con su cifra</b>; no rotula el gráfico.</li>
+    <li>Si intercambia dos slides y no pasa nada, <b>no hay historia</b>.</li>
+    <li>El dato sostiene <b>la descripción</b>, no la intención.</li>
+  </ul>
+  <p class="lead reveal">Ahora sí, la parte que a la audiencia nunca se le muestra: de dónde salen las cifras.</p>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 2 ======================= -->
+<section class="slide divider" data-block="2" data-title="Divisoria · Bloque 2">
+  <span class="n">02</span>
+  <p class="kicker">Bloque dos</p>
+  <h2>Demo &middot; Lo recorre usted</h2>
+  <p class="lead">Abra <span class="term">demo/demo.ipynb</span> y avance solo, a su ritmo. <b>El código ya está escrito:</b> se corre, se entiende y se responden las preguntas de interpretación. Nadie lo va a dictar desde aquí. Yo camino por el salón resolviendo dudas.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="El dataset, antes de tocarlo">
+  <p class="kicker reveal">El archivo con el que trabaja el demo</p>
+  <h2 class="reveal">Ejecución presupuestal nacional</h2>
+  <div class="cards c4 reveal">
+    <article class="card"><span class="k">Tamaño</span><h3>3.645 &times; 21</h3>
+      <p>Un mismo sector aparece en muchas filas. Sin agrupar, es un extracto bancario de 3.645 líneas.</p></article>
+    <article class="card good"><span class="k">Nulos</span><h3>Cero</h3>
+      <p>En las 21 columnas. Es raro y vale decirlo: <b>los datos limpios existen</b> y este es uno.</p></article>
+    <article class="card warn"><span class="k">Encabezados</span><h3>Dos con defecto</h3>
+      <p>Uno le falta una letra y otro tiene una tilde suelta donde va un espacio. <b>No se corrige el archivo fuente:</b> se documenta.</p></article>
+    <article class="card"><span class="k">Magnitudes</span><h3>Doce y trece dígitos</h3>
+      <p>Pesos sin separador. Ilegibles crudos: toda la clase se apoya en dividir entre un billón.</p></article>
+  </div>
+  <p class="lead reveal">La jerarquía del rubro tiene cinco niveles anidados y hoy solo se usa el primero. <strong>Se ignora información a propósito porque la historia no la necesita.</strong></p>
+</section>
+
+<section class="slide" data-block="2" data-title="El glosario: cupo, contrato, factura, plata">
+  <p class="kicker reveal">Sin esto, las columnas no significan nada</p>
+  <h2 class="reveal">La cadena del gasto público</h2>
+  <div class="fig-wrap reveal">
+    <svg class="fig" viewBox="0 0 1000 260" role="img" aria-label="Cadena del gasto público: apropiación vigente 546,98 billones, compromisos 92,34, obligaciones 25,51 y pagos 25,32 billones. Cada eslabón es menor o igual al anterior.">
+      <rect class="box" x="10" y="60" width="215" height="96" rx="3"/>
+      <text class="lbl" x="30" y="95">Cupo</text>
+      <text class="t sm" x="30" y="122">Apropiación Vigente</text>
+      <text class="t" x="30" y="146">546,98 bill.</text>
+
+      <rect class="box" x="270" y="60" width="215" height="96" rx="3"/>
+      <text class="lbl" x="290" y="95">Contrato</text>
+      <text class="t sm" x="290" y="122">Compromisos</text>
+      <text class="t" x="290" y="146">92,34 bill.</text>
+
+      <rect class="box" x="530" y="60" width="215" height="96" rx="3"/>
+      <text class="lbl" x="550" y="95">Factura</text>
+      <text class="t sm" x="550" y="122">Obligaciones</text>
+      <text class="t" x="550" y="146">25,51 bill.</text>
+
+      <rect class="box sel" x="790" y="60" width="200" height="96" rx="3"/>
+      <text class="lbl acc" x="810" y="95">Plata</text>
+      <text class="t sm" x="810" y="122">Pagos</text>
+      <text class="t" x="810" y="146">25,32 bill.</text>
+
+      <path class="arrow" d="M225 108 H262"/><path class="arrowhead" d="M262 102 l14 6 -14 6z"/>
+      <path class="arrow" d="M485 108 H522"/><path class="arrowhead" d="M522 102 l14 6 -14 6z"/>
+      <path class="arrow" d="M745 108 H782"/><path class="arrowhead" d="M782 102 l14 6 -14 6z"/>
+
+      <text class="drop" x="228" y="200">aquí se cae el 83%</text>
+      <text class="t sm" x="498" y="200">la brecha que cuenta la historia: 67,02 billones</text>
+    </svg>
+  </div>
+  <p class="lead reveal">Cada eslabón es menor o igual al anterior. <strong>Confundir compromisos con pagos saca la historia al revés</strong>, y es el error más frecuente del bloque.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="El recorrido, a nivel general">
+  <p class="kicker reveal">Lo que van a hacer en este bloque, sin desarrollarlo aquí</p>
+  <h2 class="reveal">Un cuaderno con dos mitades</h2>
+  <div class="cards c3 reveal">
+    <article class="card"><span class="k">Primera mitad</span><h3>De dónde salen las cifras</h3>
+      <p>Totalizar, dividir para volver legible, partir por sector y partir por tipo de gasto. Todo con pandas ya conocido: hoy no hay sintaxis nueva.</p></article>
+    <article class="card on"><span class="k">La bisagra</span><h3>El cuaderno cambia de oficio</h3>
+      <p>De herramienta de cálculo a cuaderno de redacción. A partir de ahí no se ejecuta nada: se escribe, se borra y se reescribe en celdas de texto.</p></article>
+    <article class="card good"><span class="k">Segunda mitad</span><h3>La historia de cuatro slides</h3>
+      <p>Contexto, hallazgo, implicación y acción sobre el caso, cada una con su versión mala al lado. Es el marco que el reto replica con los datos del equipo.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Hay una cifra en ese archivo que no voy a adelantar:</strong> aparece cuando se cambia el recorte, obliga a reescribir la historia entera y explica una contradicción que este curso arrastraba del semestre pasado. Descubrirla ejecutando vale mucho más que oírmela contar.</p></div>
+</section>
+
+<section class="slide" data-block="2" data-title="Cómo se recorre el cuaderno">
+  <p class="kicker reveal">Se lee antes de ejecutar &middot; nadie va adelantado ni atrasado</p>
+  <h2 class="reveal">Cómo se recorre el cuaderno</h2>
+  <div class="cards c3 reveal">
+    <article class="card"><span class="k">Aquí no se teclea</span><h3>El código está escrito</h3>
+      <p>Se ejecuta, se mira la salida y se lee la explicación que está justo encima. <b>Escribir código es el bloque 3</b>, y es lo que se entrega.</p></article>
+    <article class="card on"><span class="k">Doce celdas</span><h3>Preguntas de interpretación</h3>
+      <p>Marcadas <b>Tu respuesta:</b>, en español y sin código, con la respuesta esperada plegada debajo. Se escribe la propia <b>primero</b> y se abre después. Qué significa el resultado, no cuál fue.</p></article>
+    <article class="card"><span class="k">Los recuadros</span><h3>De fundamento</h3>
+      <p>Por qué no se corrige el archivo fuente, dónde está la línea entre analítica y opinión. Si ya lo tiene claro se puede saltar; si no, es lo que más le va a servir en la sustentación.</p></article>
+  </div>
+  <div class="callout reveal"><p><b>Yo estoy caminando.</b> Levante la mano en el momento en que algo no cuadre, no al final. Y una advertencia que va en serio: quien ejecuta celdas sin leer termina la primera mitad en veinte minutos y no puede responder una sola de las doce preguntas.</p></div>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 3 ======================= -->
+<section class="slide divider" data-block="3" data-title="Divisoria · Bloque 3">
+  <span class="n">03</span>
+  <p class="kicker">Bloque tres</p>
+  <h2>Reto &middot; Ahora usted, con sus propios datos</h2>
+  <p class="lead">La misma técnica, otro dataset: el de su equipo, el que viene usando desde el Momento 1.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="El reto: su proyecto en cuatro slides">
+  <p class="kicker reveal">El entregable de hoy</p>
+  <h2 class="reveal">La historia de su proyecto, en cuatro slides</h2>
+  <ul class="bullets reveal">
+    <li><b>Tres cifras</b> calculadas sobre su dataset, en <span class="term">reto.ipynb</span>.</li>
+    <li><b>Cuatro títulos</b> que cuenten la historia leídos seguidos.</li>
+    <li><b>Un pitch</b> presentado en el salón, sin leer las slides.</li>
+    <li><b>Un formulario de feedback</b> diligenciado para cada equipo que escuchó.</li>
+  </ul>
+  <div class="callout reveal"><p><b>Los cuatro títulos primero, el resto después.</b> El equipo que empieza por el diseño no termina; el que empieza por los títulos siempre llega, aunque el deck quede feo. La meta de hoy no es el deck terminado: es tener los cuatro títulos.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Parte A · las tres cifras">
+  <p class="kicker reveal">Tareas 1 a 3 &middot; lo que se entrena no es calcular, es elegir qué calcular</p>
+  <h2 class="reveal">Las tres cifras que sostienen la historia</h2>
+  <div class="cards c3 reveal">
+    <article class="card on"><span class="k">T1</span><h3>La cifra principal</h3>
+      <p>Una sola, y no la que fue fácil de calcular: <b>la que cambiaría una decisión</b>. Si al decirla nadie tendría que hacer nada distinto, es una cifra, no la cifra.</p></article>
+    <article class="card"><span class="k">T2</span><h3>El recorte con nombre propio</h3>
+      <p>¿Dónde está concentrado eso? Partir el total por una categórica no cambia ningún dato, y <b>sí cambia la historia</b>.</p></article>
+    <article class="card"><span class="k">T3</span><h3>La segunda evidencia</h3>
+      <p>La que hace que la primera no dependa de la buena fe del que escucha.</p></article>
+  </div>
+  <p class="lead reveal">De su dataset salen cientos de cifras verdaderas y casi todas son irrelevantes. Si sale con más de seis dígitos, divídala: <strong>nadie lee trece dígitos en una slide.</strong></p>
+</section>
+
+<section class="slide" data-block="3" data-title="Parte B · los cuatro títulos">
+  <p class="kicker reveal">Tareas 4 a 7 &middot; una por slide del marco</p>
+  <h2 class="reveal">Escriba primero la versión débil</h2>
+  <ul class="bullets reveal">
+    <li>El bloqueo casi siempre es <b>querer escribir la buena de una</b>. Escriba la mala, mírela, y corríjala.</li>
+    <li>Si el revisor le marca solapamiento, <b>reescriba la slide 3</b>, no la 2.</li>
+    <li>La acción nombra <b>un responsable, una métrica y un punto de arranque</b>. Si falta uno, todavía no es una acción.</li>
+    <li>Declare su <b>audiencia principal</b>: ejecutivo, gerente de área o técnico. Una sola.</li>
+  </ul>
+  <div class="callout warn reveal"><p><b>Un título en verde no es un título bueno: es un título con forma de título.</b> El cuaderno revisa forma — que afirme, que quepa en una línea, que el hallazgo lleve cifra, que la implicación no repita el hallazgo. El juicio lo cierra usted en la autoevaluación, y lo cierra la sala en la clase 12.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Parte C · la cifra recalculada desde cero">
+  <p class="kicker reveal">Tarea 9 &middot; la única comprobación de verdad automática del cuaderno</p>
+  <h2 class="reveal">"¿De dónde sacó ese número?"</h2>
+  <p class="pseudo reveal"><span class="no">No</span> reimprimir la variable de la tarea 1: <b>volver a leer el archivo, repetir la limpieza, calcular otra vez la cifra</b> y compararla con el número tal como quedó escrito en su título.</p>
+  <p class="lead reveal">Las dos celdas ya están rotuladas en el cuaderno: usted solo escribe adentro. Se aceptan como iguales si no se apartan más de un uno por ciento. Los dos errores que esto atrapa son <strong>de unidades y de filtro</strong>: los dos producen una slide correcta en apariencia y falsa en el fondo, y ninguno lanza una excepción.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="Si su limpieza no está en el cuaderno">
+  <p class="kicker reveal">El atasco más incómodo de la tarea 9</p>
+  <p class="claim reveal">"Es que yo eso lo hice <span>en otro archivo</span>."</p>
+  <p class="lead reveal">Entonces la tarea 9 no se puede hacer, y eso ya es un hallazgo sobre su propio trabajo. Tráigala del Momento 1 y péguela en el cuaderno.</p>
+  <div class="callout warn reveal"><p><b>En el Momento 2 la pregunta "¿de dónde salió?" se hace en voz alta y con público.</b> Hoy la hace un verificador que no juzga a nadie. Es la última vez que sale barata.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Requisitos del mini-deck">
+  <p class="kicker reveal">Lo que se revisa del entregable</p>
+  <h2 class="reveal">Requisitos del mini-deck</h2>
+  <ul class="bullets reveal">
+    <li>Exactamente <b>cuatro slides</b>. Ni tres ni seis.</li>
+    <li>Los cuatro títulos son <b>afirmaciones con contenido</b>, no etiquetas.</li>
+    <li>Al menos <b>dos evidencias</b> de su propio EDA: dos cifras, o una cifra y un gráfico.</li>
+    <li>Toda cifra que ponga <b>la puede reproducir</b> en su notebook.</li>
+    <li>La slide de acción nombra <b>qué</b> hacer y <b>quién</b> lo hace.</li>
+  </ul>
+  <div class="callout good reveal"><p><b>Formato libre.</b> HTML, PDF, Google Slides o las cuatro celdas de texto del notebook renderizadas. <b>No hay plantilla obligatoria del curso.</b> Lo que se valora es la estructura narrativa, no la estética: el tiempo que gaste eligiendo colores es tiempo que no gastó puliendo títulos.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="El pitch: cuatro reglas">
+  <p class="kicker reveal">Cómo se presenta &middot; el corte es duro y se avisa antes del final</p>
+  <h2 class="reveal">Cuatro reglas del pitch</h2>
+  <div class="cards c4 reveal">
+    <article class="card warn"><span class="k">No</span><h3>No lea las slides</h3>
+      <p>La audiencia lee más rápido que usted y se aburre esperándolo.</p></article>
+    <article class="card"><span class="k">Sí</span><h3>Una frase por gráfico</h3>
+      <p>Y señale el punto exacto del que está hablando.</p></article>
+    <article class="card warn"><span class="k">No</span><h3>No abra disculpándose</h3>
+      <p>"Nuestros datos no eran muy buenos" mata la credibilidad en la primera frase.</p></article>
+    <article class="card on"><span class="k">Sí</span><h3>Cierre con la recomendación</h3>
+      <p>No con "eso es todo, ¿preguntas?". Su última frase es lo que se recuerda.</p></article>
+  </div>
+  <p class="lead reveal">El reparto sugerido de los cuatro tramos está en <span class="term">reto.md</span>. En la clase 12 el corte es real y queda en el acta; hoy es el ensayo.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="Feedback: I like, I wish, What if">
+  <p class="kicker reveal">Después de cada pitch, tres frases por evaluador</p>
+  <h2 class="reveal">I like &middot; I wish &middot; What if</h2>
+  <div class="cards c3 reveal">
+    <article class="card good"><span class="k">I like</span><h3>Qué funcionó</h3>
+      <p>Concreto, no "estuvo bien". <em>"Arrancaste con la cifra de la brecha, entendí el problema de una."</em></p></article>
+    <article class="card"><span class="k">I wish</span><h3>Qué faltó</h3>
+      <p>Sobre el trabajo, <b>nunca sobre la persona</b>. <em>"El título de la tercera slide no dice qué concluir; me tocó deducirlo."</em></p></article>
+    <article class="card on"><span class="k">What if</span><h3>Una propuesta</h3>
+      <p>No una queja. <em>"¿Y si muestras el gráfico por municipio antes del total?"</em></p></article>
+  </div>
+  <div class="callout warn reveal"><p><b>El que presenta no defiende.</b> Escucha y anota. Discutir el feedback consume el turno del siguiente equipo, y no cambia lo que la sala entendió.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Cómo se ve un buen trabajo">
+  <p class="kicker reveal">El mismo instrumento de los momentos evaluativos, sin nota</p>
+  <h2 class="reveal">Saber, Ser y Hacer</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Una banda por dimensión. Los elementos no tienen peso: no se suman ni se promedian</caption>
+      <thead><tr><th>Dimensión</th><th>Qué se mira hoy</th><th>Se cumple cuando</th></tr></thead>
+      <tbody>
+        <tr><th>Saber</th><td><em>Evidencia</em></td>
+          <td>Las cifras son reproducibles desde el notebook y sostienen lo que el título afirma</td></tr>
+        <tr class="on"><th>Ser</th><td><em>Títulos &middot; acción</em></td>
+          <td>Leer solo los cuatro títulos seguidos ya cuenta la historia, y alguien podría hacer algo distinto el lunes por haber escuchado esto</td></tr>
+        <tr><th>Hacer</th><td><em>Estructura &middot; foco</em></td>
+          <td>Las cuatro slides están en orden, hay una idea por slide y un solo hallazgo principal, y cupo en el pitch sin correr al final</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">Este reto <strong>no tiene nota</strong>. Contéstese la autoevaluación del final del cuaderno antes de presentar: en un ensayo, el resultado útil es saber qué no está listo.</p>
+</section>
+
+<!-- ======================= CIERRE ======================= -->
+<section class="slide" data-title="Cierre: qué se lleva de hoy">
+  <p class="kicker reveal">Lo que se lleva de hoy</p>
+  <h2 class="reveal">Tres frases y una regla</h2>
+  <ul class="bullets reveal">
+    <li>Si intercambia dos slides y no pasa nada, <b>no hay historia</b>.</li>
+    <li>El título <b>afirma un hallazgo con su cifra</b>.</li>
+    <li>El dato sostiene la descripción, <b>no la intención</b>.</li>
+    <li><b>La regla:</b> una cifra que no puede recalcular no va en una slide.</li>
+  </ul>
+  <div class="callout reveal"><p><b>En casa:</b> aplique al menos dos de los tres "I wish" que recibió, ensaye en voz alta el turno completo y pula el gráfico del hallazgo con lo de la clase 8. El ensayo mental no revela ni el tiempo ni las frases torpes.</p></div>
+</section>
+
+<section class="slide" data-title="Cierre: puente a la clase 10">
+  <p class="kicker reveal">Nos vemos en la clase 10</p>
+  <p class="claim reveal">Ya sabe contarlo con cuatro slides. <span>Ahora hay que dejar que otro lo explore.</span></p>
+  <p class="lead reveal">Plotly y Streamlit: la misma historia, pero interactiva, y en un dashboard que alguien más puede filtrar sin llamarlo a usted. <strong>Traiga <span class="term">streamlit</span> instalado y probado antes de llegar:</strong> instalarlo en clase le cuesta el bloque entero.</p>
+</section>
+
+</main>
+
+<script>
+/* ============================================================================
+   CONTROLADOR DE DIAPOSITIVAS (invariante 1)
+   Mismos atajos y misma navegación en las 16 clases del curso.
+   Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
+   swipe táctil · rueda del ratón.
+   ========================================================================= */
+class SlidePresentation {
+  constructor(root){
+    this.slides = [...root.querySelectorAll('.slide')];
+    this.i = 0;
+    this.bar = document.querySelector('.progress-bar');
+    this.dotsNav = document.querySelector('.nav-dots');
+    this.chip = document.querySelector('.block-chip');
+    this.index = document.querySelector('.slide-index');
+    this.blockNames = {'1':'Bloque 1 · Teoría','2':'Bloque 2 · Demo guiado','3':'Bloque 3 · Reto'};
+
+    this.buildFooters();
+    this.buildDots();
+    this.buildIndex();
+    this.bindKeys();
+    this.bindPointer();
+    this.observe();
+    this.sync();
+  }
+
+  /* Invariante 7: el marcado institucional va en el pie de TODAS las slides.
+     Se inyecta desde aquí para que no pueda faltar en ninguna. */
+  buildFooters(){
+    this.slides.forEach(s => {
+      const f = document.createElement('p');
+      f.className = 'slide-footer';
+      const b = s.dataset.block;
+      f.innerHTML = '<span>Analítica de Datos · Clase 09 · M2</span>' +
+        (b ? '<span class="fb">Bloque ' + b + '</span>' : '');
+      s.appendChild(f);
+    });
+  }
+
+  buildDots(){
+    this.slides.forEach((s, k) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Ir a la diapositiva ' + (k + 1) + ': ' + (s.dataset.title || ''));
+      b.addEventListener('click', () => this.go(k));
+      this.dotsNav.appendChild(b);
+    });
+    this.dots = [...this.dotsNav.children];
+  }
+
+  buildIndex(){
+    const ol = this.index.querySelector('ol');
+    let lastBlock;
+    this.slides.forEach((s, k) => {
+      const b = s.dataset.block || null;
+      if (b !== lastBlock){
+        const h = document.createElement('li');
+        h.className = 'bk';
+        h.textContent = b ? this.blockNames[b] : (k === 0 ? 'Apertura' : 'Cierre');
+        ol.appendChild(h);
+        lastBlock = b;
+      }
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerHTML = '<span class="ix">' + String(k + 1).padStart(2, '0') + '</span>';
+      btn.appendChild(document.createTextNode(s.dataset.title || ''));
+      btn.addEventListener('click', () => { this.toggleIndex(false); this.go(k); });
+      li.appendChild(btn);
+      ol.appendChild(li);
+    });
+  }
+
+  go(n){
+    this.i = Math.max(0, Math.min(n, this.slides.length - 1));
+    this.slides[this.i].scrollIntoView({behavior: 'smooth', block: 'start'});
+    this.sync();
+  }
+  next(){ this.go(this.i + 1); }
+  prev(){ this.go(this.i - 1); }
+
+  sync(){
+    this.bar.style.width = ((this.i + 1) / this.slides.length * 100) + '%';
+    this.dots.forEach((d, k) => d.setAttribute('aria-current', String(k === this.i)));
+    const slide = this.slides[this.i];
+    const b = slide.dataset.block;
+    if (b && !slide.classList.contains('divider')){
+      this.chip.textContent = 'Bloque ' + b;
+      this.chip.hidden = false;
+    } else {
+      this.chip.hidden = true;
+    }
+  }
+
+  bindKeys(){
+    addEventListener('keydown', e => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const fwd  = ['ArrowRight', 'ArrowDown', ' ', 'Spacebar', 'PageDown'];
+      const back = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+      if (fwd.includes(e.key))       { e.preventDefault(); this.next(); }
+      else if (back.includes(e.key)) { e.preventDefault(); this.prev(); }
+      else if (e.key === 'Home')     { e.preventDefault(); this.go(0); }
+      else if (e.key === 'End')      { e.preventDefault(); this.go(this.slides.length - 1); }
+      else if (e.key === 'Escape')   { e.preventDefault(); this.toggleIndex(); }
+    });
+  }
+
+  bindPointer(){
+    let x0 = null, lock = false;
+    addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, {passive: true});
+    addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) (dx < 0 ? this.next() : this.prev());
+      x0 = null;
+    }, {passive: true});
+    addEventListener('wheel', e => {
+      if (lock || Math.abs(e.deltaY) < 20) return;
+      lock = true;
+      (e.deltaY > 0 ? this.next() : this.prev());
+      setTimeout(() => { lock = false; }, 600);
+    }, {passive: true});
+  }
+
+  toggleIndex(force){
+    const open = force === undefined ? !this.index.classList.contains('open') : force;
+    this.index.classList.toggle('open', open);
+  }
+
+  /* Anima la entrada de cada slide y mantiene la barra y los dots sincronizados
+     cuando se navega con scroll o swipe en vez de con el teclado. */
+  observe(){
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('in-view');
+        const k = this.slides.indexOf(en.target);
+        if (k !== -1 && k !== this.i){ this.i = k; this.sync(); }
+      });
+    }, {threshold: 0.55});
+    this.slides.forEach(s => io.observe(s));
+  }
+}
+
+addEventListener('DOMContentLoaded', () => new SlidePresentation(document.body));
+</script>
+</body>
+</html>

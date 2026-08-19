@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 05 · EDA: bivariado y multivariado | Analítica de Datos</title>
+<meta name="description" content="Clase 5 de Analítica de Datos: qué mide y qué no mide una correlación, correlación contra causalidad, variables confusoras, correlaciones espurias y paradoja de Simpson; demo guiado sobre el consumo de agua de Empocaldas y reto de análisis bivariado sobre 25.362 resultados del Saber Pro.">
+<style>
+/* ============================================================================
+   CLASE 05 — "GACETA VINTAGE"
+   Estética documentada en clase05/slides/ESTETICA.md
+   Contrato invariante: design/CONTRATO.md (9 invariantes)
+
+   Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
+   Todo el CSS, el JS y los gráficos (SVG inline) viven en este archivo.
+
+   Motivo rector: el titular que miente. La clase entera consiste en no
+   publicar "los helados causan ahogamientos", así que el deck se compone como
+   una gaceta: filetes, antetítulos en versalitas, titulares serif, y el
+   titular falso tachado en rojo cuando la evidencia lo tumba.
+
+   Los ocho gráficos son SVG inline generados a partir de los datos reales
+   (datasets/HISTORICO_CONSUMO.csv y los mismos generadores con semilla del
+   demo). Ninguna cifra del deck está escrita a mano: todas salen del CSV o
+   del cuaderno. Regenerarlos: ver ESTETICA.md, sección "Los gráficos".
+
+   La restricción dura del bloque 1 se respeta por construcción: las reglas
+   de `pre`/`code` solo se aplican en slides con data-block="2" o "3". En el
+   bloque 1 los nombres de funciones se escriben con `.term`, que es texto
+   corrido y no un bloque de código.
+   ========================================================================= */
+
+/* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
+:root{
+  --bg:#EFE7D6;          /* papel de periódico */
+  --surface:#F7F2E6;     /* recuadro claro */
+  --surface-2:#E4DAC4;   /* recuadro atenuado */
+  --line:#C4B9A2;        /* filete */
+  --fg:#1B1815;          /* tinta */
+  --muted:#57514A;       /* secundaria (AA sobre --bg) */
+  --accent:#A32C1C;      /* rojo de titular */
+  --accent-ink:#F7F2E6;  /* texto sobre el rojo */
+  --alt:#2C5545;         /* verde botella, segunda tinta */
+  --code-bg:#1B1815;     /* el editor */
+  --code-fg:#EFE7D6;
+
+  --font-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --font-body:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* Escala tipográfica. El piso del invariante 6 no se negocia. */
+  --fs-title:clamp(1.9rem,5.6vw,4.6rem);
+  --fs-h2:clamp(1.5rem,3.3vw,2.8rem);
+  --fs-h3:clamp(1.05rem,1.9vw,1.5rem);
+  --fs-body:clamp(0.95rem,1.55vw,1.4rem);
+  --fs-small:clamp(0.78rem,1.02vw,0.95rem);
+  --fs-micro:clamp(0.66rem,0.85vw,0.8rem);
+  --fs-code:clamp(0.78rem,1.15vw,1.05rem);
+
+  --pad:clamp(1.4rem,3.6vw,4rem);
+  --gap:clamp(0.55rem,1.4vw,1.4rem);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+body{
+  height:100%;overflow-x:hidden;
+  background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);font-size:var(--fs-body);line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+/* Invariante 6: piso absoluto de 22px reales a 1280x720 en adelante. */
+@media (min-width:1200px){body{font-size:max(22px,var(--fs-body))}}
+
+/* Grano de papel: dos degradados repetidos. Sin imágenes, sin peticiones. */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.5;
+  background:
+    repeating-linear-gradient(0deg,rgba(27,24,21,.035) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(90deg,rgba(27,24,21,.02) 0 1px,transparent 1px 4px);
+}
+
+/* ---- Invariante 9: viewport fitting. Nunca hay scroll dentro de una slide ---- */
+.slide{
+  width:100vw;height:100vh;height:100dvh;overflow:hidden;
+  padding:var(--pad) calc(var(--pad) + 1.6rem) calc(var(--pad) + 1.1rem) var(--pad);
+  scroll-snap-align:start;
+  display:flex;flex-direction:column;justify-content:center;gap:var(--gap);
+  position:relative;z-index:2;
+}
+.slide > *{max-width:100%}
+
+/* Marcado institucional (invariante 7). Lo inyecta el JS en TODAS las slides. */
+.slide-footer{
+  position:absolute;left:var(--pad);right:var(--pad);bottom:calc(var(--pad)/2.4);
+  display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  font-family:var(--font-mono);
+  font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+}
+.slide-footer .fb{color:var(--accent)}
+
+/* ---- Tipografía ---- */
+h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:700;
+   line-height:1;letter-spacing:-.02em;max-width:17ch}
+h1 em{font-style:italic;color:var(--accent)}
+h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:700;line-height:1.06;
+   letter-spacing:-.015em}
+h3{font-family:var(--font-display);font-size:var(--fs-h3);font-weight:700}
+p{max-width:64ch}
+strong{color:var(--accent);font-weight:700}
+.kicker{font-family:var(--font-mono);font-size:var(--fs-small);letter-spacing:.22em;
+  text-transform:uppercase;color:var(--accent)}
+.lead{color:var(--muted);max-width:60ch}
+/* El filete de cabecera: tres reglas de grosor decreciente, como una gaceta */
+.rules{display:flex;flex-direction:column;gap:3px;flex:none}
+.rules i{display:block;height:1px;background:var(--fg);opacity:.6}
+.rules i:first-child{height:4px;opacity:1}
+.claim{font-family:var(--font-display);font-weight:700;letter-spacing:-.02em;
+  font-size:clamp(1.6rem,4.4vw,3.5rem);line-height:1.04;max-width:21ch}
+.claim span{color:var(--accent)}
+.claim .kill{text-decoration:line-through;text-decoration-color:var(--accent);
+  text-decoration-thickness:.08em;color:var(--muted)}
+/* Nombres de funciones dentro de texto corrido. NO es un bloque de código:
+   se usa también en el bloque 1, donde el contrato lo permite explícitamente. */
+.term{font-family:var(--font-mono);font-size:.86em;border-bottom:1px solid var(--accent);
+  white-space:nowrap}
+.byline{font-variant:small-caps;letter-spacing:.06em;color:var(--muted);font-size:var(--fs-small)}
+.byline b{color:var(--fg);font-weight:700;font-variant:small-caps}
+.numeral{position:absolute;right:calc(var(--pad)/1.2);top:50%;transform:translateY(-50%);
+  font-family:var(--font-display);font-weight:700;font-size:clamp(7rem,22vw,18rem);line-height:1;
+  color:transparent;-webkit-text-stroke:2px var(--line);pointer-events:none;user-select:none;z-index:0}
+.slide > :not(.numeral):not(.slide-footer){position:relative;z-index:1}
+
+/* ---- Portada ---- */
+.cover{background:linear-gradient(180deg,rgba(163,44,28,.07),transparent 34%),var(--bg)}
+
+/* ---- Listas ----
+   El item de lista es un bloque con sangria francesa, no un contenedor flex.
+   Con display:flex, un <b> o un <strong> dentro del item se vuelve flex item y
+   el texto se parte en columnas independientes. El marcador es un inline-block:
+   conserva la alineacion por baseline y la sangria (padding-left mas
+   text-indent negativo del mismo valor) reproduce el ancho del marcador mas su
+   separacion, de modo que la composicion no cambia. */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.4rem,1.1vh,.95rem)}
+ul.bullets li{display:block;max-width:62ch;padding-left:1.2em;text-indent:-1.2em}
+ul.bullets li::before{content:"";display:inline-block;width:.5em;height:.5em;margin-right:.7em;
+  background:var(--accent);border-radius:50%;transform:translateY(-.12em)}
+ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.85rem)}
+/* 1.84em = ancho del contador (dos digitos mono a .82em) mas su separacion. */
+ol.steps li{counter-increment:s;display:block;max-width:66ch;padding-left:1.84em;
+  text-indent:-1.84em}
+ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-mono);
+  color:var(--accent);font-size:.82em;display:inline-block;width:1.2em;margin-right:1.04em}
+
+/* ---- Columnas de gaceta (las tarjetas de esta clase) ---- */
+.cols{display:grid;gap:0;border-top:3px solid var(--fg);border-bottom:1px solid var(--line);
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.cols.c4{grid-template-columns:repeat(4,1fr)}
+.cols.c3{grid-template-columns:repeat(3,1fr)}
+.cols.c2{grid-template-columns:repeat(2,1fr)}
+.col{padding:clamp(.55rem,1.2vw,1.15rem);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:.4em;min-width:0}
+.col:last-child{border-right:0}
+.col.hot{background:var(--surface);box-shadow:inset 0 4px 0 var(--accent)}
+.col.good{background:var(--surface);box-shadow:inset 0 4px 0 var(--alt)}
+.col .no{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.2em;
+  text-transform:uppercase;color:var(--accent)}
+.col.good .no{color:var(--alt)}
+.col p{font-size:clamp(.76rem,1.12vw,1.02rem);color:var(--muted);line-height:1.38;max-width:none}
+.col p b{color:var(--fg)}
+
+/* ---- Tablas ---- */
+.table-wrap{flex:1;min-height:0;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:clamp(.72rem,1.08vw,1rem);line-height:1.32}
+caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:var(--fs-micro);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:.6em}
+th,td{border-bottom:1px solid var(--line);padding:clamp(.28rem,.7vw,.68rem) clamp(.35rem,.7vw,.8rem);
+  text-align:left;vertical-align:top}
+thead th{font-family:var(--font-mono);font-weight:500;font-size:.84em;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent);border-bottom:2px solid var(--accent)}
+tbody th{font-weight:700;color:var(--fg)}
+tbody th .mono,td .mono{font-family:var(--font-mono);font-size:.9em}
+tbody tr.on td,tbody tr.on th{background:var(--surface);box-shadow:inset 3px 0 0 var(--accent)}
+td em{font-style:italic;color:var(--muted)}
+td b{color:var(--fg)}
+.num{font-variant-numeric:tabular-nums;font-family:var(--font-mono)}
+
+/* ---- Recuadro de cita / advertencia ---- */
+.callout{border-left:5px solid var(--accent);background:var(--surface);
+  padding:clamp(.65rem,1.4vw,1.25rem) clamp(.9rem,1.8vw,1.6rem);max-width:70ch}
+.callout.good{border-left-color:var(--alt)}
+.callout p{max-width:none}
+.callout p b{color:var(--fg)}
+
+/* ---- Código (solo bloques 2 y 3) ---- */
+pre{background:var(--code-bg);color:var(--code-fg);border-left:6px solid var(--accent);
+  padding:clamp(.6rem,1.35vw,1.2rem) clamp(.85rem,1.7vw,1.5rem);overflow:hidden;
+  font-family:var(--font-mono);font-size:var(--fs-code);line-height:1.5;max-width:min(100%,82ch)}
+pre code{font:inherit;color:inherit;background:none}
+pre .c{color:#9C9282}      /* comentario */
+pre .k{color:#E58B7B}      /* palabra clave o función incorporada */
+pre .s{color:#9FC7A8}      /* cadena */
+pre .n{color:#E0A657}      /* número */
+.out{font-family:var(--font-mono);font-size:clamp(.72rem,1.04vw,.94rem);color:var(--alt);
+  background:var(--surface);border:1px dashed var(--alt);padding:.42em .8em;max-width:74ch;
+  white-space:pre-wrap}
+.out b{color:var(--accent)}
+
+/* ---- Divisorias de bloque (invariante 3) ---- */
+/* El pie lo inyecta el JS como <p>, asi que .divider p{max-width:NNch} tambien lo
+   alcanzaba y lo estrangulaba a ~275px: en las divisorias el pie se partia en dos
+   lineas mientras en el resto del deck iba en una. Dos clases ganan en especificidad
+   a clase+tipo, de modo que el pie recupera el ancho completo sin tocar el parrafo. */
+.divider .slide-footer{max-width:none}
+.divider{background:var(--fg);color:var(--bg);justify-content:center;align-items:center;
+  text-align:center;gap:clamp(.4rem,1vw,1rem)}
+.divider::after{content:"";position:absolute;inset:calc(var(--pad)/2);border:1px solid #4A443C;
+  pointer-events:none}
+.divider .n{font-family:var(--font-display);font-weight:700;line-height:.8;
+  font-size:clamp(4rem,15vw,13rem);color:transparent;-webkit-text-stroke:2px var(--accent)}
+.divider h2{font-size:clamp(1.7rem,5vw,4rem);color:var(--bg)}
+.divider p{color:#C9BFAE;max-width:46ch;font-style:italic}
+.divider .kicker{color:#E6A79A}
+.divider .term{border-bottom-color:#E6A79A;font-style:normal}
+.divider .slide-footer{color:#8E857A}
+.divider .slide-footer .fb{color:#E6A79A}
+
+/* ---- Gráficos SVG inline ---- */
+.fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+svg.fig{width:100%;height:auto;max-height:58vh;display:block}
+svg.fig .pane{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+svg.fig .dot{fill:var(--fg);opacity:.6}
+svg.fig .dot.big{fill:var(--alt);opacity:1;stroke:var(--surface);stroke-width:2}
+svg.fig .dot.out{fill:var(--accent);opacity:1}
+svg.fig .dot.g1{fill:var(--alt);opacity:.75}
+svg.fig .dot.g2{fill:var(--accent);opacity:.7}
+svg.fig .dot.g3{fill:var(--fg);opacity:.55}
+svg.fig .trend{fill:none;stroke-width:3}
+svg.fig .trend.g1{stroke:var(--alt)}
+svg.fig .trend.g2{stroke:var(--accent)}
+svg.fig .trend.g3{stroke:var(--fg)}
+svg.fig .trend.global{stroke:var(--fg);stroke-width:5;stroke-dasharray:12 7}
+svg.fig .bar{fill:var(--muted);opacity:.55}
+svg.fig .bar.hot{fill:var(--accent);opacity:1}
+svg.fig .ax{stroke:var(--fg);stroke-width:2}
+svg.fig .ref{stroke:var(--accent);stroke-width:2;stroke-dasharray:8 6}
+svg.fig .stem{stroke:var(--line);stroke-width:3}
+svg.fig .cap{font-family:var(--font-mono);font-size:23px;letter-spacing:.06em;fill:var(--muted);
+  text-transform:uppercase}
+svg.fig .cap.acc{fill:var(--accent)}
+svg.fig .note{font-family:var(--font-body);font-size:23px;fill:var(--muted)}
+svg.fig .note.acc{fill:var(--accent)}
+svg.fig .val{font-family:var(--font-mono);font-size:25px;fill:var(--fg);font-weight:700}
+svg.fig .val.acc{fill:var(--accent)}
+svg.fig .tick{font-family:var(--font-mono);font-size:20px;fill:var(--muted)}
+svg.fig .rowlbl{font-family:var(--font-body);font-size:25px;fill:var(--fg)}
+svg.fig .big{font-family:var(--font-display);font-size:76px;font-weight:700;fill:var(--accent)}
+svg.fig .node{fill:var(--surface);stroke:var(--fg);stroke-width:3}
+svg.fig .node.hot{fill:var(--accent);stroke:var(--accent)}
+svg.fig .nodet{font-family:var(--font-display);font-size:38px;font-weight:700;fill:var(--fg)}
+svg.fig .nodet.hot{fill:var(--accent-ink)}
+svg.fig .arrow{stroke:var(--fg);stroke-width:3}
+svg.fig .arrow.hot{stroke:var(--accent)}
+svg.fig .head{fill:var(--fg)}
+svg.fig .head.hot{fill:var(--accent)}
+
+/* ---- Navegación (invariante 1) ---- */
+.progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
+  z-index:120;transition:width .3s var(--ease)}
+.nav-dots{position:fixed;right:clamp(.45rem,1.1vw,1rem);top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:clamp(3px,.45vh,6px);z-index:120}
+.nav-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--muted);
+  background:transparent;cursor:pointer}
+.nav-dots button[aria-current="true"]{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
+.nav-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.block-chip{position:fixed;top:clamp(.6rem,1.6vh,1.2rem);right:clamp(1.4rem,3vw,2.6rem);z-index:120;
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent-ink);background:var(--accent);padding:.35em .8em}
+.block-chip[hidden]{display:none}
+
+/* Índice de slides (Esc) */
+.slide-index{position:fixed;inset:0;z-index:200;background:rgba(239,231,214,.98);
+  padding:clamp(1.2rem,4vw,3rem);overflow:auto;display:none}
+.slide-index.open{display:block}
+.slide-index h2{margin-bottom:1rem;color:var(--accent)}
+.slide-index ol{list-style:none;columns:2;column-gap:2.5rem;font-size:clamp(.78rem,1.05vw,.95rem)}
+.slide-index li{break-inside:avoid;margin-bottom:.35em}
+.slide-index button{background:none;border:0;color:var(--fg);font:inherit;text-align:left;
+  cursor:pointer;padding:.15em 0;width:100%}
+.slide-index button:hover,.slide-index button:focus-visible{color:var(--accent)}
+.slide-index .ix{font-family:var(--font-mono);color:var(--muted);margin-right:.6em}
+.slide-index .bk{color:var(--accent);font-family:var(--font-mono);font-size:.8em;
+  letter-spacing:.16em;text-transform:uppercase;margin:1.2em 0 .4em;break-after:avoid}
+
+/* ---- Animaciones de entrada ---- */
+.reveal{opacity:0;transform:translateY(20px);
+  transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.slide.in-view .reveal{opacity:1;transform:none}
+.slide.in-view .reveal:nth-child(1){transition-delay:.05s}
+.slide.in-view .reveal:nth-child(2){transition-delay:.12s}
+.slide.in-view .reveal:nth-child(3){transition-delay:.19s}
+.slide.in-view .reveal:nth-child(4){transition-delay:.26s}
+.slide.in-view .reveal:nth-child(5){transition-delay:.33s}
+.slide.in-view .reveal:nth-child(6){transition-delay:.40s}
+
+/* ---- Breakpoints obligatorios de alto (invariante 9) ---- */
+@media (max-height:700px){
+  :root{--pad:clamp(1rem,2.4vw,2rem);--gap:clamp(.4rem,1vw,.9rem)}
+  svg.fig{max-height:52vh}
+}
+@media (max-height:600px){
+  :root{--fs-title:clamp(1.6rem,4.2vw,2.8rem);--fs-h2:clamp(1.2rem,2.9vw,2rem);
+        --fs-h3:clamp(.95rem,1.6vw,1.2rem)}
+  .numeral{display:none}
+}
+@media (max-height:500px){
+  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-code:clamp(.72rem,1vw,.9rem)}
+  .nav-dots{display:none}
+}
+@media (max-width:900px){
+  .cols.c4{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:600px){
+  .cols.c4,.cols.c3,.cols.c2{grid-template-columns:1fr}
+  .slide-index ol{columns:1}
+}
+
+/* ---- prefers-reduced-motion (invariante 9) ---- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+
+/* ============================================================================
+   IMPRESIÓN A PDF (invariante 5) — idéntica en los 16 decks.
+   Una slide por página, horizontal, fondo claro, sin dots ni barra.
+   El bloque de código pasa de fondo oscuro a fondo claro: en papel, negro
+   sólido es tóner y es ilegible.
+   ========================================================================= */
+@media print{
+  @page{size:landscape;margin:0}
+  :root{--bg:#fff;--surface:#f6f4ee;--surface-2:#eceadf;--line:#c9c9c9;
+        --fg:#111;--muted:#444;--accent:#8E2618;--accent-ink:#fff;--alt:#1E4436;
+        --code-bg:#f4f2ec;--code-fg:#111}
+  html,body{height:auto;background:#fff!important;color:#111!important}
+  body::before{display:none}
+  .slide{height:100vh;page-break-after:always;break-after:page;
+    background:#fff!important;color:#111!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cover{background:#fff!important}
+  .divider{background:#fff!important;color:#111!important;border-top:8px solid #8E2618}
+  .divider::after{display:none}
+  .divider h2{color:#111!important}
+  .divider .n{-webkit-text-stroke:2px #8E2618}
+  .divider p,.divider .kicker,.divider .slide-footer{color:#444!important}
+  /* En pantalla el nombre del bloque va en tinta clara porque la divisoria es de color.
+     En papel la divisoria se vuelve blanca y esa tinta clara desaparecia (1:1, invisible):
+     la regla de arriba oscurece el pie pero no alcanza a .fb, que es mas especifica. */
+  .divider .slide-footer .fb{color:var(--accent)!important}
+  .col.hot,.col.good{background:#f6f4ee!important}
+  pre{background:#f4f2ec!important;color:#111!important;border:1px solid #c9c9c9;border-left:6px solid #8E2618}
+  pre .c{color:#666!important} pre .k{color:#8E2618!important} pre .s{color:#1E4436!important}
+  pre .n{color:#8A5A00!important}
+  svg.fig .dot{fill:#333!important;opacity:.65}
+  svg.fig .dot.g3{fill:#555!important}
+  svg.fig .pane{fill:#fbfaf6!important}
+  .numeral{display:none}
+  .progress-bar,.nav-dots,.slide-index,.block-chip{display:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" role="presentation"></div>
+<nav class="nav-dots" aria-label="Navegación de diapositivas"></nav>
+<div class="block-chip" hidden></div>
+
+<div class="slide-index" role="dialog" aria-label="Índice de diapositivas" aria-modal="true">
+  <h2>Índice</h2>
+  <ol></ol>
+</div>
+
+<main>
+
+<!-- ======================= PORTADA ======================= -->
+<section class="slide cover" data-title="Portada">
+  <p class="kicker reveal">Analítica de Datos &middot; Clase 05 &middot; Momento 1</p>
+  <div class="rules reveal"><i></i><i></i><i></i></div>
+  <h1 class="reveal">EDA: <em>bivariado y multivariado</em></h1>
+  <div class="rules reveal"><i></i></div>
+  <p class="byline reveal"><b>Julián Garzón</b> &middot; Ingeniería de Sistemas &middot; Universidad Cooperativa de Colombia</p>
+</section>
+
+<!-- ======================= OBJETIVOS ======================= -->
+<section class="slide" data-title="Objetivos de la clase">
+  <p class="kicker reveal">Al terminar hoy, usted debe poder hacer esto solo</p>
+  <h2 class="reveal">Objetivos de la clase</h2>
+  <ol class="steps reveal">
+    <li><b>Clasificar una relación</b> como positiva, negativa o nula mirando una nube de puntos.</li>
+    <li><b>Traducir un valor de r</b> a una frase de fuerza, y decir qué <b>no</b> significa ese número.</li>
+    <li><b>Dar un ejemplo propio</b> de correlación sin causalidad, nombrando la variable confusora.</li>
+    <li><b>Elegir el gráfico correcto</b> según los tipos de las dos variables.</li>
+    <li><b>Comparar una variable numérica entre categorías</b>, y decir cuándo conviene cada gráfico.</li>
+    <li><b>Ejecutar un chequeo de paradoja de Simpson</b> y reportar honestamente si la relación cambia o no.</li>
+  </ol>
+  <p class="lead reveal">Es la última clase de contenido nuevo del Momento 1. La siguiente es la evaluación, y el cierre de hoy se dedica entero a eso.</p>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
+<section class="slide divider" data-block="1" data-title="Divisoria · Bloque 1">
+  <span class="n">01</span>
+  <p class="kicker">Bloque uno</p>
+  <h2>Teoría &middot; Las ideas antes de la sintaxis</h2>
+  <p>Cero código en pantalla. Aquí nadie va adelantado ni atrasado: lo que se entiende en este bloque es lo que impide publicar una conclusión falsa en el siguiente.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Hook: el titular de los helados">
+  <span class="numeral">?</span>
+  <p class="kicker reveal">El gancho del día</p>
+  <p class="claim reveal"><span class="kill">Los helados causan ahogamientos.</span></p>
+  <p class="lead reveal">En una ciudad costera se midió, día a día durante un año, cuántos helados se vendieron y cuántas personas se ahogaron. La correlación es de <b>0,85</b>. Es altísima. ¿Prohibimos los helados?</p>
+  <div class="callout reveal"><p><strong>Esa es la clase de hoy.</strong> El número es correcto y la conclusión es falsa. Todo lo que sigue existe para poder distinguir una cosa de la otra antes de escribirla en un informe.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Dónde vamos: cuarta de cuatro">
+  <p class="kicker reveal">El arco del EDA &middot; dónde estamos parados</p>
+  <h2 class="reveal">Cuarta de cuatro: el verbo de hoy es relacionar</h2>
+  <div class="cols c3 reveal">
+    <article class="col hot"><span class="no">Por qué hoy</span><h3>Entendida, limpia y descrita</h3>
+      <p>Los tres primeros verbos del EDA están hechos. Una relación entre dos variables <b>se lee con el lenguaje de la clase 4</b>: sin media, dispersión y outliers, un cruce no significa nada.</p></article>
+    <article class="col"><span class="no">Qué se rompe si no</span><h3>Se publica una causa que no existe</h3>
+      <p>Es el error más caro del oficio y el más fácil de cometer: ver dos cosas que suben juntas y escribir que una causa la otra. <b>La clase de hoy existe entera para frenar ese salto.</b></p></article>
+    <article class="col good"><span class="no">Qué habilita</span><h3>El Momento 1, y las clases 13 y 14</h3>
+      <p>Al terminar hoy habrán hecho un <b>EDA completo</b>, que es lo que se entrega en la clase 6. Encima de eso se paran después la inferencia y la predicción.</p></article>
+  </div>
+  <p class="lead reveal">El EDA empezó en la clase 2: <strong>hoy se cierra, no se empieza</strong>. Y hoy no se aprende una técnica nueva de cálculo, se aprende <strong>hasta dónde se puede estirar lo que el número dice</strong>.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Qué es una correlación">
+  <p class="kicker reveal">Cinco nubes, cinco números</p>
+  <h2 class="reveal">Correlación: cuando una sube, ¿qué hace la otra?</h2>
+  <div class="fig-wrap reveal"><!--FIG:NUBES--><svg class="fig" viewBox="0 0 1240 300" role="img" aria-label="Cinco nubes de puntos, de correlacion positiva fuerte a negativa fuerte, pasando por una nube redonda sin direccion."><rect class="pane" x="24.0" y="46.0" width="196.0" height="172.0"/><circle class="dot" cx="86.4" cy="160.7" r="4"/><circle class="dot" cx="135.0" cy="158.6" r="4"/><circle class="dot" cx="34.5" cy="201.9" r="4"/><circle class="dot" cx="189.3" cy="55.2" r="4"/><circle class="dot" cx="153.7" cy="108.3" r="4"/><circle class="dot" cx="110.0" cy="158.3" r="4"/><circle class="dot" cx="109.0" cy="179.8" r="4"/><circle class="dot" cx="138.0" cy="131.0" r="4"/><circle class="dot" cx="111.1" cy="174.9" r="4"/><circle class="dot" cx="113.1" cy="167.3" r="4"/><circle class="dot" cx="157.6" cy="131.2" r="4"/><circle class="dot" cx="147.9" cy="131.9" r="4"/><circle class="dot" cx="120.7" cy="142.4" r="4"/><circle class="dot" cx="119.7" cy="168.8" r="4"/><circle class="dot" cx="131.3" cy="164.3" r="4"/><circle class="dot" cx="94.8" cy="197.2" r="4"/><circle class="dot" cx="104.7" cy="187.8" r="4"/><circle class="dot" cx="149.5" cy="154.2" r="4"/><circle class="dot" cx="117.5" cy="175.6" r="4"/><circle class="dot" cx="59.0" cy="197.4" r="4"/><circle class="dot" cx="101.2" cy="185.8" r="4"/><circle class="dot" cx="154.6" cy="126.3" r="4"/><circle class="dot" cx="112.8" cy="184.1" r="4"/><circle class="dot" cx="116.7" cy="161.4" r="4"/><circle class="dot" cx="153.9" cy="154.5" r="4"/><circle class="dot" cx="209.5" cy="90.4" r="4"/><circle class="dot" cx="90.1" cy="156.3" r="4"/><circle class="dot" cx="187.1" cy="108.8" r="4"/><circle class="dot" cx="65.8" cy="193.7" r="4"/><circle class="dot" cx="131.9" cy="143.8" r="4"/><circle class="dot" cx="68.7" cy="208.8" r="4"/><circle class="dot" cx="187.2" cy="109.7" r="4"/><circle class="dot" cx="162.9" cy="104.6" r="4"/><circle class="dot" cx="177.2" cy="112.1" r="4"/><circle class="dot" cx="82.0" cy="173.6" r="4"/><circle class="dot" cx="155.9" cy="138.6" r="4"/><circle class="dot" cx="99.3" cy="178.5" r="4"/><circle class="dot" cx="102.2" cy="170.3" r="4"/><circle class="dot" cx="147.5" cy="131.0" r="4"/><circle class="dot" cx="164.9" cy="137.7" r="4"/><circle class="dot" cx="133.3" cy="158.1" r="4"/><circle class="dot" cx="94.2" cy="186.6" r="4"/><circle class="dot" cx="84.8" cy="204.0" r="4"/><circle class="dot" cx="191.6" cy="87.4" r="4"/><circle class="dot" cx="151.6" cy="124.4" r="4"/><circle class="dot" cx="157.5" cy="154.3" r="4"/><text class="cap" x="122" y="34" text-anchor="middle">r = 0,89</text><text class="note" x="122" y="252" text-anchor="middle">positiva fuerte</text><rect class="pane" x="268.0" y="46.0" width="196.0" height="172.0"/><circle class="dot" cx="297.7" cy="177.1" r="4"/><circle class="dot" cx="318.6" cy="201.1" r="4"/><circle class="dot" cx="374.3" cy="102.5" r="4"/><circle class="dot" cx="450.6" cy="140.2" r="4"/><circle class="dot" cx="354.4" cy="137.8" r="4"/><circle class="dot" cx="379.6" cy="127.7" r="4"/><circle class="dot" cx="327.3" cy="167.3" r="4"/><circle class="dot" cx="327.9" cy="115.6" r="4"/><circle class="dot" cx="291.7" cy="126.5" r="4"/><circle class="dot" cx="368.5" cy="124.1" r="4"/><circle class="dot" cx="407.3" cy="124.5" r="4"/><circle class="dot" cx="355.4" cy="135.4" r="4"/><circle class="dot" cx="425.2" cy="141.1" r="4"/><circle class="dot" cx="377.5" cy="137.7" r="4"/><circle class="dot" cx="368.2" cy="137.7" r="4"/><circle class="dot" cx="390.2" cy="146.6" r="4"/><circle class="dot" cx="389.0" cy="111.8" r="4"/><circle class="dot" cx="415.3" cy="150.9" r="4"/><circle class="dot" cx="337.7" cy="154.0" r="4"/><circle class="dot" cx="278.5" cy="208.8" r="4"/><circle class="dot" cx="374.2" cy="123.5" r="4"/><circle class="dot" cx="345.3" cy="127.1" r="4"/><circle class="dot" cx="368.5" cy="122.7" r="4"/><circle class="dot" cx="435.9" cy="55.2" r="4"/><circle class="dot" cx="325.7" cy="128.9" r="4"/><circle class="dot" cx="400.1" cy="145.5" r="4"/><circle class="dot" cx="407.3" cy="69.0" r="4"/><circle class="dot" cx="388.0" cy="148.6" r="4"/><circle class="dot" cx="414.2" cy="105.6" r="4"/><circle class="dot" cx="351.4" cy="125.3" r="4"/><circle class="dot" cx="342.5" cy="161.4" r="4"/><circle class="dot" cx="411.0" cy="94.0" r="4"/><circle class="dot" cx="398.3" cy="119.3" r="4"/><circle class="dot" cx="425.0" cy="106.8" r="4"/><circle class="dot" cx="378.1" cy="146.5" r="4"/><circle class="dot" cx="434.3" cy="89.0" r="4"/><circle class="dot" cx="358.4" cy="156.2" r="4"/><circle class="dot" cx="327.4" cy="184.4" r="4"/><circle class="dot" cx="288.5" cy="130.0" r="4"/><circle class="dot" cx="325.8" cy="157.0" r="4"/><circle class="dot" cx="402.2" cy="124.5" r="4"/><circle class="dot" cx="311.3" cy="113.0" r="4"/><circle class="dot" cx="351.6" cy="117.1" r="4"/><circle class="dot" cx="453.5" cy="97.0" r="4"/><circle class="dot" cx="403.3" cy="103.0" r="4"/><circle class="dot" cx="440.9" cy="128.8" r="4"/><text class="cap" x="366" y="34" text-anchor="middle">r = 0,56</text><text class="note" x="366" y="252" text-anchor="middle">positiva moderada</text><rect class="pane" x="512.0" y="46.0" width="196.0" height="172.0"/><circle class="dot" cx="684.6" cy="146.6" r="4"/><circle class="dot" cx="697.5" cy="85.6" r="4"/><circle class="dot" cx="684.7" cy="88.5" r="4"/><circle class="dot" cx="650.2" cy="90.4" r="4"/><circle class="dot" cx="522.5" cy="70.4" r="4"/><circle class="dot" cx="677.6" cy="179.9" r="4"/><circle class="dot" cx="661.7" cy="117.1" r="4"/><circle class="dot" cx="644.2" cy="114.2" r="4"/><circle class="dot" cx="685.5" cy="123.7" r="4"/><circle class="dot" cx="667.1" cy="68.9" r="4"/><circle class="dot" cx="664.9" cy="55.2" r="4"/><circle class="dot" cx="604.1" cy="107.0" r="4"/><circle class="dot" cx="604.9" cy="117.8" r="4"/><circle class="dot" cx="670.9" cy="176.7" r="4"/><circle class="dot" cx="660.3" cy="176.7" r="4"/><circle class="dot" cx="662.5" cy="116.2" r="4"/><circle class="dot" cx="663.5" cy="142.0" r="4"/><circle class="dot" cx="672.3" cy="183.7" r="4"/><circle class="dot" cx="658.8" cy="143.6" r="4"/><circle class="dot" cx="663.2" cy="127.5" r="4"/><circle class="dot" cx="666.7" cy="108.4" r="4"/><circle class="dot" cx="691.0" cy="143.1" r="4"/><circle class="dot" cx="639.0" cy="148.4" r="4"/><circle class="dot" cx="685.8" cy="139.3" r="4"/><circle class="dot" cx="680.4" cy="133.7" r="4"/><circle class="dot" cx="661.3" cy="178.1" r="4"/><circle class="dot" cx="640.4" cy="111.8" r="4"/><circle class="dot" cx="670.8" cy="66.8" r="4"/><circle class="dot" cx="688.6" cy="112.4" r="4"/><circle class="dot" cx="618.8" cy="187.6" r="4"/><circle class="dot" cx="659.8" cy="136.3" r="4"/><circle class="dot" cx="659.8" cy="198.1" r="4"/><circle class="dot" cx="633.7" cy="200.2" r="4"/><circle class="dot" cx="635.2" cy="117.6" r="4"/><circle class="dot" cx="601.6" cy="136.9" r="4"/><circle class="dot" cx="617.8" cy="162.3" r="4"/><circle class="dot" cx="602.1" cy="208.8" r="4"/><circle class="dot" cx="635.3" cy="181.6" r="4"/><circle class="dot" cx="637.3" cy="134.1" r="4"/><circle class="dot" cx="638.0" cy="138.4" r="4"/><circle class="dot" cx="670.9" cy="116.6" r="4"/><circle class="dot" cx="650.8" cy="88.9" r="4"/><circle class="dot" cx="631.3" cy="150.7" r="4"/><circle class="dot" cx="631.5" cy="123.9" r="4"/><circle class="dot" cx="616.7" cy="144.1" r="4"/><circle class="dot" cx="650.4" cy="156.0" r="4"/><text class="cap" x="610" y="34" text-anchor="middle">r = 0,04</text><text class="note" x="610" y="252" text-anchor="middle">nula</text><rect class="pane" x="756.0" y="46.0" width="196.0" height="172.0"/><circle class="dot" cx="823.0" cy="113.2" r="4"/><circle class="dot" cx="867.6" cy="156.7" r="4"/><circle class="dot" cx="794.0" cy="118.1" r="4"/><circle class="dot" cx="874.2" cy="150.8" r="4"/><circle class="dot" cx="886.7" cy="180.6" r="4"/><circle class="dot" cx="833.4" cy="131.1" r="4"/><circle class="dot" cx="841.5" cy="145.6" r="4"/><circle class="dot" cx="779.9" cy="57.2" r="4"/><circle class="dot" cx="919.3" cy="178.9" r="4"/><circle class="dot" cx="868.2" cy="128.5" r="4"/><circle class="dot" cx="838.4" cy="117.5" r="4"/><circle class="dot" cx="834.2" cy="158.2" r="4"/><circle class="dot" cx="848.7" cy="168.4" r="4"/><circle class="dot" cx="808.0" cy="127.4" r="4"/><circle class="dot" cx="842.5" cy="111.2" r="4"/><circle class="dot" cx="797.9" cy="126.6" r="4"/><circle class="dot" cx="850.4" cy="152.3" r="4"/><circle class="dot" cx="807.0" cy="196.8" r="4"/><circle class="dot" cx="865.1" cy="151.4" r="4"/><circle class="dot" cx="827.6" cy="114.6" r="4"/><circle class="dot" cx="842.0" cy="117.2" r="4"/><circle class="dot" cx="941.5" cy="161.9" r="4"/><circle class="dot" cx="861.8" cy="148.0" r="4"/><circle class="dot" cx="841.9" cy="136.3" r="4"/><circle class="dot" cx="833.7" cy="102.5" r="4"/><circle class="dot" cx="793.6" cy="112.2" r="4"/><circle class="dot" cx="872.1" cy="208.8" r="4"/><circle class="dot" cx="891.3" cy="122.7" r="4"/><circle class="dot" cx="834.4" cy="157.2" r="4"/><circle class="dot" cx="894.0" cy="113.9" r="4"/><circle class="dot" cx="827.9" cy="75.4" r="4"/><circle class="dot" cx="766.5" cy="74.6" r="4"/><circle class="dot" cx="807.9" cy="89.0" r="4"/><circle class="dot" cx="793.0" cy="55.2" r="4"/><circle class="dot" cx="821.9" cy="152.3" r="4"/><circle class="dot" cx="855.2" cy="128.5" r="4"/><circle class="dot" cx="797.7" cy="103.4" r="4"/><circle class="dot" cx="829.1" cy="151.6" r="4"/><circle class="dot" cx="839.4" cy="71.5" r="4"/><circle class="dot" cx="804.9" cy="129.9" r="4"/><circle class="dot" cx="798.4" cy="131.3" r="4"/><circle class="dot" cx="835.3" cy="119.3" r="4"/><circle class="dot" cx="864.3" cy="110.4" r="4"/><circle class="dot" cx="809.7" cy="132.6" r="4"/><circle class="dot" cx="804.3" cy="130.2" r="4"/><circle class="dot" cx="826.8" cy="108.8" r="4"/><text class="cap" x="854" y="34" text-anchor="middle">r = -0,51</text><text class="note" x="854" y="252" text-anchor="middle">negativa moderada</text><rect class="pane" x="1000.0" y="46.0" width="196.0" height="172.0"/><circle class="dot" cx="1044.4" cy="76.5" r="4"/><circle class="dot" cx="1071.1" cy="118.2" r="4"/><circle class="dot" cx="1068.4" cy="105.3" r="4"/><circle class="dot" cx="1084.9" cy="116.8" r="4"/><circle class="dot" cx="1096.9" cy="128.3" r="4"/><circle class="dot" cx="1178.2" cy="192.7" r="4"/><circle class="dot" cx="1139.8" cy="177.1" r="4"/><circle class="dot" cx="1103.6" cy="123.6" r="4"/><circle class="dot" cx="1093.5" cy="120.5" r="4"/><circle class="dot" cx="1138.5" cy="176.1" r="4"/><circle class="dot" cx="1120.2" cy="147.8" r="4"/><circle class="dot" cx="1139.2" cy="180.8" r="4"/><circle class="dot" cx="1159.2" cy="184.4" r="4"/><circle class="dot" cx="1061.4" cy="118.0" r="4"/><circle class="dot" cx="1010.5" cy="55.2" r="4"/><circle class="dot" cx="1101.8" cy="105.4" r="4"/><circle class="dot" cx="1106.0" cy="125.4" r="4"/><circle class="dot" cx="1114.4" cy="140.5" r="4"/><circle class="dot" cx="1078.2" cy="128.8" r="4"/><circle class="dot" cx="1093.2" cy="126.9" r="4"/><circle class="dot" cx="1125.6" cy="144.7" r="4"/><circle class="dot" cx="1127.8" cy="160.5" r="4"/><circle class="dot" cx="1157.2" cy="182.3" r="4"/><circle class="dot" cx="1014.0" cy="84.8" r="4"/><circle class="dot" cx="1035.2" cy="92.9" r="4"/><circle class="dot" cx="1162.5" cy="208.6" r="4"/><circle class="dot" cx="1127.6" cy="138.2" r="4"/><circle class="dot" cx="1135.2" cy="160.4" r="4"/><circle class="dot" cx="1091.0" cy="121.4" r="4"/><circle class="dot" cx="1083.3" cy="125.2" r="4"/><circle class="dot" cx="1110.9" cy="161.8" r="4"/><circle class="dot" cx="1064.2" cy="105.4" r="4"/><circle class="dot" cx="1040.1" cy="94.5" r="4"/><circle class="dot" cx="1057.2" cy="112.3" r="4"/><circle class="dot" cx="1107.5" cy="142.3" r="4"/><circle class="dot" cx="1128.8" cy="159.2" r="4"/><circle class="dot" cx="1170.3" cy="196.5" r="4"/><circle class="dot" cx="1117.9" cy="160.0" r="4"/><circle class="dot" cx="1122.0" cy="165.8" r="4"/><circle class="dot" cx="1171.8" cy="195.7" r="4"/><circle class="dot" cx="1070.9" cy="99.3" r="4"/><circle class="dot" cx="1063.4" cy="124.4" r="4"/><circle class="dot" cx="1080.7" cy="128.1" r="4"/><circle class="dot" cx="1098.8" cy="137.5" r="4"/><circle class="dot" cx="1185.5" cy="208.8" r="4"/><circle class="dot" cx="1088.4" cy="133.8" r="4"/><text class="cap" x="1098" y="34" text-anchor="middle">r = -0,95</text><text class="note" x="1098" y="252" text-anchor="middle">negativa fuerte</text><text class="note" x="24" y="288">El signo dice la direccion. El valor absoluto dice la fuerza. Nunca sale de menos uno a mas uno.</text></svg><!--/FIG--></div>
+  <p class="lead reveal"><b>Positiva:</b> área sembrada y producción. <b>Negativa:</b> precio y cantidad demandada. <b>Nula:</b> estatura y número de cédula.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="El coeficiente r y su escala">
+  <p class="kicker reveal">El número que resume la nube, y cómo se lee en voz alta</p>
+  <h2 class="reveal">El coeficiente r</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>La escala de fuerza que se usa el resto del semestre</caption>
+      <thead><tr><th scope="col">Valor absoluto de r</th><th scope="col">Lectura</th><th scope="col">Cómo se dice</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="num">0,0 a 0,3</span></th><td>Débil</td><td><em>"apenas se insinúa una tendencia"</em></td></tr>
+        <tr><th scope="row"><span class="num">0,3 a 0,7</span></th><td>Moderada</td><td><em>"hay una tendencia clara, con mucha dispersión"</em></td></tr>
+        <tr class="on"><th scope="row"><span class="num">0,7 a 1,0</span></th><td>Fuerte</td><td><em>"la nube se parece bastante a una recta"</em></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="bullets reveal">
+    <li>Va de <b>menos uno a más uno</b>, siempre. Si a alguien le da 1,4, se equivocó en algo.</li>
+    <li>El <b>signo</b> dice la dirección; el <b>valor absoluto</b> dice la fuerza.</li>
+  </ul>
+</section>
+
+<section class="slide" data-block="1" data-title="Las cuatro cosas que r no es">
+  <p class="kicker reveal">Cuatro advertencias, dichas ahora y no después del error</p>
+  <h2 class="reveal">Lo que r <em>no</em> es</h2>
+  <div class="cols c4 reveal">
+    <article class="col hot"><span class="no">Uno</span><h3>No mide relación, mide recta</h3>
+      <p>r mide relación <b>lineal</b> y nada más. Una relación en U perfecta da r cercano a cero.</p></article>
+    <article class="col"><span class="no">Dos</span><h3>Un punto la puede mover</h3>
+      <p>Un solo valor extremo cambia r de forma dramática. Otra razón para mirar el gráfico primero.</p></article>
+    <article class="col"><span class="no">Tres</span><h3>No es una proporción</h3>
+      <p>r no tiene unidades. Un r de 0,5 <b>no</b> es "la mitad de la relación". No se reparte ni se suma.</p></article>
+    <article class="col"><span class="no">Cuatro</span><h3>Con pocos datos no dice nada</h3>
+      <p>Con menos de diez observaciones, r es casi ruido. El tamaño del grupo se reporta siempre.</p></article>
+  </div>
+  <p class="lead reveal">Las dos primeras se ven mejor dibujadas que explicadas. Ahí van.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Lo que r no ve: la curva">
+  <p class="kicker reveal">Advertencia uno, con datos</p>
+  <h2 class="reveal">Relación perfecta, coeficiente cero</h2>
+  <div class="fig-wrap reveal"><!--FIG:CURVA--><svg class="fig" viewBox="0 0 880 420" role="img" aria-label="Parabola perfecta: los puntos dibujan una U impecable y el coeficiente r vale cero."><rect class="pane" x="70.0" y="40.0" width="760.0" height="300.0"/><circle class="dot" cx="110.7" cy="56.1" r="5"/><circle class="dot" cx="122.0" cy="73.6" r="5"/><circle class="dot" cx="133.3" cy="90.6" r="5"/><circle class="dot" cx="144.6" cy="107.0" r="5"/><circle class="dot" cx="156.0" cy="122.7" r="5"/><circle class="dot" cx="167.3" cy="137.9" r="5"/><circle class="dot" cx="178.6" cy="152.5" r="5"/><circle class="dot" cx="189.9" cy="166.5" r="5"/><circle class="dot" cx="201.2" cy="179.9" r="5"/><circle class="dot" cx="212.5" cy="192.7" r="5"/><circle class="dot" cx="223.8" cy="204.9" r="5"/><circle class="dot" cx="235.1" cy="216.5" r="5"/><circle class="dot" cx="246.4" cy="227.5" r="5"/><circle class="dot" cx="257.7" cy="237.9" r="5"/><circle class="dot" cx="269.0" cy="247.7" r="5"/><circle class="dot" cx="280.4" cy="257.0" r="5"/><circle class="dot" cx="291.7" cy="265.6" r="5"/><circle class="dot" cx="303.0" cy="273.6" r="5"/><circle class="dot" cx="314.3" cy="281.1" r="5"/><circle class="dot" cx="325.6" cy="287.9" r="5"/><circle class="dot" cx="336.9" cy="294.2" r="5"/><circle class="dot" cx="348.2" cy="299.8" r="5"/><circle class="dot" cx="359.5" cy="304.9" r="5"/><circle class="dot" cx="370.8" cy="309.3" r="5"/><circle class="dot" cx="382.1" cy="313.2" r="5"/><circle class="dot" cx="393.5" cy="316.5" r="5"/><circle class="dot" cx="404.8" cy="319.2" r="5"/><circle class="dot" cx="416.1" cy="321.2" r="5"/><circle class="dot" cx="427.4" cy="322.7" r="5"/><circle class="dot" cx="438.7" cy="323.6" r="5"/><circle class="dot" cx="450.0" cy="323.9" r="5"/><circle class="dot" cx="461.3" cy="323.6" r="5"/><circle class="dot" cx="472.6" cy="322.7" r="5"/><circle class="dot" cx="483.9" cy="321.2" r="5"/><circle class="dot" cx="495.2" cy="319.2" r="5"/><circle class="dot" cx="506.5" cy="316.5" r="5"/><circle class="dot" cx="517.9" cy="313.2" r="5"/><circle class="dot" cx="529.2" cy="309.3" r="5"/><circle class="dot" cx="540.5" cy="304.9" r="5"/><circle class="dot" cx="551.8" cy="299.8" r="5"/><circle class="dot" cx="563.1" cy="294.2" r="5"/><circle class="dot" cx="574.4" cy="287.9" r="5"/><circle class="dot" cx="585.7" cy="281.1" r="5"/><circle class="dot" cx="597.0" cy="273.6" r="5"/><circle class="dot" cx="608.3" cy="265.6" r="5"/><circle class="dot" cx="619.6" cy="257.0" r="5"/><circle class="dot" cx="631.0" cy="247.7" r="5"/><circle class="dot" cx="642.3" cy="237.9" r="5"/><circle class="dot" cx="653.6" cy="227.5" r="5"/><circle class="dot" cx="664.9" cy="216.5" r="5"/><circle class="dot" cx="676.2" cy="204.9" r="5"/><circle class="dot" cx="687.5" cy="192.7" r="5"/><circle class="dot" cx="698.8" cy="179.9" r="5"/><circle class="dot" cx="710.1" cy="166.5" r="5"/><circle class="dot" cx="721.4" cy="152.5" r="5"/><circle class="dot" cx="732.7" cy="137.9" r="5"/><circle class="dot" cx="744.0" cy="122.7" r="5"/><circle class="dot" cx="755.4" cy="107.0" r="5"/><circle class="dot" cx="766.7" cy="90.6" r="5"/><circle class="dot" cx="778.0" cy="73.6" r="5"/><circle class="dot" cx="789.3" cy="56.1" r="5"/><text class="cap" x="70" y="28">y = x al cuadrado &#183; relacion perfecta, sin una pizca de azar</text><text class="big" x="450" y="200" text-anchor="middle">r = 0,000</text><text class="note" x="40" y="378">Cada punto esta exactamente sobre la curva. r no la ve: solo mide lo que se parece a una recta.</text></svg><!--/FIG--></div>
+  <p class="lead reveal">Un r cercano a cero <strong>no</strong> significa "no hay relación". Significa "no hay relación <b>lineal</b>". La diferencia entre esas dos frases es media clase.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Lo que r no ve: un solo outlier">
+  <p class="kicker reveal">Advertencia dos, con datos</p>
+  <h2 class="reveal">Un punto sobre ciento uno</h2>
+  <div class="fig-wrap reveal"><!--FIG:OUTLIER--><svg class="fig" viewBox="0 0 1180 430" role="img" aria-label="Cien puntos al azar sin ninguna relacion; al agregar un solo punto extremo, el coeficiente r pasa de casi cero a correlacion fuerte."><rect class="pane" x="60.0" y="56.0" width="480.0" height="300.0"/><circle class="dot" cx="321.9" cy="246.8" r="4"/><circle class="dot" cx="181.1" cy="157.8" r="4"/><circle class="dot" cx="368.6" cy="245.7" r="4"/><circle class="dot" cx="388.5" cy="187.6" r="4"/><circle class="dot" cx="85.7" cy="276.3" r="4"/><circle class="dot" cx="153.7" cy="237.7" r="4"/><circle class="dot" cx="303.4" cy="277.2" r="4"/><circle class="dot" cx="256.9" cy="244.7" r="4"/><circle class="dot" cx="288.3" cy="182.1" r="4"/><circle class="dot" cx="200.7" cy="318.4" r="4"/><circle class="dot" cx="382.1" cy="203.7" r="4"/><circle class="dot" cx="371.5" cy="214.1" r="4"/><circle class="dot" cx="296.9" cy="258.3" r="4"/><circle class="dot" cx="408.1" cy="303.5" r="4"/><circle class="dot" cx="339.0" cy="222.9" r="4"/><circle class="dot" cx="200.0" cy="254.9" r="4"/><circle class="dot" cx="328.6" cy="214.4" r="4"/><circle class="dot" cx="189.6" cy="225.6" r="4"/><circle class="dot" cx="382.0" cy="141.7" r="4"/><circle class="dot" cx="284.8" cy="239.5" r="4"/><circle class="dot" cx="270.7" cy="281.1" r="4"/><circle class="dot" cx="218.7" cy="217.2" r="4"/><circle class="dot" cx="418.0" cy="215.1" r="4"/><circle class="dot" cx="273.8" cy="154.6" r="4"/><circle class="dot" cx="245.2" cy="182.4" r="4"/><circle class="dot" cx="253.1" cy="207.8" r="4"/><circle class="dot" cx="345.8" cy="149.1" r="4"/><circle class="dot" cx="328.3" cy="289.9" r="4"/><circle class="dot" cx="333.2" cy="260.7" r="4"/><circle class="dot" cx="335.1" cy="275.9" r="4"/><circle class="dot" cx="514.3" cy="247.4" r="4"/><circle class="dot" cx="247.5" cy="299.8" r="4"/><circle class="dot" cx="236.4" cy="193.0" r="4"/><circle class="dot" cx="204.8" cy="238.5" r="4"/><circle class="dot" cx="354.5" cy="304.8" r="4"/><circle class="dot" cx="408.2" cy="280.7" r="4"/><circle class="dot" cx="278.1" cy="210.1" r="4"/><circle class="dot" cx="202.0" cy="182.3" r="4"/><circle class="dot" cx="203.7" cy="120.8" r="4"/><circle class="dot" cx="358.1" cy="72.1" r="4"/><circle class="dot" cx="367.9" cy="204.8" r="4"/><circle class="dot" cx="346.9" cy="279.3" r="4"/><circle class="dot" cx="220.3" cy="339.9" r="4"/><circle class="dot" cx="314.3" cy="212.5" r="4"/><circle class="dot" cx="302.2" cy="269.9" r="4"/><circle class="dot" cx="312.9" cy="248.8" r="4"/><circle class="dot" cx="381.3" cy="259.2" r="4"/><circle class="dot" cx="313.4" cy="234.2" r="4"/><circle class="dot" cx="361.1" cy="170.2" r="4"/><circle class="dot" cx="297.1" cy="218.4" r="4"/><circle class="dot" cx="320.3" cy="235.2" r="4"/><circle class="dot" cx="356.1" cy="281.7" r="4"/><circle class="dot" cx="137.4" cy="315.6" r="4"/><circle class="dot" cx="256.5" cy="252.6" r="4"/><circle class="dot" cx="240.8" cy="229.6" r="4"/><circle class="dot" cx="223.1" cy="132.9" r="4"/><circle class="dot" cx="261.2" cy="219.8" r="4"/><circle class="dot" cx="446.6" cy="174.6" r="4"/><circle class="dot" cx="199.4" cy="253.3" r="4"/><circle class="dot" cx="391.4" cy="289.7" r="4"/><circle class="dot" cx="113.8" cy="278.0" r="4"/><circle class="dot" cx="255.0" cy="265.2" r="4"/><circle class="dot" cx="307.1" cy="113.8" r="4"/><circle class="dot" cx="351.4" cy="270.4" r="4"/><circle class="dot" cx="364.5" cy="182.2" r="4"/><circle class="dot" cx="373.1" cy="274.7" r="4"/><circle class="dot" cx="253.5" cy="177.3" r="4"/><circle class="dot" cx="241.6" cy="206.3" r="4"/><circle class="dot" cx="379.9" cy="235.1" r="4"/><circle class="dot" cx="270.0" cy="228.9" r="4"/><circle class="dot" cx="156.4" cy="261.5" r="4"/><circle class="dot" cx="171.3" cy="203.1" r="4"/><circle class="dot" cx="193.7" cy="250.9" r="4"/><circle class="dot" cx="342.1" cy="291.8" r="4"/><circle class="dot" cx="304.9" cy="294.6" r="4"/><circle class="dot" cx="362.3" cy="217.6" r="4"/><circle class="dot" cx="245.3" cy="142.9" r="4"/><circle class="dot" cx="306.6" cy="218.3" r="4"/><circle class="dot" cx="355.5" cy="233.0" r="4"/><circle class="dot" cx="257.6" cy="211.6" r="4"/><circle class="dot" cx="337.9" cy="157.4" r="4"/><circle class="dot" cx="220.7" cy="215.1" r="4"/><circle class="dot" cx="252.0" cy="248.6" r="4"/><circle class="dot" cx="250.0" cy="168.0" r="4"/><circle class="dot" cx="164.8" cy="204.0" r="4"/><circle class="dot" cx="341.0" cy="145.2" r="4"/><circle class="dot" cx="240.9" cy="217.0" r="4"/><circle class="dot" cx="291.3" cy="291.8" r="4"/><circle class="dot" cx="340.4" cy="299.4" r="4"/><circle class="dot" cx="336.8" cy="139.1" r="4"/><circle class="dot" cx="359.7" cy="135.3" r="4"/><circle class="dot" cx="279.7" cy="236.3" r="4"/><circle class="dot" cx="245.7" cy="247.1" r="4"/><circle class="dot" cx="281.7" cy="149.2" r="4"/><circle class="dot" cx="113.3" cy="285.5" r="4"/><circle class="dot" cx="138.5" cy="274.2" r="4"/><circle class="dot" cx="151.5" cy="192.6" r="4"/><circle class="dot" cx="185.6" cy="247.7" r="4"/><circle class="dot" cx="331.9" cy="227.0" r="4"/><circle class="dot" cx="195.2" cy="235.4" r="4"/><text class="cap" x="60" y="40">100 puntos al azar</text><text class="val" x="540" y="40" text-anchor="end">r = 0,094</text><rect class="pane" x="640.0" y="56.0" width="480.0" height="300.0"/><circle class="dot" cx="709.8" cy="318.7" r="4"/><circle class="dot" cx="683.5" cy="298.4" r="4"/><circle class="dot" cx="718.5" cy="318.4" r="4"/><circle class="dot" cx="722.2" cy="305.2" r="4"/><circle class="dot" cx="665.7" cy="325.4" r="4"/><circle class="dot" cx="678.4" cy="316.6" r="4"/><circle class="dot" cx="706.3" cy="325.6" r="4"/><circle class="dot" cx="697.6" cy="318.2" r="4"/><circle class="dot" cx="703.5" cy="304.0" r="4"/><circle class="dot" cx="687.2" cy="335.0" r="4"/><circle class="dot" cx="721.0" cy="308.9" r="4"/><circle class="dot" cx="719.0" cy="311.2" r="4"/><circle class="dot" cx="705.1" cy="321.3" r="4"/><circle class="dot" cx="725.8" cy="331.6" r="4"/><circle class="dot" cx="712.9" cy="313.3" r="4"/><circle class="dot" cx="687.0" cy="320.5" r="4"/><circle class="dot" cx="711.0" cy="311.3" r="4"/><circle class="dot" cx="685.1" cy="313.9" r="4"/><circle class="dot" cx="721.0" cy="294.7" r="4"/><circle class="dot" cx="702.8" cy="317.0" r="4"/><circle class="dot" cx="700.2" cy="326.5" r="4"/><circle class="dot" cx="690.5" cy="312.0" r="4"/><circle class="dot" cx="727.7" cy="311.5" r="4"/><circle class="dot" cx="700.8" cy="297.7" r="4"/><circle class="dot" cx="695.4" cy="304.0" r="4"/><circle class="dot" cx="696.9" cy="309.8" r="4"/><circle class="dot" cx="714.2" cy="296.4" r="4"/><circle class="dot" cx="710.9" cy="328.5" r="4"/><circle class="dot" cx="711.9" cy="321.9" r="4"/><circle class="dot" cx="712.2" cy="325.3" r="4"/><circle class="dot" cx="745.6" cy="318.8" r="4"/><circle class="dot" cx="695.9" cy="330.8" r="4"/><circle class="dot" cx="693.8" cy="306.4" r="4"/><circle class="dot" cx="687.9" cy="316.8" r="4"/><circle class="dot" cx="715.8" cy="331.9" r="4"/><circle class="dot" cx="725.8" cy="326.4" r="4"/><circle class="dot" cx="701.6" cy="310.3" r="4"/><circle class="dot" cx="687.4" cy="304.0" r="4"/><circle class="dot" cx="687.7" cy="290.0" r="4"/><circle class="dot" cx="716.5" cy="278.9" r="4"/><circle class="dot" cx="718.3" cy="309.1" r="4"/><circle class="dot" cx="714.4" cy="326.1" r="4"/><circle class="dot" cx="690.8" cy="339.9" r="4"/><circle class="dot" cx="708.3" cy="310.9" r="4"/><circle class="dot" cx="706.1" cy="324.0" r="4"/><circle class="dot" cx="708.1" cy="319.2" r="4"/><circle class="dot" cx="720.8" cy="321.5" r="4"/><circle class="dot" cx="708.2" cy="315.8" r="4"/><circle class="dot" cx="717.1" cy="301.2" r="4"/><circle class="dot" cx="705.1" cy="312.2" r="4"/><circle class="dot" cx="709.5" cy="316.0" r="4"/><circle class="dot" cx="716.1" cy="326.7" r="4"/><circle class="dot" cx="675.4" cy="334.4" r="4"/><circle class="dot" cx="697.6" cy="320.0" r="4"/><circle class="dot" cx="694.6" cy="314.8" r="4"/><circle class="dot" cx="691.3" cy="292.7" r="4"/><circle class="dot" cx="698.4" cy="312.5" r="4"/><circle class="dot" cx="733.0" cy="302.2" r="4"/><circle class="dot" cx="686.9" cy="320.2" r="4"/><circle class="dot" cx="722.7" cy="328.5" r="4"/><circle class="dot" cx="670.9" cy="325.8" r="4"/><circle class="dot" cx="697.3" cy="322.9" r="4"/><circle class="dot" cx="707.0" cy="288.4" r="4"/><circle class="dot" cx="715.3" cy="324.1" r="4"/><circle class="dot" cx="717.7" cy="304.0" r="4"/><circle class="dot" cx="719.3" cy="325.1" r="4"/><circle class="dot" cx="697.0" cy="302.9" r="4"/><circle class="dot" cx="694.8" cy="309.5" r="4"/><circle class="dot" cx="720.6" cy="316.0" r="4"/><circle class="dot" cx="700.1" cy="314.6" r="4"/><circle class="dot" cx="678.9" cy="322.0" r="4"/><circle class="dot" cx="681.7" cy="308.7" r="4"/><circle class="dot" cx="685.9" cy="319.6" r="4"/><circle class="dot" cx="713.5" cy="329.0" r="4"/><circle class="dot" cx="706.6" cy="329.6" r="4"/><circle class="dot" cx="717.3" cy="312.0" r="4"/><circle class="dot" cx="695.5" cy="295.0" r="4"/><circle class="dot" cx="706.9" cy="312.2" r="4"/><circle class="dot" cx="716.0" cy="315.6" r="4"/><circle class="dot" cx="697.8" cy="310.7" r="4"/><circle class="dot" cx="712.7" cy="298.3" r="4"/><circle class="dot" cx="690.9" cy="311.5" r="4"/><circle class="dot" cx="696.7" cy="319.1" r="4"/><circle class="dot" cx="696.4" cy="300.7" r="4"/><circle class="dot" cx="680.5" cy="308.9" r="4"/><circle class="dot" cx="713.3" cy="295.5" r="4"/><circle class="dot" cx="694.6" cy="311.9" r="4"/><circle class="dot" cx="704.1" cy="328.9" r="4"/><circle class="dot" cx="713.2" cy="330.7" r="4"/><circle class="dot" cx="712.5" cy="294.1" r="4"/><circle class="dot" cx="716.8" cy="293.3" r="4"/><circle class="dot" cx="701.9" cy="316.3" r="4"/><circle class="dot" cx="695.5" cy="318.8" r="4"/><circle class="dot" cx="702.2" cy="296.4" r="4"/><circle class="dot" cx="670.9" cy="327.5" r="4"/><circle class="dot" cx="675.6" cy="325.0" r="4"/><circle class="dot" cx="678.0" cy="306.3" r="4"/><circle class="dot" cx="684.3" cy="318.9" r="4"/><circle class="dot" cx="711.6" cy="314.2" r="4"/><circle class="dot" cx="686.1" cy="316.1" r="4"/><circle class="dot out" cx="1094.3" cy="72.1" r="9"/><text class="cap" x="640" y="40">Los mismos, mas UN punto</text><text class="val acc" x="1120" y="40" text-anchor="end">r = 0,853</text><text class="note" x="60" y="400">Un punto sobre ciento uno cambia la conclusion. Por eso el grafico va antes que el numero.</text></svg><!--/FIG--></div>
+  <p class="lead reveal">Los cien puntos de la izquierda no tienen ninguna relación, y r lo dice. Se agrega <b>un</b> valor extremo y r pasa a anunciar correlación fuerte. El número cambió; los datos, casi no.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Correlación no es causalidad">
+  <p class="kicker reveal">El tramo más importante del día</p>
+  <h2 class="reveal">Tres explicaciones, no una</h2>
+  <div class="fig-wrap reveal"><!--FIG:CAUSAS--><svg class="fig" viewBox="0 0 1160 300" role="img" aria-label="Tres explicaciones posibles de una correlacion: A causa B, B causa A, o una tercera variable C causa las dos."><text class="cap" x="24" y="30">Uno &#183; A causa B</text><circle class="node" cx="80" cy="150" r="42"/><text class="nodet" x="80" y="159" text-anchor="middle">A</text><circle class="node" cx="290" cy="150" r="42"/><text class="nodet" x="290" y="159" text-anchor="middle">B</text><line class="arrow" x1="126" y1="150" x2="230" y2="150"/><path class="head" d="M230 140 L252 150 L230 160 Z"/><text class="note" x="24" y="246">El helado causa</text><text class="note" x="24" y="272">el ahogamiento.</text><text class="cap" x="404" y="30">Dos &#183; B causa A</text><circle class="node" cx="460" cy="150" r="42"/><text class="nodet" x="460" y="159" text-anchor="middle">A</text><circle class="node" cx="670" cy="150" r="42"/><text class="nodet" x="670" y="159" text-anchor="middle">B</text><line class="arrow" x1="624" y1="150" x2="520" y2="150"/><path class="head" d="M520 140 L498 150 L520 160 Z"/><text class="note" x="404" y="246">El ahogamiento causa</text><text class="note" x="404" y="272">la venta de helados.</text><text class="cap acc" x="784" y="30">Tres &#183; C causa las dos</text><circle class="node" cx="840" cy="210" r="42"/><text class="nodet" x="840" y="219" text-anchor="middle">A</text><circle class="node" cx="1090" cy="210" r="42"/><text class="nodet" x="1090" y="219" text-anchor="middle">B</text><circle class="node hot" cx="965" cy="86" r="42"/><text class="nodet hot" x="965" y="95" text-anchor="middle">C</text><line class="arrow hot" x1="932" y1="114" x2="874" y2="172"/><path class="head hot" d="M867 179 L876 157 L889 170 Z"/><line class="arrow hot" x1="998" y1="114" x2="1056" y2="172"/><path class="head hot" d="M1063 179 L1054 157 L1041 170 Z"/><text class="note acc" x="784" y="272">El calor causa las dos. Es la confusora.</text></svg><!--/FIG--></div>
+  <p class="lead reveal">Cuando A y B están correlacionados, esas tres son compatibles con el mismo número. En los helados es la tercera: la <strong>variable confusora</strong> está detrás de las dos, no aparece en la tabla, y es la que explica el patrón.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Las tres preguntas antes de afirmar causalidad">
+  <p class="kicker reveal">Se hacen siempre, antes de escribir la conclusión</p>
+  <h2 class="reveal">Las tres preguntas</h2>
+  <ol class="steps reveal">
+    <li><b>¿Tiene sentido lógico?</b> ¿Puedo contar el mecanismo, paso por paso, sin saltarme nada?</li>
+    <li><b>¿El orden temporal funciona?</b> La causa tiene que ir antes que el efecto, no después.</li>
+    <li><b>¿Puede haber una tercera variable escondida?</b> Casi siempre puede. La pregunta es cuál.</li>
+  </ol>
+  <div class="cols c3 reveal">
+    <article class="col"><span class="no">Colombia</span><h3>Colegios y delitos</h3>
+      <p>Los municipios con más colegios tienen más delitos. Confusora: la <b>población</b>.</p></article>
+    <article class="col"><span class="no">Colombia</span><h3>Hospitales grandes</h3>
+      <p>Sus pacientes mueren más que los de hospitales pequeños. Confusora: la <b>gravedad</b> de los casos que reciben.</p></article>
+    <article class="col hot"><span class="no">Colombia</span><h3>Tutorías y notas</h3>
+      <p>Quien asiste a tutorías saca peores notas. Confusora: <b>quien va a tutorías ya iba mal</b>. La conclusión llega al revés.</p></article>
+  </div>
+</section>
+
+<section class="slide" data-block="1" data-title="Correlaciones espurias">
+  <span class="numeral">!</span>
+  <p class="kicker reveal">El caso extremo: ni siquiera hay confusora</p>
+  <p class="claim reveal">Hay correlaciones altísimas <span>sin ninguna relación</span> detrás.</p>
+  <ul class="bullets reveal">
+    <li>Películas de <b>Nicolas Cage</b> estrenadas por año contra ahogamientos en piscinas: r cercano a <b>0,67</b>.</li>
+    <li>Consumo de <b>queso</b> por persona contra muertes por enredarse en las sábanas: r cercano a <b>0,95</b>.</li>
+    <li>Doctorados en ingeniería civil otorgados contra consumo de mozzarella: r por encima de <b>0,9</b>.</li>
+  </ul>
+  <p class="lead reveal">Fuente: tylervigen.com/spurious-correlations. No hay confusora que valga: es puro azar más un conjunto de datos suficientemente grande.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Espurias, con datos">
+  <p class="kicker reveal">Sesenta variables inventadas por un generador de números al azar</p>
+  <h2 class="reveal">Con 60 variables hay 1.770 pares</h2>
+  <div class="fig-wrap reveal"><!--FIG:ESPURIAS--><svg class="fig" viewBox="0 0 1180 400" role="img" aria-label="Histograma de los 1770 pares de sesenta variables de puro azar: la mayoria cae cerca de cero, pero 19 pares superan el 0,5 sin que exista ninguna relacion."><rect class="bar" x="80" y="80.0" width="60" height="250.0"/><text class="tick" x="110" y="352" text-anchor="middle">0,00</text><text class="tick" x="110" y="76.0" text-anchor="middle">338</text><rect class="bar" x="164" y="96.3" width="60" height="233.7"/><text class="tick" x="194" y="352" text-anchor="middle">0,05</text><text class="tick" x="194" y="92.3" text-anchor="middle">316</text><rect class="bar" x="248" y="118.5" width="60" height="211.5"/><text class="tick" x="278" y="352" text-anchor="middle">0,10</text><text class="tick" x="278" y="114.5" text-anchor="middle">286</text><rect class="bar" x="332" y="149.5" width="60" height="180.5"/><text class="tick" x="362" y="352" text-anchor="middle">0,15</text><text class="tick" x="362" y="145.5" text-anchor="middle">244</text><rect class="bar" x="416" y="182.1" width="60" height="147.9"/><text class="tick" x="446" y="352" text-anchor="middle">0,20</text><text class="tick" x="446" y="178.1" text-anchor="middle">200</text><rect class="bar" x="500" y="220.5" width="60" height="109.5"/><text class="tick" x="530" y="352" text-anchor="middle">0,25</text><text class="tick" x="530" y="216.5" text-anchor="middle">148</text><rect class="bar" x="584" y="262.0" width="60" height="68.0"/><text class="tick" x="614" y="352" text-anchor="middle">0,30</text><text class="tick" x="614" y="258.0" text-anchor="middle">92</text><rect class="bar" x="668" y="279.0" width="60" height="51.0"/><text class="tick" x="698" y="352" text-anchor="middle">0,35</text><text class="tick" x="698" y="275.0" text-anchor="middle">69</text><rect class="bar" x="752" y="300.4" width="60" height="29.6"/><text class="tick" x="782" y="352" text-anchor="middle">0,40</text><text class="tick" x="782" y="296.4" text-anchor="middle">40</text><rect class="bar" x="836" y="316.7" width="60" height="13.3"/><text class="tick" x="866" y="352" text-anchor="middle">0,45</text><text class="tick" x="866" y="312.7" text-anchor="middle">18</text><rect class="bar hot" x="920" y="318.9" width="60" height="11.1"/><text class="tick" x="950" y="352" text-anchor="middle">0,50</text><text class="tick" x="950" y="314.9" text-anchor="middle">15</text><rect class="bar hot" x="1004" y="327.0" width="60" height="3.0"/><text class="tick" x="1034" y="352" text-anchor="middle">0,55</text><text class="tick" x="1034" y="323.0" text-anchor="middle">4</text><line class="ax" x1="70" y1="330" x2="1140" y2="330"/><text class="cap" x="70" y="30">1.770 pares de 60 variables de puro azar &#183; |r| maximo = 0.581</text><text class="val acc" x="1140" y="30" text-anchor="end">19 pares por encima de 0,5</text><text class="note" x="70" y="384">Ninguna de esas relaciones existe. Salieron de un generador de numeros aleatorios.</text></svg><!--/FIG--></div>
+  <p class="lead reveal">Encontrar un r alto entre dos de mil pares no es un hallazgo: es aritmética. <strong>La regla que se llevan: primero la hipótesis, después el número.</strong> Si el número llegó primero, hay que poder contar el mecanismo antes de publicarlo.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Paradoja de Simpson: Berkeley">
+  <p class="kicker reveal">Berkeley, 1973 &middot; admisiones de posgrado</p>
+  <h2 class="reveal">La paradoja de Simpson</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Mirado en conjunto, parece discriminación evidente</caption>
+      <thead><tr><th scope="col">Grupo</th><th scope="col">Solicitaron</th><th scope="col">Admitidos</th><th scope="col">Tasa de admisión</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Hombres</th><td><span class="num">8.442</span></td><td><span class="num">3.738</span></td><td><b>44 de cada 100</b></td></tr>
+        <tr class="on"><th scope="row">Mujeres</th><td><span class="num">4.321</span></td><td><span class="num">1.494</span></td><td><b>35 de cada 100</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p><strong>Al separar por departamento, la mayoría admitía a las mujeres en igual o mayor proporción.</strong> Ellas postulaban a los departamentos más competidos, con tasas bajísimas <b>para todo el mundo</b>. La confusora era el departamento al que se postula.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Simpson, la versión limpia">
+  <p class="kicker reveal">Datos fabricados a propósito, para ver la criatura completa</p>
+  <h2 class="reveal">Cada grupo sube. Los tres juntos bajan.</h2>
+  <div class="fig-wrap reveal"><!--FIG:SIMPSON_FAB--><svg class="fig" viewBox="0 0 1120 450" role="img" aria-label="Tres grupos de puntos: dentro de cada grupo la nube sube, y la recta que ignora los grupos baja."><rect class="pane" x="80.0" y="56.0" width="940.0" height="320.0"/><circle class="dot g1" cx="222.0" cy="138.9" r="4"/><circle class="dot g1" cx="284.2" cy="89.4" r="4"/><circle class="dot g1" cx="277.9" cy="112.6" r="4"/><circle class="dot g1" cx="196.5" cy="139.4" r="4"/><circle class="dot g1" cx="206.5" cy="128.5" r="4"/><circle class="dot g1" cx="195.7" cy="157.0" r="4"/><circle class="dot g1" cx="247.2" cy="120.6" r="4"/><circle class="dot g1" cx="217.8" cy="143.4" r="4"/><circle class="dot g1" cx="255.5" cy="112.0" r="4"/><circle class="dot g1" cx="133.8" cy="163.7" r="4"/><circle class="dot g1" cx="293.9" cy="78.4" r="4"/><circle class="dot g1" cx="215.9" cy="148.1" r="4"/><circle class="dot g1" cx="252.4" cy="120.1" r="4"/><circle class="dot g1" cx="214.0" cy="129.4" r="4"/><circle class="dot g1" cx="202.7" cy="128.2" r="4"/><circle class="dot g1" cx="242.2" cy="117.4" r="4"/><circle class="dot g1" cx="259.1" cy="118.0" r="4"/><circle class="dot g1" cx="210.9" cy="134.2" r="4"/><circle class="dot g1" cx="213.3" cy="135.5" r="4"/><circle class="dot g1" cx="252.6" cy="117.0" r="4"/><circle class="dot g1" cx="179.6" cy="158.3" r="4"/><circle class="dot g1" cx="149.4" cy="164.7" r="4"/><circle class="dot g1" cx="239.0" cy="119.9" r="4"/><circle class="dot g1" cx="189.0" cy="148.4" r="4"/><circle class="dot g1" cx="130.4" cy="179.2" r="4"/><circle class="dot g1" cx="182.3" cy="161.3" r="4"/><circle class="dot g1" cx="198.5" cy="146.7" r="4"/><circle class="dot g1" cx="164.5" cy="150.6" r="4"/><circle class="dot g1" cx="150.4" cy="168.8" r="4"/><circle class="dot g1" cx="222.2" cy="142.3" r="4"/><circle class="dot g1" cx="262.5" cy="99.8" r="4"/><circle class="dot g1" cx="209.5" cy="133.1" r="4"/><circle class="dot g1" cx="185.6" cy="132.7" r="4"/><circle class="dot g1" cx="238.5" cy="122.1" r="4"/><circle class="dot g1" cx="254.1" cy="118.3" r="4"/><circle class="dot g1" cx="206.4" cy="150.4" r="4"/><circle class="dot g1" cx="246.0" cy="108.3" r="4"/><circle class="dot g1" cx="269.4" cy="86.5" r="4"/><circle class="dot g1" cx="210.7" cy="143.2" r="4"/><circle class="dot g1" cx="182.3" cy="156.2" r="4"/><circle class="dot g1" cx="236.7" cy="118.7" r="4"/><circle class="dot g1" cx="232.0" cy="132.4" r="4"/><circle class="dot g1" cx="272.0" cy="107.7" r="4"/><circle class="dot g1" cx="160.2" cy="165.1" r="4"/><circle class="dot g1" cx="189.4" cy="146.0" r="4"/><circle class="dot g1" cx="181.1" cy="143.0" r="4"/><circle class="dot g1" cx="139.1" cy="172.8" r="4"/><circle class="dot g1" cx="226.4" cy="121.4" r="4"/><circle class="dot g1" cx="245.2" cy="122.5" r="4"/><circle class="dot g1" cx="185.8" cy="146.7" r="4"/><circle class="dot g1" cx="285.4" cy="115.7" r="4"/><circle class="dot g1" cx="259.0" cy="123.7" r="4"/><circle class="dot g1" cx="249.9" cy="110.5" r="4"/><circle class="dot g1" cx="239.3" cy="126.8" r="4"/><circle class="dot g1" cx="265.3" cy="104.4" r="4"/><circle class="dot g1" cx="158.0" cy="159.1" r="4"/><circle class="dot g1" cx="249.2" cy="106.6" r="4"/><circle class="dot g1" cx="248.7" cy="110.9" r="4"/><circle class="dot g1" cx="137.5" cy="165.7" r="4"/><circle class="dot g1" cx="236.7" cy="124.4" r="4"/><circle class="dot g1" cx="208.7" cy="143.2" r="4"/><circle class="dot g1" cx="257.1" cy="118.9" r="4"/><circle class="dot g1" cx="199.8" cy="146.0" r="4"/><circle class="dot g1" cx="219.6" cy="141.1" r="4"/><circle class="dot g1" cx="236.5" cy="127.9" r="4"/><circle class="dot g1" cx="179.3" cy="153.3" r="4"/><circle class="dot g1" cx="248.5" cy="115.5" r="4"/><circle class="dot g1" cx="215.5" cy="136.9" r="4"/><circle class="dot g1" cx="243.5" cy="135.3" r="4"/><circle class="dot g1" cx="196.0" cy="144.7" r="4"/><circle class="dot g1" cx="271.4" cy="104.1" r="4"/><circle class="dot g1" cx="248.8" cy="108.7" r="4"/><circle class="dot g1" cx="212.1" cy="131.4" r="4"/><circle class="dot g1" cx="250.1" cy="121.8" r="4"/><circle class="dot g1" cx="279.5" cy="107.5" r="4"/><circle class="dot g1" cx="304.5" cy="73.1" r="4"/><circle class="dot g1" cx="146.6" cy="163.2" r="4"/><circle class="dot g1" cx="261.9" cy="96.2" r="4"/><circle class="dot g1" cx="242.3" cy="103.8" r="4"/><circle class="dot g1" cx="216.0" cy="140.5" r="4"/><polyline class="trend g1" points="130.4,177.2 304.5,88.2"/><circle class="dot g2" cx="551.2" cy="197.4" r="4"/><circle class="dot g2" cx="554.6" cy="207.0" r="4"/><circle class="dot g2" cx="559.4" cy="209.5" r="4"/><circle class="dot g2" cx="558.6" cy="199.9" r="4"/><circle class="dot g2" cx="542.6" cy="207.9" r="4"/><circle class="dot g2" cx="541.3" cy="209.7" r="4"/><circle class="dot g2" cx="462.7" cy="239.0" r="4"/><circle class="dot g2" cx="525.4" cy="201.3" r="4"/><circle class="dot g2" cx="498.1" cy="232.2" r="4"/><circle class="dot g2" cx="539.1" cy="202.5" r="4"/><circle class="dot g2" cx="511.2" cy="214.7" r="4"/><circle class="dot g2" cx="562.2" cy="190.7" r="4"/><circle class="dot g2" cx="571.6" cy="183.3" r="4"/><circle class="dot g2" cx="547.6" cy="206.8" r="4"/><circle class="dot g2" cx="548.0" cy="197.7" r="4"/><circle class="dot g2" cx="537.5" cy="192.8" r="4"/><circle class="dot g2" cx="512.1" cy="215.3" r="4"/><circle class="dot g2" cx="525.4" cy="219.9" r="4"/><circle class="dot g2" cx="509.9" cy="218.0" r="4"/><circle class="dot g2" cx="551.4" cy="191.8" r="4"/><circle class="dot g2" cx="533.8" cy="207.8" r="4"/><circle class="dot g2" cx="560.4" cy="201.7" r="4"/><circle class="dot g2" cx="470.8" cy="230.4" r="4"/><circle class="dot g2" cx="574.8" cy="199.8" r="4"/><circle class="dot g2" cx="497.4" cy="225.2" r="4"/><circle class="dot g2" cx="498.7" cy="228.7" r="4"/><circle class="dot g2" cx="523.9" cy="225.2" r="4"/><circle class="dot g2" cx="506.7" cy="214.8" r="4"/><circle class="dot g2" cx="546.8" cy="201.4" r="4"/><circle class="dot g2" cx="506.2" cy="234.0" r="4"/><circle class="dot g2" cx="483.0" cy="231.7" r="4"/><circle class="dot g2" cx="493.5" cy="234.6" r="4"/><circle class="dot g2" cx="594.7" cy="194.9" r="4"/><circle class="dot g2" cx="535.2" cy="215.5" r="4"/><circle class="dot g2" cx="478.4" cy="236.8" r="4"/><circle class="dot g2" cx="533.5" cy="205.8" r="4"/><circle class="dot g2" cx="460.2" cy="246.8" r="4"/><circle class="dot g2" cx="617.1" cy="168.1" r="4"/><circle class="dot g2" cx="461.6" cy="243.6" r="4"/><circle class="dot g2" cx="555.6" cy="201.3" r="4"/><circle class="dot g2" cx="558.7" cy="188.8" r="4"/><circle class="dot g2" cx="465.1" cy="244.4" r="4"/><circle class="dot g2" cx="547.2" cy="201.6" r="4"/><circle class="dot g2" cx="579.9" cy="183.0" r="4"/><circle class="dot g2" cx="555.1" cy="208.3" r="4"/><circle class="dot g2" cx="545.4" cy="210.5" r="4"/><circle class="dot g2" cx="577.7" cy="176.3" r="4"/><circle class="dot g2" cx="540.7" cy="204.6" r="4"/><circle class="dot g2" cx="548.9" cy="205.3" r="4"/><circle class="dot g2" cx="527.2" cy="211.4" r="4"/><circle class="dot g2" cx="562.8" cy="199.8" r="4"/><circle class="dot g2" cx="489.0" cy="231.3" r="4"/><circle class="dot g2" cx="570.3" cy="197.5" r="4"/><circle class="dot g2" cx="509.5" cy="220.9" r="4"/><circle class="dot g2" cx="482.0" cy="249.5" r="4"/><circle class="dot g2" cx="550.3" cy="191.8" r="4"/><circle class="dot g2" cx="612.6" cy="174.8" r="4"/><circle class="dot g2" cx="578.3" cy="200.7" r="4"/><circle class="dot g2" cx="509.0" cy="225.1" r="4"/><circle class="dot g2" cx="565.9" cy="197.4" r="4"/><circle class="dot g2" cx="511.8" cy="220.7" r="4"/><circle class="dot g2" cx="527.3" cy="223.1" r="4"/><circle class="dot g2" cx="537.4" cy="205.8" r="4"/><circle class="dot g2" cx="424.5" cy="237.5" r="4"/><circle class="dot g2" cx="542.1" cy="216.6" r="4"/><circle class="dot g2" cx="484.9" cy="232.9" r="4"/><circle class="dot g2" cx="500.4" cy="230.1" r="4"/><circle class="dot g2" cx="464.0" cy="244.6" r="4"/><circle class="dot g2" cx="462.0" cy="261.5" r="4"/><circle class="dot g2" cx="488.9" cy="242.6" r="4"/><circle class="dot g2" cx="571.9" cy="187.8" r="4"/><circle class="dot g2" cx="611.3" cy="171.7" r="4"/><circle class="dot g2" cx="532.0" cy="198.7" r="4"/><circle class="dot g2" cx="584.4" cy="190.7" r="4"/><circle class="dot g2" cx="520.8" cy="216.0" r="4"/><circle class="dot g2" cx="443.5" cy="233.5" r="4"/><circle class="dot g2" cx="540.2" cy="213.6" r="4"/><circle class="dot g2" cx="554.1" cy="207.6" r="4"/><circle class="dot g2" cx="513.0" cy="221.5" r="4"/><circle class="dot g2" cx="547.3" cy="204.2" r="4"/><polyline class="trend g2" points="424.5,259.3 617.1,173.0"/><circle class="dot g3" cx="885.5" cy="267.3" r="4"/><circle class="dot g3" cx="852.0" cy="293.3" r="4"/><circle class="dot g3" cx="810.4" cy="304.1" r="4"/><circle class="dot g3" cx="855.8" cy="287.0" r="4"/><circle class="dot g3" cx="969.6" cy="234.0" r="4"/><circle class="dot g3" cx="905.5" cy="260.4" r="4"/><circle class="dot g3" cx="715.4" cy="358.4" r="4"/><circle class="dot g3" cx="839.2" cy="287.8" r="4"/><circle class="dot g3" cx="804.8" cy="311.6" r="4"/><circle class="dot g3" cx="875.1" cy="279.8" r="4"/><circle class="dot g3" cx="837.7" cy="283.0" r="4"/><circle class="dot g3" cx="936.5" cy="236.6" r="4"/><circle class="dot g3" cx="889.6" cy="258.2" r="4"/><circle class="dot g3" cx="887.6" cy="264.4" r="4"/><circle class="dot g3" cx="854.6" cy="286.8" r="4"/><circle class="dot g3" cx="844.0" cy="294.7" r="4"/><circle class="dot g3" cx="861.8" cy="284.5" r="4"/><circle class="dot g3" cx="906.6" cy="252.1" r="4"/><circle class="dot g3" cx="870.9" cy="276.8" r="4"/><circle class="dot g3" cx="829.4" cy="310.5" r="4"/><circle class="dot g3" cx="905.7" cy="260.4" r="4"/><circle class="dot g3" cx="854.9" cy="297.1" r="4"/><circle class="dot g3" cx="842.2" cy="290.9" r="4"/><circle class="dot g3" cx="808.8" cy="318.8" r="4"/><circle class="dot g3" cx="819.3" cy="313.9" r="4"/><circle class="dot g3" cx="816.0" cy="304.6" r="4"/><circle class="dot g3" cx="714.9" cy="357.5" r="4"/><circle class="dot g3" cx="893.6" cy="279.4" r="4"/><circle class="dot g3" cx="872.4" cy="271.0" r="4"/><circle class="dot g3" cx="835.8" cy="278.3" r="4"/><circle class="dot g3" cx="894.9" cy="277.3" r="4"/><circle class="dot g3" cx="866.4" cy="265.5" r="4"/><circle class="dot g3" cx="863.3" cy="287.0" r="4"/><circle class="dot g3" cx="729.8" cy="353.2" r="4"/><circle class="dot g3" cx="834.9" cy="297.4" r="4"/><circle class="dot g3" cx="870.8" cy="289.2" r="4"/><circle class="dot g3" cx="921.4" cy="241.8" r="4"/><circle class="dot g3" cx="932.2" cy="242.7" r="4"/><circle class="dot g3" cx="912.8" cy="262.4" r="4"/><circle class="dot g3" cx="791.4" cy="320.2" r="4"/><circle class="dot g3" cx="742.8" cy="354.7" r="4"/><circle class="dot g3" cx="872.6" cy="279.6" r="4"/><circle class="dot g3" cx="847.2" cy="282.3" r="4"/><circle class="dot g3" cx="891.0" cy="281.1" r="4"/><circle class="dot g3" cx="840.0" cy="296.9" r="4"/><circle class="dot g3" cx="856.2" cy="284.0" r="4"/><circle class="dot g3" cx="775.5" cy="317.8" r="4"/><circle class="dot g3" cx="866.9" cy="269.0" r="4"/><circle class="dot g3" cx="825.0" cy="304.6" r="4"/><circle class="dot g3" cx="862.3" cy="287.9" r="4"/><circle class="dot g3" cx="867.4" cy="275.9" r="4"/><circle class="dot g3" cx="840.4" cy="296.1" r="4"/><circle class="dot g3" cx="860.7" cy="285.3" r="4"/><circle class="dot g3" cx="845.2" cy="282.2" r="4"/><circle class="dot g3" cx="881.5" cy="258.9" r="4"/><circle class="dot g3" cx="869.4" cy="276.3" r="4"/><circle class="dot g3" cx="820.2" cy="304.9" r="4"/><circle class="dot g3" cx="818.3" cy="299.9" r="4"/><circle class="dot g3" cx="927.7" cy="263.9" r="4"/><circle class="dot g3" cx="841.1" cy="293.0" r="4"/><circle class="dot g3" cx="892.4" cy="275.2" r="4"/><circle class="dot g3" cx="864.3" cy="262.1" r="4"/><circle class="dot g3" cx="819.4" cy="298.1" r="4"/><circle class="dot g3" cx="810.7" cy="307.1" r="4"/><circle class="dot g3" cx="851.5" cy="289.1" r="4"/><circle class="dot g3" cx="857.9" cy="304.2" r="4"/><circle class="dot g3" cx="874.7" cy="270.1" r="4"/><circle class="dot g3" cx="786.4" cy="307.6" r="4"/><circle class="dot g3" cx="818.0" cy="310.3" r="4"/><circle class="dot g3" cx="841.4" cy="287.2" r="4"/><circle class="dot g3" cx="921.0" cy="246.6" r="4"/><circle class="dot g3" cx="735.2" cy="358.9" r="4"/><circle class="dot g3" cx="866.5" cy="272.5" r="4"/><circle class="dot g3" cx="820.5" cy="292.5" r="4"/><circle class="dot g3" cx="866.1" cy="278.3" r="4"/><circle class="dot g3" cx="822.8" cy="302.6" r="4"/><circle class="dot g3" cx="863.0" cy="275.5" r="4"/><circle class="dot g3" cx="919.3" cy="265.4" r="4"/><circle class="dot g3" cx="862.5" cy="281.2" r="4"/><circle class="dot g3" cx="866.2" cy="271.7" r="4"/><polyline class="trend g3" points="714.9,357.6 969.6,226.7"/><polyline class="trend global" points="130.4,117.9 969.6,309.4"/><text class="cap" x="80" y="40">Cada grupo sube. Los tres juntos bajan.</text><text class="val acc" x="1020" y="40" text-anchor="end">r de los tres juntos = -0,877</text><text class="note" x="80" y="410">Dentro de cada municipio, r queda entre 0,92 y 0,95. La misma nube, partida de otra manera, dice lo contrario.</text><text class="note" x="80" y="438">Datos fabricados a proposito: es la version limpia de lo que en datos reales llega matizado.</text></svg><!--/FIG--></div>
+  <p class="lead reveal">Una tendencia que aparece en varios grupos por separado puede <strong>desaparecer o invertirse</strong> cuando se juntan. No cambió ni un dato: cambió cómo se agruparon.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="El chequeo de Simpson">
+  <p class="kicker reveal">Cuatro pasos &middot; es lo que van a ejecutar hoy en el reto</p>
+  <h2 class="reveal">El chequeo de Simpson</h2>
+  <ol class="steps reveal">
+    <li><b>Calcule la relación en el conjunto completo.</b></li>
+    <li><b>Recalcúlela dentro de cada grupo.</b> Mismo par de variables, una vez por grupo.</li>
+    <li><b>Compare.</b> Si el signo se invierte o la fuerza cambia mucho, hay una confusora estructural.</li>
+    <li><b>Reporte lo que encontró</b>, incluso si es "no hay paradoja".</li>
+  </ol>
+  <div class="callout good reveal"><p><strong>El punto cuatro no es relleno.</strong> El reto pide un chequeo, no pide encontrar una paradoja. Que la relación resista la partición es un hallazgo tan válido como que se invierta, y <b>forzar los datos hasta que aparezca una es exactamente lo que esta clase enseña a no hacer</b>.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Confusora y paradoja no son lo mismo">
+  <p class="kicker reveal">La distinción que se pregunta en la sustentación</p>
+  <div class="cols c2 reveal">
+    <article class="col hot"><span class="no">La causa</span><h3>Variable confusora</h3>
+      <p>Una tercera variable que está detrás de las dos. Es <b>lo que produce</b> el patrón, y normalmente no está en la tabla.</p></article>
+    <article class="col"><span class="no">El síntoma</span><h3>Paradoja de Simpson</h3>
+      <p>Lo que le pasa a los números cuando esa confusora está <b>desbalanceada</b> entre los grupos. Es <b>lo que uno ve</b>.</p></article>
+  </div>
+  <p class="lead reveal">Simpson es el síntoma; la confusora es la causa. Por eso el chequeo se hace partiendo por la variable que uno sospecha que está desbalanceada, no por una cualquiera.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Elegir el gráfico según los tipos">
+  <p class="kicker reveal">Se pega en la primera página del notebook del Momento 1</p>
+  <h2 class="reveal">Qué gráfico va con qué par de variables</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Tres combinaciones, tres gráficos, tres métricas</caption>
+      <thead><tr><th scope="col">Variable 1</th><th scope="col">Variable 2</th><th scope="col">Gráfico</th><th scope="col">Métrica</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">Numérica</th><td>Numérica</td><td>Diagrama de dispersión (scatter)</td><td>Coeficiente r</td></tr>
+        <tr><th scope="row">Categórica</th><td>Numérica</td><td>Boxplot, o barras de medias</td><td>Comparación de medias y medianas</td></tr>
+        <tr><th scope="row">Categórica</th><td>Categórica</td><td>Tabla cruzada, mapa de calor</td><td>Conteos y proporciones</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">No hay que decidir nada creativo: se miran los dos tipos y la tabla dice el gráfico. Lo creativo viene después, al interpretarlo.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Boxplot o barras de medias">
+  <p class="kicker reveal">La duda que siempre sale, resuelta de una vez</p>
+  <h2 class="reveal">Boxplot o barras de medias</h2>
+  <div class="cols c2 reveal">
+    <article class="col good"><span class="no">Casi siempre</span><h3>Boxplot</h3>
+      <p>Cuando importa la <b>dispersión</b>. Muestra mediana, cuartiles y valores extremos en un solo dibujo. Es el que conviene por defecto.</p></article>
+    <article class="col"><span class="no">A veces</span><h3>Barras de medias</h3>
+      <p>Cuando solo importa <b>comparar niveles</b> y la audiencia no lee boxplots. Esconde la dispersión, así que se acompaña de una nota que lo diga.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Y una media nunca se reporta sola:</strong> va con el número de observaciones del grupo. Una media de 190 sobre cinco casos y una media de 190 sobre dos mil no son la misma frase.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="El marco bivariado de 5 pasos">
+  <p class="kicker reveal">El gemelo del marco de la clase 4 &middot; se aplica a cualquier par de variables</p>
+  <h2 class="reveal">El marco bivariado de 5 pasos</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col">Paso</th><th scope="col">Nombre</th><th scope="col">Qué se hace</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="num">1</span></th><td><b>Tipar</b></td><td>¿Qué tipo es cada una de las dos variables?</td></tr>
+        <tr class="on"><th scope="row"><span class="num">2</span></th><td><b>Graficar</b></td><td>El gráfico que dice la tabla. <b>Antes</b> de calcular nada</td></tr>
+        <tr><th scope="row"><span class="num">3</span></th><td><b>Cuantificar</b></td><td>r si son dos numéricas; diferencia de medias si hay una categórica</td></tr>
+        <tr><th scope="row"><span class="num">4</span></th><td><b>Interrogar</b></td><td>¿Tiene sentido? ¿Hay confusora? ¿Podría ser espuria?</td></tr>
+        <tr><th scope="row"><span class="num">5</span></th><td><b>Segmentar</b></td><td>Chequeo de Simpson: ¿la relación sobrevive dentro de cada grupo?</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">El paso 2 va antes que el 3 <strong>a propósito</strong>: es la contramedida contra las tres trampas que ya vieron dibujadas. No linealidad, outliers y agrupamientos.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Resumen del bloque 1">
+  <p class="kicker reveal">Lo que se lleva de este bloque</p>
+  <h2 class="reveal">Cuatro ideas, cero sintaxis</h2>
+  <ol class="steps reveal">
+    <li><b>r mide relación lineal y nada más.</b> Cerca de cero no dice "no hay relación": dice "no hay recta".</li>
+    <li><b>Toda correlación tiene tres explicaciones posibles.</b> Antes de afirmar causalidad, cuente el mecanismo.</li>
+    <li><b>Con muchas variables, el azar produce correlaciones altas.</b> Hipótesis primero, número después.</li>
+    <li><b>Toda relación se chequea partida por grupo.</b> Si sobrevive, es más creíble. Y si no, se reporta igual.</li>
+  </ol>
+  <p class="lead reveal">Todo lo que sigue es aprender a escribir esto. Si el bloque 1 quedó claro, el bloque 2 es teclear y leer.</p>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 2 ======================= -->
+<section class="slide divider" data-block="2" data-title="Divisoria · Bloque 2">
+  <span class="n">02</span>
+  <p class="kicker">Bloque dos</p>
+  <h2>Demo &middot; Lo recorre usted</h2>
+  <p>Abra <span class="term">demo/demo.ipynb</span> y avance solo, a su ritmo. <b>El código ya está escrito:</b> se corre, se entiende y se responden las preguntas de interpretación. Nadie lo va a dictar desde aquí. Yo camino por el salón resolviendo dudas.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="El dataset del demo">
+  <p class="kicker reveal">El mismo de la clase 4, a propósito: la limpieza ya se conoce</p>
+  <h2 class="reveal">Consumo de agua de Empocaldas</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>datasets/HISTORICO_CONSUMO.csv &middot; 21.422 filas utilizables x 9 columnas &middot; una fila = un municipio, mes, año y estrato</caption>
+      <thead><tr><th scope="col">Columna</th><th scope="col">Qué es</th><th scope="col">Tipo</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="mono">ANIO</span> &middot; <span class="mono">MES</span></th><td>Periodo del registro</td><td>Numérica / categórica</td></tr>
+        <tr><th scope="row"><span class="mono">MUNICIPIO</span> &middot; <span class="mono">ESTRATO</span></th><td>Municipio y estrato o sector (nueve valores, incluidos Comercial e Industrial)</td><td>Categóricas</td></tr>
+        <tr class="on"><th scope="row"><span class="mono">SUSCRIPTORES_ACUEDUCTO</span></th><td>Cuántos suscriptores tiene ese grupo</td><td>Numérica</td></tr>
+        <tr class="on"><th scope="row"><span class="mono">CONSUMO_ACUEDUCTO</span></th><td>Consumo <b>total</b> del grupo, en metros cúbicos</td><td>Numérica</td></tr>
+        <tr class="on"><th scope="row"><span class="mono">PROMEDIO_ACUEDUCTO</span></th><td>Consumo <b>por suscriptor</b>. Es un cociente, no una suma</td><td>Numérica</td></tr>
+        <tr><th scope="row">Las tres de <span class="mono">ALCANTARILLADO</span></th><td>Lo mismo, para el otro servicio</td><td>Numéricas</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">La celda de carga viene escrita y el cuaderno la explica línea por línea. La ruta es <span class="term">../datos/</span>: dos niveles, no uno.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="El recorrido, a nivel general">
+  <p class="kicker reveal">Lo que van a hacer en los próximos noventa minutos, sin desarrollarlo aquí</p>
+  <h2 class="reveal">El marco bivariado, aplicado de punta a punta</h2>
+  <div class="cols c3 reveal">
+    <article class="col hot"><span class="no">Primero</span><h3>Graficar antes de calcular</h3>
+      <p>La nube de puntos se mira <b>antes</b> de pedir el número. Un r sin gráfico esconde curvas y outliers, que es exactamente lo que el bloque 1 acaba de mostrar.</p></article>
+    <article class="col"><span class="no">Después</span><h3>Cuantificar y comparar</h3>
+      <p>El coeficiente r, la matriz de todas las variables contra todas, y el mapa de calor que la vuelve legible. Aquí es donde aparecen los pares que nadie esperaba.</p></article>
+    <article class="col good"><span class="no">Siempre</span><h3>Partir por grupo</h3>
+      <p>El chequeo de Simpson sobre los pares que salieron. <b>Una relación que no se chequeó partida no está terminada</b>, y eso es lo que se sustenta en la clase 6.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Hay un par en este archivo que no voy a adelantar:</strong> su correlación global es prácticamente nula, y al partirla por estrato aparece la relación que estaba ahí todo el tiempo. Descubrirlo ejecutando vale mucho más que oírmelo contar.</p></div>
+</section>
+
+<section class="slide" data-block="2" data-title="Cómo se recorre el cuaderno">
+  <p class="kicker reveal">Se lee antes de ejecutar &middot; nadie va adelantado ni atrasado</p>
+  <h2 class="reveal">Cómo se recorre el cuaderno</h2>
+  <div class="cols c3 reveal">
+    <article class="col"><span class="no">Uno</span><h3>Todo el código está escrito</h3>
+      <p>Aquí no se teclea nada: se ejecuta, se mira la salida y se lee la explicación que está justo encima. Los gráficos vienen ya titulados y con los dos ejes etiquetados, que es el modelo a copiar en el reto.</p></article>
+    <article class="col hot"><span class="no">Dos</span><h3>Preguntas de interpretación</h3>
+      <p>Con la respuesta plegada debajo. Se escribe la propia <b>primero</b> y se abre después. Qué significa el número, no cuál fue. Es lo que se lee en Saber.</p></article>
+    <article class="col"><span class="no">Tres</span><h3>Los recuadros de fundamento</h3>
+      <p>Qué mide r por dentro, qué hace <span class="term">corr</span> con los nulos, cómo se lee un scatter. Si ya lo tiene claro se puede saltar; si no, es lo que más le va a servir en la clase 6.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Yo estoy caminando.</strong> Levante la mano en el momento en que algo no cuadre, no al final. Si ejecutó la celda de carga dos veces y revienta, es normal: Kernel &rarr; Restart and Run All.</p></div>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 3 ======================= -->
+<section class="slide divider" data-block="3" data-title="Divisoria · Bloque 3">
+  <span class="n">03</span>
+  <p class="kicker">Bloque tres</p>
+  <h2>Reto &middot; Ahora usted, con datos nuevos</h2>
+  <p>Abra <span class="term">reto/reto_starter.ipynb</span>. Cada tarea trae la pregunta, el concepto y los comandos; usted elige la columna, decide el gráfico y dice qué significa el número. Yo sigo circulando. Esto es lo que se entrega.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="El reto: 25.362 resultados del Saber Pro">
+  <p class="kicker reveal">ICFES &middot; publicado en datos.gov.co</p>
+  <h2 class="reveal">Resultados del Saber Pro, 2018 a 2022</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>clase05/data/saber_pro.csv &middot; 25.362 filas x 48 columnas &middot; una fila = un estudiante</caption>
+      <thead><tr><th scope="col">Columna</th><th scope="col">Qué es</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row"><span class="mono">puntaje_global</span></th><td>Puntaje total. <b>Es un compuesto de los otros cinco</b></td></tr>
+        <tr><th scope="row"><span class="mono">punt_comp_ciud</span> &middot; <span class="mono">punt_lect_crit</span> &middot; <span class="mono">punt_razo_cuant</span></th><td>Competencias ciudadanas, lectura crítica, razonamiento cuantitativo</td></tr>
+        <tr><th scope="row"><span class="mono">punt_ingles</span> &middot; <span class="mono">punt_comu_escr</span></th><td>Inglés y comunicación escrita</td></tr>
+        <tr><th scope="row"><span class="mono">estrato</span></th><td>De <span class="mono">Estrato 1</span> a <span class="mono">Estrato 6</span>, más <span class="mono">ND/NE</span></td></tr>
+        <tr><th scope="row"><span class="mono">tipo_col</span></th><td><span class="mono">Oficial</span>, <span class="mono">Privado</span>, <span class="mono">Otros</span>, <span class="mono">Sin datos</span></td></tr>
+        <tr><th scope="row"><span class="mono">sexo</span> &middot; <span class="mono">areac_snies</span> &middot; <span class="mono">year</span></th><td>Sexo, área de conocimiento del programa y año de presentación</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">La ruta es <span class="term">../datos/saber_pro.csv</span>: <strong>un</strong> nivel, no dos como en el demo.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="Tres advertencias antes de la primera línea">
+  <p class="kicker reveal">Léalas antes de escribir nada</p>
+  <h2 class="reveal">Tres advertencias</h2>
+  <div class="cols c3 reveal">
+    <article class="col hot"><span class="no">Uno</span><h3>Los faltantes están disfrazados</h3>
+      <p>Las columnas de puntaje usan <b>-89</b> como código de dato faltante. No es un puntaje negativo: es un centinela. El archivo no tiene celdas vacías, tiene <b>celdas mentirosas</b>, y es peor.</p></article>
+    <article class="col hot"><span class="no">Dos</span><h3><span class="term">puntaje_global</span> no es hallazgo</h3>
+      <p>Se calcula a partir de los otros cinco, así que correlaciona alto con todos <b>por construcción</b>. Reportarlo no es descubrir nada: es descubrir cómo se calcula el puntaje global.</p></article>
+    <article class="col hot"><span class="no">Tres</span><h3>Numérico no es cantidad</h3>
+      <p>Un código de departamento, un identificador de programa y una latitud son números. Correlacionarlos no significa nada, y ninguna herramienta se lo va a impedir.</p></article>
+  </div>
+  <p class="lead reveal">La celda que limpia los -89 viene escrita. Lo que tiene que quedar claro es <strong>por qué está ahí</strong>: es exactamente el tipo de sorpresa que la clase 3 enseñó a buscar.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="Las once tareas">
+  <p class="kicker reveal">Once tareas, cada una con su comprobación</p>
+  <h2 class="reveal">Qué hay que hacer</h2>
+  <ol class="steps reveal">
+    <li><b>Parte A &middot; correlaciones entre puntajes.</b> La matriz de los seis, el heatmap con <span class="term">center=0</span>, las tres correlaciones más fuertes <b>sin</b> el puntaje global, y el scatter del par más fuerte.</li>
+    <li><b>Parte B &middot; categórica contra numérica.</b> Boxplot por estrato con el orden forzado, boxplot por tipo de colegio, y las medias por estrato <b>con su conteo</b>.</li>
+    <li><b>Parte C &middot; el chequeo de Simpson.</b> Aquí se listan todos los comandos y <b>ninguno del orden</b>: el ensamblaje es suyo. Es la parte que más pesa.</li>
+    <li><b>Parte D &middot; reflexión</b>, en casa. Y tres opcionales para quien termine todo.</li>
+  </ol>
+  <p class="lead reveal">Las cuatro tareas de gráfico se comprueban por lo que pide la rúbrica: dibujado, con título y con los <strong>dos</strong> ejes etiquetados.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="La pregunta de la parte C">
+  <p class="kicker reveal">La pregunta con consecuencias públicas</p>
+  <p class="claim reveal">Los colegios privados sacan mejor puntaje. <span>¿Sobrevive eso al partir por estrato?</span></p>
+  <ul class="bullets reveal">
+    <li>Primero <b>el resultado global</b>: media y conteo de puntaje por tipo de colegio.</li>
+    <li>Después <b>el resultado partido</b>: la tabla cruzada de estrato contra tipo de colegio.</li>
+    <li>Después <b>el tamaño de cada celda</b>: sin eso, la tabla se lee a medias.</li>
+    <li>Y por último <b>la comparación</b>: la diferencia, estrato por estrato.</li>
+  </ul>
+  <div class="callout good reveal"><p><strong>El entregable es el chequeo, no la paradoja.</strong> Si la relación se sostiene, ese es un resultado completo y correcto: que resista la partición la hace más creíble.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Si se atasca">
+  <p class="kicker reveal">Antes de levantar la mano, revise esto</p>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Los tropiezos de hoy, en orden de probabilidad</caption>
+      <thead><tr><th scope="col">Síntoma</th><th scope="col">Qué revisar</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">Su correlación más fuerte incluye el puntaje global</th>
+          <td>Usó la lista equivocada. Va la de los <b>módulos</b>, no la de todos los puntajes. Es el atasco número uno del reto.</td></tr>
+        <tr><th scope="row"><span class="mono">FileNotFoundError</span></th>
+          <td>La ruta es <span class="mono">../datos/saber_pro.csv</span>, un nivel. <span class="mono">import os; print(os.getcwd())</span></td></tr>
+        <tr><th scope="row">"El eje sigue valiendo None"</th>
+          <td>No guardó lo que devuelve seaborn: <span class="mono">eje = sns.boxplot(...)</span>. Va a pasar cuatro veces.</td></tr>
+        <tr><th scope="row">"Falta título o etiqueta de eje"</th>
+          <td>Es intencional. <span class="mono">plt.title()</span>, <span class="mono">plt.xlabel()</span>, <span class="mono">plt.ylabel()</span>. La rúbrica los cobra.</td></tr>
+        <tr><th scope="row">El scatter no guarda el eje</th>
+          <td><span class="mono">plt.scatter</span> no lo devuelve. <span class="mono">fig, eje = plt.subplots()</span> antes, o <span class="mono">eje = plt.gca()</span> después.</td></tr>
+        <tr><th scope="row">La tabla cruzada sale con un <span class="mono">NaN</span></th>
+          <td>No es un error: no hay ningún estudiante en esa combinación. Mírelo en la tabla de tamaños.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-block="3" data-title="Cómo se entrega y cómo se valora">
+  <p class="kicker reveal">El entregable de hoy</p>
+  <h2 class="reveal">Cómo se entrega y cómo se valora</h2>
+  <div class="cols c3 reveal">
+    <article class="col good"><span class="no">Saber</span><h3>Las explicaciones</h3>
+      <p>Las tres correlaciones más fuertes explicadas, la lectura de la comparación por categorías incluyendo <b>qué no se puede concluir</b>, y entender qué produce una paradoja de Simpson.</p></article>
+    <article class="col good"><span class="no">Ser</span><h3>La honestidad del reporte</h3>
+      <p>La conclusión del chequeo <b>tal como salió</b>, el reconocimiento de los grupos demasiado pequeños, y las preguntas de reflexión respondidas con criterio.</p></article>
+    <article class="col good"><span class="no">Hacer</span><h3>Las once tareas</h3>
+      <p>Correctas según el punto de control, la parte C armada por usted, y el cuaderno corriendo completo con Restart &amp; Run All.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Afirmar causalidad le pone techo a Saber</strong>, aunque todo el código esté bien. La forma correcta es "se observa una asociación entre X e Y", y después nombrar las confusoras plausibles. <b>Este reto es práctica: no produce nota.</b> Se entrega antes del inicio de la clase 6.</p></div>
+</section>
+
+<!-- ======================= CIERRE ======================= -->
+<section class="slide" data-title="El arco se cierra: ya hicieron un análisis descriptivo">
+  <p class="kicker reveal">Cuatro clases después &middot; cómo se llama lo que acaban de aprender</p>
+  <p class="claim reveal">Eso que acaban de hacer <span>se llama EDA</span>.</p>
+  <ol class="steps reveal">
+    <li><b>Entender &middot; clase 2.</b> Cargaron y miraron un archivo que nunca habían visto.</li>
+    <li><b>Limpiar y organizar &middot; clase 3.</b> Y dejaron escrito qué decidieron con lo que faltaba.</li>
+    <li><b>Describir &middot; clase 4.</b> Cada variable con su valor típico, su dispersión y sus valores raros.</li>
+    <li><b>Relacionar &middot; clase 5.</b> Cómo se relacionan unas con otras, sin llamar causa a lo que solo es compañía.</li>
+  </ol>
+  <div class="callout reveal"><p><strong>Eso es un EDA completo</strong> —análisis exploratorio de datos—, y no fue el trámite previo al análisis: <b>fue el análisis</b>. De aquí salieron los hallazgos que van a sustentar. Lo que sigue se para encima: afirmar sobre lo que <b>no</b> se midió es inferencia (clase 13), y decir qué va a pasar es predicción (clase 14).</p></div>
+</section>
+
+<section class="slide" data-title="Cierre: la entrega del Momento 1">
+  <p class="kicker reveal">La próxima clase es la evaluación &middot; esto se revisa hoy, en pantalla</p>
+  <h2 class="reveal">Checklist de entrega del Momento 1</h2>
+  <ul class="bullets reveal">
+    <li><b>El notebook, en el orden que fija la guía:</b> portada con las preguntas de investigación, carga desde el CSV local, limpieza documentada, univariado, bivariado con heatmap, y celda final de insights.</li>
+    <li><b>El snapshot del CSV</b>, con la URL de origen, quién publica el dato y bajo qué condiciones se puede usar.</li>
+    <li><b>Que corra de arriba abajo.</b> Si no corre, Hacer no pasa de Aceptable. Y sin análisis de correlación, el techo es más bajo todavía.</li>
+    <li><b>En el repositorio del equipo, carpeta <span class="term">momento1/</span></b>. Se evalúa el último commit anterior al inicio de la clase 6. Confirmen hoy que el repositorio sigue accesible.</li>
+  </ul>
+  <div class="callout reveal"><p><strong>El Momento 1 es formativo:</strong> no produce nota, se reporta como cumplido o no cumplido, y lo que reciben son las tres bandas con su evidencia. <b>Pero sin él no hay Momento 3</b>, que es la única evaluación calificada del semestre.</p></div>
+</section>
+
+<section class="slide" data-title="Cierre">
+  <p class="kicker reveal">Nos vemos en la clase 6</p>
+  <p class="claim reveal">Ya saben medir una relación.<br><span>Ahora hay que sustentarla.</span></p>
+  <ol class="steps reveal">
+    <li><b>Correlación no es causalidad.</b> Tres explicaciones posibles, siempre.</li>
+    <li><b>Se grafica antes de calcular.</b> r no ve las curvas ni los outliers.</li>
+    <li><b>Toda relación se chequea partida por grupo.</b> Si sobrevive, es más creíble.</li>
+  </ol>
+  <p class="lead reveal">La próxima clase son sustentaciones consecutivas: turno igual para todos los equipos, con corte duro. Traigan el orden confirmado y el repositorio accesible.</p>
+</section>
+
+</main>
+
+<script>
+/* ============================================================================
+   CONTROLADOR DE DIAPOSITIVAS (invariante 1)
+   Mismos atajos y misma navegación en las 16 clases del curso.
+   Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
+   swipe táctil · rueda del ratón.
+   ========================================================================= */
+class SlidePresentation {
+  constructor(root){
+    this.slides = [...root.querySelectorAll('.slide')];
+    this.i = 0;
+    this.bar = document.querySelector('.progress-bar');
+    this.dotsNav = document.querySelector('.nav-dots');
+    this.chip = document.querySelector('.block-chip');
+    this.index = document.querySelector('.slide-index');
+    this.blockNames = {'1':'Bloque 1 · Teoría','2':'Bloque 2 · Demo guiado','3':'Bloque 3 · Reto'};
+
+    this.buildFooters();
+    this.buildDots();
+    this.buildIndex();
+    this.bindKeys();
+    this.bindPointer();
+    this.observe();
+    this.sync();
+  }
+
+  /* Invariante 7: el marcado institucional va en el pie de TODAS las slides.
+     Se inyecta desde aquí para que no pueda faltar en ninguna. */
+  buildFooters(){
+    this.slides.forEach(s => {
+      const f = document.createElement('p');
+      f.className = 'slide-footer';
+      const b = s.dataset.block;
+      f.innerHTML = '<span>Analítica de Datos · Clase 05 · M1</span>' +
+        (b ? '<span class="fb">Bloque ' + b + '</span>' : '');
+      s.appendChild(f);
+    });
+  }
+
+  buildDots(){
+    this.slides.forEach((s, k) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Ir a la diapositiva ' + (k + 1) + ': ' + (s.dataset.title || ''));
+      b.addEventListener('click', () => this.go(k));
+      this.dotsNav.appendChild(b);
+    });
+    this.dots = [...this.dotsNav.children];
+  }
+
+  buildIndex(){
+    const ol = this.index.querySelector('ol');
+    let lastBlock;
+    this.slides.forEach((s, k) => {
+      const b = s.dataset.block || null;
+      if (b !== lastBlock){
+        const h = document.createElement('li');
+        h.className = 'bk';
+        h.textContent = b ? this.blockNames[b] : (k === 0 ? 'Apertura' : 'Cierre');
+        ol.appendChild(h);
+        lastBlock = b;
+      }
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerHTML = '<span class="ix">' + String(k + 1).padStart(2, '0') + '</span>';
+      btn.appendChild(document.createTextNode(s.dataset.title || ''));
+      btn.addEventListener('click', () => { this.toggleIndex(false); this.go(k); });
+      li.appendChild(btn);
+      ol.appendChild(li);
+    });
+  }
+
+  go(n){
+    this.i = Math.max(0, Math.min(n, this.slides.length - 1));
+    this.slides[this.i].scrollIntoView({behavior: 'smooth', block: 'start'});
+    this.sync();
+  }
+  next(){ this.go(this.i + 1); }
+  prev(){ this.go(this.i - 1); }
+
+  sync(){
+    this.bar.style.width = ((this.i + 1) / this.slides.length * 100) + '%';
+    this.dots.forEach((d, k) => d.setAttribute('aria-current', String(k === this.i)));
+    const slide = this.slides[this.i];
+    const b = slide.dataset.block;
+    if (b && !slide.classList.contains('divider')){
+      this.chip.textContent = 'Bloque ' + b;
+      this.chip.hidden = false;
+    } else {
+      this.chip.hidden = true;
+    }
+  }
+
+  bindKeys(){
+    addEventListener('keydown', e => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const fwd  = ['ArrowRight', 'ArrowDown', ' ', 'Spacebar', 'PageDown'];
+      const back = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+      if (fwd.includes(e.key))       { e.preventDefault(); this.next(); }
+      else if (back.includes(e.key)) { e.preventDefault(); this.prev(); }
+      else if (e.key === 'Home')     { e.preventDefault(); this.go(0); }
+      else if (e.key === 'End')      { e.preventDefault(); this.go(this.slides.length - 1); }
+      else if (e.key === 'Escape')   { e.preventDefault(); this.toggleIndex(); }
+    });
+  }
+
+  bindPointer(){
+    let x0 = null, lock = false;
+    addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, {passive: true});
+    addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) (dx < 0 ? this.next() : this.prev());
+      x0 = null;
+    }, {passive: true});
+    addEventListener('wheel', e => {
+      if (lock || Math.abs(e.deltaY) < 20) return;
+      lock = true;
+      (e.deltaY > 0 ? this.next() : this.prev());
+      setTimeout(() => { lock = false; }, 600);
+    }, {passive: true});
+  }
+
+  toggleIndex(force){
+    const open = force === undefined ? !this.index.classList.contains('open') : force;
+    this.index.classList.toggle('open', open);
+  }
+
+  /* Anima la entrada de cada slide y mantiene la barra y los dots sincronizados
+     cuando se navega con scroll o swipe en vez de con el teclado. */
+  observe(){
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('in-view');
+        const k = this.slides.indexOf(en.target);
+        if (k !== -1 && k !== this.i){ this.i = k; this.sync(); }
+      });
+    }, {threshold: 0.55});
+    this.slides.forEach(s => io.observe(s));
+  }
+}
+
+addEventListener('DOMContentLoaded', () => new SlidePresentation(document.body));
+</script>
+</body>
+</html>

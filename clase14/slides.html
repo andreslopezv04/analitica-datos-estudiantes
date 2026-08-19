@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 14 · Introducción a Machine Learning | Analítica de Datos</title>
+<meta name="description" content="Clase 14 de Analítica de Datos: introducción a machine learning. Qué es entrenar un modelo, por qué se parte en entrenamiento y prueba, cómo se ve el sobreajuste, qué mide cada métrica y por qué un modelo no explica causalidad. Demo sobre el consumo de agua de Empocaldas y reto con load_diabetes de scikit-learn.">
+<style>
+/* ============================================================================
+   CLASE 14 — "VOLTAJE RAMIFICADO"
+   Estética documentada en clase14/slides/ESTETICA.md
+   Contrato invariante: design/CONTRATO.md (9 invariantes)
+
+   Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
+   Todo el CSS, el JS y las tres figuras (SVG inline) viven en este archivo.
+   Las tres son conceptuales y viven en el bloque 1: los paneles de sobreajuste
+   son una simulación con semilla 42.
+
+   El bloque 2 no desarrolla el demo en pantalla: presenta el dataset y el arco
+   del recorrido, y el aula trabaja sobre clase14/demo/demo.ipynb, donde el
+   código ya está escrito. Por eso el deck no lleva ni un solo bloque de código.
+
+   Motivo rector: la rama. Un árbol de decisión parte los datos en dos, y otra
+   vez en dos. El conector que se bifurca aparece en la portada, en las tres
+   divisorias y en el diagrama de las veinte preguntas. Papel hueso, tinta casi
+   negra, violeta eléctrico para lo que decide y lima ácida para lo que hay que
+   mirar. El rojo aparece una sola vez por diapositiva, y siempre significa
+   "esto está mal".
+
+   Restricción del contrato respetada por construcción, y con margen: no hay
+   ningún bloque de código en NINGUNA slide. Los nombres de funciones se
+   escriben siempre con `.term`, que es texto corrido. Las reglas de `pre` se
+   conservan en la hoja por si una revisión futura las necesita.
+   ========================================================================= */
+
+/* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
+:root{
+  --bg:#F3F0E7;          /* papel hueso */
+  --surface:#E9E5D8;     /* fondo del código */
+  --surface-2:#DEDACB;
+  --line:#CBC6B5;        /* filete */
+  --fg:#17151C;          /* tinta */
+  --muted:#57525F;       /* secundario (AA sobre el papel) */
+  --accent:#4B23C9;      /* violeta eléctrico: lo que decide */
+  --accent-ink:#FFFFFF;
+  --volt:#C6EF00;        /* lima ácida: subrayado, nodos, número de bloque */
+  --alert:#C0311A;       /* rojo: esto está mal */
+  --ok:#166B4F;
+
+  --font-display:"Helvetica Neue",Helvetica,"Segoe UI",Arial,sans-serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* Escala tipográfica. El piso del invariante 6 no se negocia. */
+  --fs-title:clamp(1.9rem,5.4vw,4.4rem);
+  --fs-h2:clamp(1.5rem,3.3vw,2.8rem);
+  --fs-h3:clamp(1.05rem,1.9vw,1.5rem);
+  --fs-body:clamp(0.95rem,1.55vw,1.4rem);
+  --fs-small:clamp(0.78rem,1.02vw,0.95rem);
+  --fs-micro:clamp(0.66rem,0.85vw,0.8rem);
+  --fs-code:clamp(0.85rem,1.2vw,1.28rem);
+
+  --pad:clamp(1.4rem,3.6vw,4rem);
+  --gap:clamp(0.55rem,1.4vw,1.4rem);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+body{
+  height:100%;overflow-x:hidden;
+  background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);font-size:var(--fs-body);line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+/* Invariante 6: piso absoluto de 22px reales a 1280x720 en adelante. */
+@media (min-width:1200px){body{font-size:max(22px,var(--fs-body))}}
+
+/* ---- Invariante 9: viewport fitting. Nunca hay scroll dentro de una slide ---- */
+.slide{
+  width:100vw;height:100vh;height:100dvh;overflow:hidden;
+  padding:var(--pad) calc(var(--pad) + 1.6rem) calc(var(--pad) + 1.1rem) var(--pad);
+  scroll-snap-align:start;
+  display:flex;flex-direction:column;justify-content:center;gap:var(--gap);
+  position:relative;
+}
+.slide > *{max-width:100%}
+
+/* Marcado institucional (invariante 7). Lo inyecta el JS en TODAS las slides. */
+.slide-footer{
+  position:absolute;left:var(--pad);right:var(--pad);bottom:calc(var(--pad)/2.2);
+  display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  font-family:var(--font-mono);
+  font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+}
+.slide-footer .fb{color:var(--accent)}
+
+/* ---- Tipografía ---- */
+h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:800;
+   line-height:.98;letter-spacing:-.04em;max-width:17ch}
+h1 em{font-style:normal;color:var(--accent);
+  background:linear-gradient(transparent 62%,var(--volt) 62%,var(--volt) 93%,transparent 93%)}
+h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:800;
+   line-height:1.04;letter-spacing:-.032em;max-width:26ch}
+h3{font-family:var(--font-display);font-size:var(--fs-h3);font-weight:800;letter-spacing:-.015em}
+p{max-width:62ch}
+strong{color:var(--accent);font-weight:700}
+.kicker{font-family:var(--font-mono);font-size:var(--fs-small);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted)}
+.lead{color:var(--muted);max-width:58ch}
+.claim{font-family:var(--font-display);font-weight:800;letter-spacing:-.038em;
+  font-size:clamp(1.5rem,4.2vw,3.4rem);line-height:1.05;max-width:23ch}
+.claim span{color:var(--accent)}
+.claim mark{background:var(--volt);color:var(--fg);padding:0 .08em}
+/* Nombres de funciones dentro de texto corrido. NO es un bloque de código:
+   se usa también en el bloque 1, donde el contrato lo permite explícitamente. */
+.term{font-family:var(--font-mono);font-size:.88em;color:var(--accent);white-space:nowrap}
+.big{position:absolute;right:calc(var(--pad)/1.1);top:50%;transform:translateY(-50%);
+  font-family:var(--font-display);font-weight:800;font-size:clamp(6rem,19vw,15rem);line-height:1;
+  color:var(--surface-2);pointer-events:none;user-select:none;z-index:0}
+.slide > :not(.big):not(.slide-footer){position:relative;z-index:1}
+
+/* ---- El motivo rector: el conector que se bifurca ---- */
+.branch{flex:none;height:clamp(18px,3vh,26px);width:min(320px,42vw)}
+.branch path{fill:none;stroke:var(--accent);stroke-width:3}
+.branch circle{fill:var(--volt);stroke:var(--fg);stroke-width:2}
+
+/* ---- Portada ---- */
+.cover .who{color:var(--muted);font-size:var(--fs-small);letter-spacing:.04em}
+.cover .who b{color:var(--fg);font-weight:700}
+
+/* ---- Listas ---- */
+/* Las listas son de bloque, no flex: si el li fuera flex, cada elemento inline
+   (un <b> y el texto que le sigue) sería un flex item independiente y se
+   partiría en columnas al no caber. El marcador va absoluto. */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.9rem)}
+ul.bullets li{position:relative;padding-left:1.4em;max-width:64ch}
+ul.bullets li::before{content:"";position:absolute;left:0;top:.55em;
+  width:.5em;height:.5em;background:var(--line)}
+ul.bullets li.on::before{background:var(--accent)}
+ul.bullets li.no::before{background:var(--alert)}
+ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:clamp(.28rem,.9vh,.75rem)}
+ol.steps li{counter-increment:s;position:relative;padding-left:2.4em;max-width:66ch}
+ol.steps li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:.06em;
+  font-family:var(--font-mono);color:var(--accent);font-size:.85em}
+ul.check{list-style:none;display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(.25rem,.8vh,.6rem) clamp(1rem,3vw,3rem)}
+ul.check li{position:relative;padding-left:1.5em;
+  font-size:clamp(.85rem,1.25vw,1.35rem);line-height:1.3}
+ul.check li::before{content:"";position:absolute;left:0;top:.28em;
+  width:.72em;height:.72em;border:2px solid var(--line)}
+
+/* ---- Columnas ---- */
+.cols{display:grid;gap:clamp(.7rem,1.8vw,2.2rem)}
+.cols.c4{grid-template-columns:repeat(4,1fr)}
+.cols.c3{grid-template-columns:repeat(3,1fr)}
+.cols.c2{grid-template-columns:repeat(2,1fr)}
+.col{border-top:3px solid var(--line);padding-top:.6em;min-width:0;
+  display:flex;flex-direction:column;gap:.3em}
+.col.on{border-top-color:var(--accent)}
+.col.warn{border-top-color:var(--alert)}
+.col.volt{border-top-color:#8FA800}
+.col .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted)}
+.col.on .k{color:var(--accent)}
+.col.warn .k{color:var(--alert)}
+.col p{font-size:clamp(.85rem,1.2vw,1.3rem);color:var(--muted);line-height:1.35;max-width:none}
+.col p b{color:var(--fg)}
+.col h3 .num{font-family:var(--font-mono);letter-spacing:-.02em}
+
+/* ---- Tablas ---- */
+.table-wrap{flex:1;min-height:0;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:clamp(.8rem,1.15vw,1.26rem);line-height:1.3}
+caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:var(--fs-micro);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:.6em}
+th,td{border-bottom:1px solid var(--line);padding:clamp(.24rem,.62vw,.6rem) clamp(.35rem,.7vw,.8rem);
+  text-align:left;vertical-align:top}
+thead th{font-family:var(--font-mono);font-weight:500;font-size:.86em;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--fg)}
+tbody th{font-weight:700;color:var(--fg)}
+tbody th .mono,td .mono{font-family:var(--font-mono);font-size:.94em}
+tbody tr.on th,tbody tr.on td{color:var(--fg)}
+tbody tr.on{background:rgba(198,239,0,.30)}
+tbody tr.no td.d,tbody tr.no th{color:var(--alert)}
+td em{font-style:normal;color:var(--muted)}
+td b{color:var(--fg)}
+td.num{font-family:var(--font-mono)}
+
+/* ---- Cita / advertencia ---- */
+.callout{border-left:4px solid var(--accent);padding-left:clamp(.7rem,1.6vw,1.3rem);max-width:70ch}
+.callout.warn{border-left-color:var(--alert)}
+.callout.volt{border-left-color:#8FA800}
+.callout p{max-width:none;color:var(--muted)}
+.callout p b{color:var(--fg)}
+
+/* ---- Código (solo bloques 2 y 3) ---- */
+pre{background:var(--surface);color:var(--fg);border-left:4px solid var(--accent);
+  padding:clamp(.55rem,1.2vw,1rem) clamp(.8rem,1.6vw,1.4rem);overflow:hidden;
+  font-family:var(--font-mono);font-size:var(--fs-code);line-height:1.5;max-width:min(100%,86ch)}
+pre.bad{border-left-color:var(--alert)}
+pre code{font:inherit;color:inherit;background:none}
+pre .c{color:#6E6878}      /* comentario */
+pre .k{color:#4B23C9}      /* palabra clave */
+pre .s{color:#166B4F}      /* cadena */
+pre .n{color:#8A4B00}      /* número */
+pre .e{color:#C0311A}      /* lo que está mal */
+
+/* ---- Divisorias de bloque (invariante 3) ---- */
+.divider{justify-content:center;background:var(--fg);color:var(--bg);gap:clamp(.4rem,1vw,1rem)}
+.divider .n{font-family:var(--font-display);font-weight:800;line-height:.8;letter-spacing:-.06em;
+  font-size:clamp(4.5rem,16vw,13rem);color:var(--volt)}
+.divider h2{color:var(--bg);font-size:clamp(1.7rem,4.4vw,3.4rem);max-width:23ch}
+.divider .kicker,.divider .lead{color:#B9B3C6}
+.divider .branch path{stroke:var(--volt)}
+.divider .branch circle{fill:var(--fg);stroke:var(--volt)}
+.divider .term{color:var(--volt)}
+.divider .slide-footer{color:#8F8A9C}
+.divider .slide-footer .fb{color:var(--volt)}
+
+/* ---- Figuras SVG ---- */
+.fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+svg.fig{width:100%;height:auto;max-height:52vh;display:block}
+svg.fig .t{font-family:var(--font-mono);font-size:17px;fill:var(--muted)}
+svg.fig .t.sm{font-size:15px}
+svg.fig .t.on{fill:var(--accent)}
+svg.fig .t.bad{fill:var(--alert)}
+svg.fig .lbl{font-family:var(--font-display);font-weight:800;font-size:20px;fill:var(--fg)}
+svg.fig .lbl.acc{fill:var(--accent)}
+svg.fig .lbl.bad{fill:var(--alert)}
+svg.fig .note{font-family:var(--font-body);font-size:18px;fill:var(--muted)}
+svg.fig .pt{fill:var(--muted);opacity:.5}
+svg.fig .curve{fill:none;stroke:var(--accent);stroke-width:3}
+svg.fig .curve.bad{stroke:var(--alert);stroke-width:2.6}
+svg.fig .frame{fill:none;stroke:var(--line);stroke-width:1.5}
+svg.fig .ax{stroke:var(--muted);stroke-width:1.5;fill:none}
+svg.fig .grid{stroke:var(--line);stroke-width:1;fill:none}
+svg.fig .band{fill:var(--alert);opacity:.13}
+svg.fig .ln-tr{fill:none;stroke:var(--fg);stroke-width:3}
+svg.fig .ln-te{fill:none;stroke:var(--accent);stroke-width:3;stroke-dasharray:9 6}
+svg.fig .mk-tr{fill:var(--fg)}
+svg.fig .mk-te{fill:var(--accent)}
+svg.fig .bar{fill:var(--accent)}
+svg.fig .bar.n{fill:var(--line)}
+svg.fig .node{fill:var(--bg);stroke:var(--fg);stroke-width:2}
+svg.fig .node.leaf{fill:var(--volt);stroke:var(--fg)}
+svg.fig .edge{fill:none;stroke:var(--accent);stroke-width:2.5}
+svg.fig .boxr{fill:none;stroke:var(--fg);stroke-width:2.5}
+svg.fig .boxr.acc{stroke:var(--accent)}
+svg.fig .arrow{fill:none;stroke:var(--fg);stroke-width:2.5}
+svg.fig .arrow.acc{stroke:var(--accent)}
+
+/* ---- Navegación (invariante 1) ---- */
+.progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
+  z-index:120;transition:width .3s var(--ease)}
+.nav-dots{position:fixed;right:clamp(.45rem,1.1vw,1rem);top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:clamp(3px,.42vh,6px);z-index:120}
+.nav-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--muted);
+  background:transparent;cursor:pointer}
+.nav-dots button[aria-current="true"]{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
+.nav-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.block-chip{position:fixed;top:clamp(.6rem,1.6vh,1.2rem);right:clamp(1.4rem,3vw,2.6rem);z-index:120;
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent-ink);background:var(--accent);padding:.35em .8em}
+.block-chip[hidden]{display:none}
+
+/* Índice de slides (Esc) */
+.slide-index{position:fixed;inset:0;z-index:200;background:rgba(243,240,231,.98);
+  padding:clamp(1.2rem,4vw,3rem);overflow:auto;display:none}
+.slide-index.open{display:block}
+.slide-index h2{margin-bottom:1rem;color:var(--accent)}
+.slide-index ol{list-style:none;columns:2;column-gap:2.5rem;font-size:clamp(.78rem,1.05vw,.95rem)}
+.slide-index li{break-inside:avoid;margin-bottom:.35em}
+.slide-index button{background:none;border:0;color:var(--fg);font:inherit;text-align:left;
+  cursor:pointer;padding:.15em 0;width:100%}
+.slide-index button:hover,.slide-index button:focus-visible{color:var(--accent)}
+.slide-index .ix{font-family:var(--font-mono);color:var(--muted);margin-right:.6em}
+.slide-index .bk{color:var(--accent);font-family:var(--font-mono);font-size:.8em;
+  letter-spacing:.16em;text-transform:uppercase;margin:1.2em 0 .4em;break-after:avoid}
+
+/* ---- Animación de entrada: una sola ---- */
+.reveal{opacity:0;transform:translateY(16px);
+  transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.slide.in-view .reveal{opacity:1;transform:none}
+.slide.in-view .reveal:nth-child(1){transition-delay:.04s}
+.slide.in-view .reveal:nth-child(2){transition-delay:.10s}
+.slide.in-view .reveal:nth-child(3){transition-delay:.16s}
+.slide.in-view .reveal:nth-child(4){transition-delay:.22s}
+.slide.in-view .reveal:nth-child(5){transition-delay:.28s}
+.slide.in-view .reveal:nth-child(6){transition-delay:.34s}
+
+/* ---- Breakpoints obligatorios de alto (invariante 9) ---- */
+@media (max-height:700px){
+  :root{--pad:clamp(1rem,2.4vw,2rem);--gap:clamp(.4rem,1vw,.9rem)}
+  body{font-size:clamp(.92rem,1.4vw,1.22rem)}
+}
+@media (max-height:640px){
+  :root{--fs-title:clamp(1.6rem,4.2vw,2.8rem);--fs-h2:clamp(1.2rem,2.9vw,2rem);
+        --fs-h3:clamp(.95rem,1.6vw,1.2rem)}
+  body{font-size:clamp(.88rem,1.25vw,1.08rem)}
+  ol.steps{gap:.22rem} ul.bullets{gap:.24rem}
+  .col p{font-size:clamp(.8rem,1.05vw,1.05rem)}
+  .claim{font-size:clamp(1.3rem,3.3vw,2.3rem)}
+  .big{display:none}
+  svg.fig{max-height:44vh}
+}
+@media (max-height:500px){
+  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-code:clamp(.72rem,1vw,.9rem)}
+  .nav-dots{display:none}
+}
+@media (max-width:900px){
+  .cols.c4{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:600px){
+  .cols.c4,.cols.c3,.cols.c2{grid-template-columns:1fr}
+  ul.check{grid-template-columns:1fr}
+  .slide-index ol{columns:1}
+}
+
+/* ---- prefers-reduced-motion (invariante 9) ---- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+
+/* ============================================================================
+   IMPRESIÓN A PDF (invariante 5) — una slide por página, horizontal, fondo claro.
+   Las divisorias son oscuras en pantalla: aquí se invierten para no gastar tóner.
+   ========================================================================= */
+@media print{
+  @page{size:landscape;margin:0}
+  :root{--bg:#fff;--surface:#f2f2ee;--surface-2:#e8e8e2;--line:#c9c9c9;
+        --fg:#111;--muted:#444;--accent:#3B18A8;--accent-ink:#fff;
+        --volt:#D9E96B;--alert:#98281A}
+  html,body{height:auto;background:#fff!important;color:#111!important}
+  .slide{height:100vh;page-break-after:always;break-after:page;
+    background:#fff!important;color:#111!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .divider{background:#fff!important;color:#111!important;border-top:8px solid #3B18A8}
+  .divider h2{color:#111!important}
+  .divider .kicker,.divider .lead{color:#444!important}
+  .divider .n{color:#c9c9c9!important}
+  .divider .branch path{stroke:#3B18A8}
+  .divider .branch circle{fill:#fff;stroke:#3B18A8}
+  .divider .term{color:#3B18A8}
+  .divider .slide-footer{color:#444!important}
+  .divider .slide-footer .fb{color:#3B18A8!important}
+  h1 em{background:none;color:#3B18A8}
+  .claim mark{background:#EDF3C4}
+  tbody tr.on{background:#F1F6D6!important}
+  pre{background:#f2f2ee!important;color:#111!important;border:1px solid #c9c9c9;border-left:4px solid #3B18A8}
+  pre .c{color:#666!important} pre .k{color:#3B18A8!important} pre .s{color:#0B5C43!important}
+  pre .n{color:#8A5A00!important} pre .e{color:#98281A!important}
+  .big{display:none}
+  .progress-bar,.nav-dots,.slide-index,.block-chip{display:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" role="presentation"></div>
+<nav class="nav-dots" aria-label="Navegación de diapositivas"></nav>
+<div class="block-chip" hidden></div>
+
+<div class="slide-index" role="dialog" aria-label="Índice de diapositivas" aria-modal="true">
+  <h2>Índice</h2>
+  <ol></ol>
+</div>
+
+<main>
+
+<!-- ======================= PORTADA ======================= -->
+<section class="slide cover" data-title="Portada">
+  <p class="kicker reveal">Analítica de Datos &middot; Clase 14 &middot; Momento 3</p>
+  <svg class="branch reveal" viewBox="0 0 320 26" aria-hidden="true">
+    <path d="M2 13H120 M120 13V4H240 M120 13V22H240"></path>
+    <circle cx="120" cy="13" r="5"></circle>
+  </svg>
+  <h1 class="reveal">Introducción a <em>machine learning</em></h1>
+  <p class="lead reveal">Machine learning es lo que se hace cuando la regla existe, está en los datos, y usted no la puede escribir a mano.</p>
+  <p class="who reveal"><b>Julián Garzón</b> &middot; Ingeniería de Sistemas &middot; Universidad Cooperativa de Colombia</p>
+</section>
+
+<!-- ======================= OBJETIVOS ======================= -->
+<section class="slide" data-title="Objetivos de la clase">
+  <p class="kicker reveal">Al terminar hoy, usted debe poder hacer esto solo</p>
+  <h2 class="reveal">Objetivos de la clase</h2>
+  <ol class="steps reveal">
+    <li><b>Explicar qué es entrenar un modelo</b> sin usar la palabra "inteligencia": encontrar una regla a partir de ejemplos, no programarla.</li>
+    <li><b>Clasificar un problema</b> como regresión o clasificación mirando solo el tipo de la variable que quiere predecir.</li>
+    <li><b>Justificar la partición en entrenamiento y prueba</b>, y decir qué pasa cuando no se hace.</li>
+    <li><b>Distinguir subajuste, buen ajuste y sobreajuste</b> a partir de una tabla, y aplicar la regla del gap.</li>
+    <li><b>Entrenar y evaluar un árbol de decisión completo</b> con el patrón de cinco pasos de scikit-learn.</li>
+    <li><b>Leer las importancias del modelo</b> sin convertirlas en una afirmación de causalidad.</li>
+  </ol>
+  <p class="lead reveal">Es la última clase de contenido antes del proyecto final. Todo lo de hoy entra en la capa de machine learning del Momento 3.</p>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
+<section class="slide divider" data-block="1" data-title="Divisoria · Bloque 1">
+  <span class="n">01</span>
+  <svg class="branch" viewBox="0 0 320 26" aria-hidden="true">
+    <path d="M2 13H120 M120 13V4H240 M120 13V22H240"></path>
+    <circle cx="120" cy="13" r="5"></circle>
+  </svg>
+  <p class="kicker">Bloque uno</p>
+  <h2>Teoría &middot; La idea antes que la librería</h2>
+  <p class="lead">Cero código en pantalla. Todo este bloque son ideas, analogías y figuras: qué significa entrenar, por qué se aparta un examen y cómo se ve un modelo que memorizó. La sintaxis es del bloque 2.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Gancho: el if que nunca se termina">
+  <span class="big">?</span>
+  <p class="kicker reveal">Empocaldas quiere saber cuánta agua consumirá un suscriptor nuevo</p>
+  <p class="claim reveal">Escríbame el <span>if</span> que lo calcula.</p>
+  <p class="lead reveal">Estrato 3 en Manizales, digamos 12 m3. ¿Y si es diciembre? ¿Y si es La Dorada, que es caliente? ¿Y si es un colegio y no una casa? Cada respuesta agrega una condición, y ningún conjunto de condiciones termina de cubrir el caso.</p>
+  <div class="callout volt reveal"><p><b>No es que sea difícil.</b> Es que la regla existe, está en los datos, y usted no la puede escribir a mano. Machine learning es exactamente lo que se hace en ese punto.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="La misma caja al revés">
+  <p class="kicker reveal">El contraste que sostiene toda la clase</p>
+  <h2 class="reveal">Es la misma caja, al revés</h2>
+  <div class="fig-wrap reveal">
+    <svg class="fig" viewBox="0 0 960 322" role="img" aria-label="Dos esquemas comparados. En programación tradicional entran datos y reglas, y el computador produce respuestas. En machine learning entran datos y respuestas, y el computador produce las reglas.">
+      <text class="lbl" x="20" y="26">Programación tradicional</text>
+      <rect class="boxr" x="20" y="52" width="170" height="54"></rect>
+      <text class="t" x="105" y="85" text-anchor="middle">datos</text>
+      <rect class="boxr" x="230" y="52" width="170" height="54"></rect>
+      <text class="t" x="315" y="85" text-anchor="middle">reglas</text>
+      <path class="arrow" d="M105 106 V140 H315 V106"></path>
+      <path class="arrow" d="M210 140 V186 M199 175 L210 189 L221 175"></path>
+      <rect class="boxr" x="125" y="192" width="170" height="54"></rect>
+      <text class="t" x="210" y="225" text-anchor="middle">respuestas</text>
+      <text class="note" x="20" y="288">Usted pone la regla.</text>
+      <text class="note" x="20" y="312">El computador aplica la regla.</text>
+
+      <text class="lbl acc" x="530" y="26">Machine learning</text>
+      <rect class="boxr acc" x="530" y="52" width="170" height="54"></rect>
+      <text class="t on" x="615" y="85" text-anchor="middle">datos</text>
+      <rect class="boxr acc" x="740" y="52" width="200" height="54"></rect>
+      <text class="t on" x="840" y="85" text-anchor="middle">respuestas</text>
+      <path class="arrow acc" d="M615 106 V140 H840 V106"></path>
+      <path class="arrow acc" d="M727 140 V186 M716 175 L727 189 L738 175"></path>
+      <rect class="boxr acc" x="640" y="192" width="176" height="54" fill="#C6EF00"></rect>
+      <text class="lbl" x="728" y="226" text-anchor="middle">REGLAS</text>
+      <text class="note" x="530" y="288">Usted pone las respuestas conocidas.</text>
+      <text class="note" x="530" y="312">El computador deduce la regla.</text>
+    </svg>
+  </div>
+  <p class="lead reveal">En vez de escribir la regla, se le muestran ejemplos al computador y él la deduce. Eso es todo lo que significa "entrenar".</p>
+</section>
+
+<section class="slide" data-block="1" data-title="La analogía del niño que aprende">
+  <p class="kicker reveal">Nadie le dicta a un niño de tres años la definición formal de "perro"</p>
+  <h2 class="reveal">Le señalan perros hasta que reconoce uno que nunca vio</h2>
+  <div class="cols c3 reveal">
+    <div class="col on"><span class="k">Qué pasó</span><h3>Dedujo la regla</h3>
+      <p>Nadie enumeró cuatro patas, pelo, cola y hocico. El niño vio ejemplos etiquetados y un día acertó con una raza nueva. <b>Eso es entrenar un modelo.</b></p></div>
+    <div class="col warn"><span class="k">Consecuencia uno</span><h3>Solo chihuahuas</h3>
+      <p>Si únicamente le muestra chihuahuas, va a dudar con un gran danés. <b>Los datos de entrenamiento determinan lo que el modelo puede reconocer.</b></p></div>
+    <div class="col warn"><span class="k">Consecuencia dos</span><h3>Un gato llamado perro</h3>
+      <p>Si le enseña mal un ejemplo, aprende mal. <b>Datos malos, modelo malo</b>, y ninguna cantidad de algoritmo arregla eso.</p></div>
+  </div>
+  <div class="callout reveal"><p><b>El machine learning no es magia: es reconocimiento de patrones a escala.</b> Hace lo que usted ya hace intuitivamente, mirar casos parecidos para decidir, pero con miles de casos en vez de tres.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Eje 1: supervisado o no supervisado">
+  <p class="kicker reveal">Primer eje &middot; ¿tengo las respuestas?</p>
+  <h2 class="reveal">Supervisado y no supervisado</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col"></th><th scope="col">Qué tiene</th><th scope="col">Qué hace</th><th scope="col">Ejemplo Empocaldas</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">Supervisado</th><td>Ejemplos <b>con</b> la respuesta correcta</td><td>Aprender a predecir esa respuesta</td><td>Tengo el consumo histórico de miles de suscriptores; predigo el del próximo</td></tr>
+        <tr><th scope="row">No supervisado</th><td>Ejemplos <b>sin</b> respuesta</td><td>Encontrar grupos o estructura</td><td>No sé qué tipos de suscriptor existen; que el algoritmo los agrupe</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p><b>Este curso es supervisado, punto.</b> Todo lo que va a ver hoy, y todo lo que va en el proyecto final, parte de datos que ya traen la respuesta.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Eje 2: regresión o clasificación">
+  <p class="kicker reveal">Segundo eje, y es independiente del primero &middot; ¿de qué tipo es la respuesta?</p>
+  <h2 class="reveal">Regresión y clasificación</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col"></th><th scope="col">La respuesta es</th><th scope="col">Modelo</th><th scope="col">Ejemplo</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">Regresión</th><td>Un número</td><td><span class="term">DecisionTreeRegressor</span></td><td>¿Cuántos m3 va a consumir este suscriptor?</td></tr>
+        <tr><th scope="row">Clasificación</th><td>Una categoría</td><td><span class="term">DecisionTreeClassifier</span></td><td>¿El consumo va a ser bajo, medio o alto?</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout volt reveal"><p><b>Regla de bolsillo para todo el semestre:</b> mire el tipo de la columna que quiere predecir. Si es un número, regresión. Si es una categoría, clasificación. Nada más.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Cinco casos, en voz alta">
+  <p class="kicker reveal">Sin computador &middot; grite la respuesta</p>
+  <h2 class="reveal">¿Regresión o clasificación?</h2>
+  <ol class="steps reveal">
+    <li>Predecir el <b>puntaje Saber Pro</b> de un estudiante.</li>
+    <li>Predecir si un estudiante <b>deserta o no</b>.</li>
+    <li>Predecir el <b>precio</b> de un apartamento en Manizales.</li>
+    <li>Predecir si un pago <b>va a llegar tarde</b>.</li>
+    <li>Predecir <b>cuántos días tarde</b> va a llegar el pago.</li>
+  </ol>
+  <p class="lead reveal">Los dos últimos son el mismo fenómeno planteado de dos formas distintas. Lo que decide no es el fenómeno: es el tipo de la columna que usted eligió predecir.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="El flujo de trabajo, en orden">
+  <p class="kicker reveal">Siete pasos &middot; el orden no es decorativo</p>
+  <h2 class="reveal">El flujo de trabajo de machine learning</h2>
+  <ol class="steps reveal">
+    <li><b>Definir la pregunta.</b> Qué se predice y para qué. Si no hay una decisión detrás, no hay proyecto.</li>
+    <li><b>Conseguir y limpiar los datos.</b> Lo de la clase 3. Aquí se va la mayor parte del tiempo real.</li>
+    <li><b>Elegir X y y.</b> <span class="term">y</span> es lo que quiere predecir; <span class="term">X</span> es todo lo que sabe antes de saberlo.</li>
+    <li><b>Partir en entrenamiento y prueba.</b> Antes de entrenar nada.</li>
+    <li><b>Entrenar</b> con los datos de entrenamiento. Solo con esos.</li>
+    <li><b>Evaluar</b> con los datos de prueba. Solo con esos.</li>
+    <li><b>Interpretar y decidir.</b> Qué variable manda y qué acción soporta.</li>
+  </ol>
+  <div class="callout warn reveal"><p><b>Los pasos 5 y 6 no se pueden mezclar.</b> Mezclarlos es la fuente número uno de resultados que se ven bien y no significan nada.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="X, y, y la respuesta disfrazada">
+  <p class="kicker reveal">El error más caro del proyecto final, y no produce ningún mensaje de error</p>
+  <h2 class="reveal">En X solo va lo que tendría antes de conocer y</h2>
+  <div class="cols c2 reveal">
+    <div class="col on"><span class="k">Lo que sí</span><h3>Información disponible</h3>
+      <p>El municipio, el mes, el estrato, cuántos suscriptores hay. Todo eso existe <b>antes</b> de que aparezca el consumo del mes.</p></div>
+    <div class="col warn"><span class="k">Lo que no</span><h3>La respuesta disfrazada</h3>
+      <p>El consumo total del grupo, cuando lo que se predice es el consumo por suscriptor. Es la respuesta partida en dos pedazos: <b>fuga de datos</b> (<em>data leakage</em>).</p></div>
+  </div>
+  <p class="lead reveal">La fuga no rompe nada: produce un resultado espectacular. El modelo se ve genial en el cuaderno y falla el día que se usa, porque en el mundo real ese dato todavía no existe.</p>
+  <div class="callout warn reveal"><p>Es lo mismo que <b>darle al estudiante el examen resuelto y felicitarlo por sacar cinco</b>.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Train y test: la analogía del examen">
+  <p class="kicker reveal">La analogía central de la clase &middot; sin esto, todo lo demás es ritual</p>
+  <h2 class="reveal">El taller y el examen</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col">Estudiar</th><th scope="col">Machine learning</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">El taller que resolvió en clase, con respuestas</th><td>Conjunto de <b>entrenamiento</b>, el 80% de las filas</td></tr>
+        <tr><th scope="row">El examen final, que nunca vio</th><td>Conjunto de <b>prueba</b>, el 20% restante</td></tr>
+        <tr><th scope="row">Estudiar el taller</th><td><span class="term">fit</span> sobre los datos de entrenamiento</td></tr>
+        <tr><th scope="row">Presentar el examen</th><td><span class="term">predict</span> sobre los datos de prueba</td></tr>
+        <tr class="on"><th scope="row">Su nota real</th><td>La métrica sobre el conjunto de <b>prueba</b>. La otra no se reporta</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">El 20% se aparta <b>antes</b> de entrenar y no se toca hasta el final. Evaluar sobre los datos de entrenamiento es autocalificarse el taller: siempre da bien y no significa nada.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Dos formas de sacar cinco en el taller">
+  <p class="kicker reveal">Y desde el taller se ven idénticas</p>
+  <p class="claim reveal">Hay dos formas de sacar cinco en el taller: entender el tema, o <mark>memorizar las respuestas</mark>.</p>
+  <p class="lead reveal">La única manera de distinguirlas es un examen con preguntas que no estaban en el taller. Por eso existe el conjunto de prueba, y por eso se aparta antes de empezar.</p>
+  <p class="lead reveal">¿Por qué 80/20 y no mitad y mitad? Con más entrenamiento el modelo aprende mejor; con más prueba la evaluación es más confiable. Con datasets de pocos cientos de filas se usa 70/30, porque un 20% de 100 filas son 20 filas y eso no evalúa nada.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Memorizar no es aprender">
+  <p class="kicker reveal">El mismo algoritmo, tres profundidades &middot; los mismos 40 puntos de entrenamiento</p>
+  <h2 class="reveal">Memorizar no es aprender</h2>
+  <div class="fig-wrap reveal">
+    <svg class="fig" viewBox="0 0 960 258" role="img" aria-label="Tres paneles con los mismos cuarenta puntos de entrenamiento. A la izquierda, un árbol de profundidad 1 traza dos escalones y no capta el patrón: le va regular en el taller y en el examen. En el centro, profundidad 3 sigue la forma de la nube y le va bien en los dos. A la derecha, un árbol sin límite de profundidad pasa exactamente por cada punto de entrenamiento, acierta perfecto en el taller y cae en el examen.">
+      <g transform="translate(0,0)">
+        <rect class="frame" x="16" y="26" width="268" height="176"></rect>
+        <text class="lbl" x="16" y="18">Subajuste</text>
+        <g class="pt"><circle cx="27.7" cy="163.7" r="3.4"/><circle cx="33.1" cy="161.3" r="3.4"/><circle cx="41.2" cy="173.3" r="3.4"/><circle cx="50.3" cy="148.3" r="3.4"/><circle cx="50.8" cy="149.8" r="3.4"/><circle cx="57.3" cy="141.4" r="3.4"/><circle cx="66.8" cy="120.8" r="3.4"/><circle cx="68.2" cy="130.5" r="3.4"/><circle cx="76.8" cy="114.4" r="3.4"/><circle cx="76.9" cy="124.8" r="3.4"/><circle cx="103.3" cy="98.3" r="3.4"/><circle cx="111.0" cy="86.7" r="3.4"/><circle cx="115.3" cy="119.4" r="3.4"/><circle cx="115.4" cy="99.9" r="3.4"/><circle cx="133.6" cy="91.1" r="3.4"/><circle cx="134.8" cy="93.3" r="3.4"/><circle cx="136.7" cy="86.1" r="3.4"/><circle cx="141.1" cy="53.7" r="3.4"/><circle cx="141.8" cy="93.7" r="3.4"/><circle cx="143.5" cy="61.5" r="3.4"/><circle cx="164.6" cy="99.0" r="3.4"/><circle cx="185.3" cy="72.1" r="3.4"/><circle cx="188.6" cy="63.3" r="3.4"/><circle cx="195.5" cy="55.8" r="3.4"/><circle cx="199.1" cy="53.8" r="3.4"/><circle cx="202.9" cy="52.5" r="3.4"/><circle cx="215.6" cy="73.6" r="3.4"/><circle cx="219.2" cy="76.2" r="3.4"/><circle cx="220.0" cy="53.8" r="3.4"/><circle cx="223.4" cy="72.5" r="3.4"/><circle cx="224.6" cy="91.3" r="3.4"/><circle cx="226.7" cy="89.4" r="3.4"/><circle cx="236.5" cy="88.8" r="3.4"/><circle cx="237.8" cy="65.0" r="3.4"/><circle cx="246.1" cy="74.3" r="3.4"/><circle cx="255.4" cy="69.0" r="3.4"/><circle cx="264.4" cy="92.7" r="3.4"/><circle cx="275.3" cy="88.8" r="3.4"/><circle cx="276.1" cy="81.4" r="3.4"/><circle cx="277.5" cy="98.2" r="3.4"/></g>
+        <path class="curve" d="M16.0 142.8H90.3V79.8H284.0"></path>
+        <text class="t sm" x="16" y="224">Dos escalones para toda la nube</text>
+        <text class="t sm" x="16" y="246">taller 0.709 &middot; examen 0.755</text>
+      </g>
+      <g transform="translate(336,0)">
+        <rect class="frame" x="16" y="26" width="268" height="176"></rect>
+        <text class="lbl acc" x="16" y="18">Buen ajuste</text>
+        <g class="pt"><circle cx="27.7" cy="163.7" r="3.4"/><circle cx="33.1" cy="161.3" r="3.4"/><circle cx="41.2" cy="173.3" r="3.4"/><circle cx="50.3" cy="148.3" r="3.4"/><circle cx="50.8" cy="149.8" r="3.4"/><circle cx="57.3" cy="141.4" r="3.4"/><circle cx="66.8" cy="120.8" r="3.4"/><circle cx="68.2" cy="130.5" r="3.4"/><circle cx="76.8" cy="114.4" r="3.4"/><circle cx="76.9" cy="124.8" r="3.4"/><circle cx="103.3" cy="98.3" r="3.4"/><circle cx="111.0" cy="86.7" r="3.4"/><circle cx="115.3" cy="119.4" r="3.4"/><circle cx="115.4" cy="99.9" r="3.4"/><circle cx="133.6" cy="91.1" r="3.4"/><circle cx="134.8" cy="93.3" r="3.4"/><circle cx="136.7" cy="86.1" r="3.4"/><circle cx="141.1" cy="53.7" r="3.4"/><circle cx="141.8" cy="93.7" r="3.4"/><circle cx="143.5" cy="61.5" r="3.4"/><circle cx="164.6" cy="99.0" r="3.4"/><circle cx="185.3" cy="72.1" r="3.4"/><circle cx="188.6" cy="63.3" r="3.4"/><circle cx="195.5" cy="55.8" r="3.4"/><circle cx="199.1" cy="53.8" r="3.4"/><circle cx="202.9" cy="52.5" r="3.4"/><circle cx="215.6" cy="73.6" r="3.4"/><circle cx="219.2" cy="76.2" r="3.4"/><circle cx="220.0" cy="53.8" r="3.4"/><circle cx="223.4" cy="72.5" r="3.4"/><circle cx="224.6" cy="91.3" r="3.4"/><circle cx="226.7" cy="89.4" r="3.4"/><circle cx="236.5" cy="88.8" r="3.4"/><circle cx="237.8" cy="65.0" r="3.4"/><circle cx="246.1" cy="74.3" r="3.4"/><circle cx="255.4" cy="69.0" r="3.4"/><circle cx="264.4" cy="92.7" r="3.4"/><circle cx="275.3" cy="88.8" r="3.4"/><circle cx="276.1" cy="81.4" r="3.4"/><circle cx="277.5" cy="98.2" r="3.4"/></g>
+        <path class="curve" d="M16.0 166.1H46.0V146.5H62.1V125.6H72.8V119.6H90.3V101.1H124.7V92.2H135.9V69.1H224.0V83.9H284.0"></path>
+        <text class="t sm" x="16" y="224">Captó el patrón y no el ruido</text>
+        <text class="t sm" x="16" y="246">taller 0.881 &middot; examen 0.828</text>
+      </g>
+      <g transform="translate(672,0)">
+        <rect class="frame" x="16" y="26" width="268" height="176"></rect>
+        <text class="lbl bad" x="16" y="18">Sobreajuste</text>
+        <g class="pt"><circle cx="27.7" cy="163.7" r="3.4"/><circle cx="33.1" cy="161.3" r="3.4"/><circle cx="41.2" cy="173.3" r="3.4"/><circle cx="50.3" cy="148.3" r="3.4"/><circle cx="50.8" cy="149.8" r="3.4"/><circle cx="57.3" cy="141.4" r="3.4"/><circle cx="66.8" cy="120.8" r="3.4"/><circle cx="68.2" cy="130.5" r="3.4"/><circle cx="76.8" cy="114.4" r="3.4"/><circle cx="76.9" cy="124.8" r="3.4"/><circle cx="103.3" cy="98.3" r="3.4"/><circle cx="111.0" cy="86.7" r="3.4"/><circle cx="115.3" cy="119.4" r="3.4"/><circle cx="115.4" cy="99.9" r="3.4"/><circle cx="133.6" cy="91.1" r="3.4"/><circle cx="134.8" cy="93.3" r="3.4"/><circle cx="136.7" cy="86.1" r="3.4"/><circle cx="141.1" cy="53.7" r="3.4"/><circle cx="141.8" cy="93.7" r="3.4"/><circle cx="143.5" cy="61.5" r="3.4"/><circle cx="164.6" cy="99.0" r="3.4"/><circle cx="185.3" cy="72.1" r="3.4"/><circle cx="188.6" cy="63.3" r="3.4"/><circle cx="195.5" cy="55.8" r="3.4"/><circle cx="199.1" cy="53.8" r="3.4"/><circle cx="202.9" cy="52.5" r="3.4"/><circle cx="215.6" cy="73.6" r="3.4"/><circle cx="219.2" cy="76.2" r="3.4"/><circle cx="220.0" cy="53.8" r="3.4"/><circle cx="223.4" cy="72.5" r="3.4"/><circle cx="224.6" cy="91.3" r="3.4"/><circle cx="226.7" cy="89.4" r="3.4"/><circle cx="236.5" cy="88.8" r="3.4"/><circle cx="237.8" cy="65.0" r="3.4"/><circle cx="246.1" cy="74.3" r="3.4"/><circle cx="255.4" cy="69.0" r="3.4"/><circle cx="264.4" cy="92.7" r="3.4"/><circle cx="275.3" cy="88.8" r="3.4"/><circle cx="276.1" cy="81.4" r="3.4"/><circle cx="277.5" cy="98.2" r="3.4"/></g>
+        <path class="curve bad" d="M16.0 163.7H30.8V161.3H37.5V173.3H46.0V148.3H50.9V149.8H54.5V141.4H62.1V120.8H67.9V130.5H72.8V114.4H77.3V124.8H90.3V98.3H107.3V86.7H113.5V119.4H115.8V99.9H124.7V91.1H134.6V93.3H135.9V86.1H139.0V53.7H141.7V93.7H143.1V61.5H154.3V99.0H175.3V72.1H187.4V63.3H192.3V55.8H197.6V53.8H201.2V52.5H209.3V73.6H217.8V76.2H220.0V53.8H221.8V72.5H224.0V91.3H225.8V89.4H231.7V88.8H237.5V65.0H242.4V74.3H250.9V69.0H260.3V92.7H270.1V88.8H275.9V81.4H276.8V98.2H284.0"></path>
+        <text class="t sm bad" x="16" y="224">Un escalón por punto: memorizó</text>
+        <text class="t sm bad" x="16" y="246">taller 1.000 &middot; examen 0.761</text>
+      </g>
+    </svg>
+  </div>
+  <p class="lead reveal">El de la derecha pasa exactamente por cada punto del taller. Y es el peor de los tres el día del examen: no aprendió el patrón, aprendió el ruido.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="La regla del gap">
+  <p class="kicker reveal">Lo que va a usar en la práctica, hoy y en el proyecto final</p>
+  <h2 class="reveal">La regla del gap</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>gap = puntaje de entrenamiento &minus; puntaje de prueba</caption>
+      <thead><tr><th scope="col">Gap</th><th scope="col">Diagnóstico</th><th scope="col">Qué se hace</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row"><span class="mono">menor a 0.05</span></th><td>Bien</td><td>Lo que aprendió sirve para casos nuevos</td></tr>
+        <tr><th scope="row"><span class="mono">0.05 a 0.10</span></th><td>Aceptable</td><td>Se vigila; ya se está estirando</td></tr>
+        <tr class="no"><th scope="row"><span class="mono">mayor a 0.10</span></th><td class="d"><b>Sobreajuste</b></td><td class="d">Se simplifica el modelo: menos profundidad</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn reveal"><p><b>El corolario contraintuitivo, y hay que decirlo en voz alta:</b> un modelo con puntaje perfecto en entrenamiento es una mala noticia, no una buena. Significa que memorizó.</p></div>
+  <p class="lead reveal">En un árbol, el sobreajuste se arregla bajando <span class="term">max_depth</span>. Un árbol sin límite sigue partiendo hasta aislar cada fila en su propia hoja, que es memorización literal.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Por qué una sola métrica engaña">
+  <p class="kicker reveal">Dos escalas distintas, y ninguna sobra</p>
+  <h2 class="reveal">Qué mide cada métrica</h2>
+  <div class="cols c3 reveal">
+    <div class="col on"><span class="k">Error absoluto medio</span><h3>MAE</h3>
+      <p>En promedio, <b>por cuánto se equivoca</b>. Va en las unidades del dato: metros cúbicos, pesos, días. Es la que entiende el cliente.</p></div>
+    <div class="col on"><span class="k">Coeficiente de determinación</span><h3>R2</h3>
+      <p>Qué <b>proporción de la variación</b> logra explicar. Sin unidades. Vale 0 para el modelo que siempre responde el promedio, y puede dar negativo.</p></div>
+    <div class="col warn"><span class="k">El piso</span><h3>El modelo tonto</h3>
+      <p>Responder siempre el promedio. <b>Si su modelo no le gana a eso, no tiene modelo</b>, y ningún R2 alto lo salva.</p></div>
+  </div>
+  <div class="callout reveal"><p><b>Y por qué una sola engaña:</b> el error promedio reparte por igual entre todos los casos, así que un error enorme en un grupo pequeño desaparece dentro del promedio. En el demo van a ver exactamente eso, partido por tipo de suscriptor.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Un modelo no explica causalidad">
+  <p class="kicker reveal">Lo mismo de la clase 5, con otro disfraz</p>
+  <p class="claim reveal">Un modelo mide <span>asociación en unos datos</span>. Nunca un mecanismo.</p>
+  <div class="cols c2 reveal">
+    <div class="col warn"><span class="k">Clase 5</span><h3>La correlación</h3>
+      <p>Un coeficiente alto entre dos columnas no dice que una cause la otra. Eso ya lo discutimos con gráficos de dispersión.</p></div>
+    <div class="col warn"><span class="k">Hoy</span><h3>La importancia de variables</h3>
+      <p>Una barra alta dice <b>cuánto usó el modelo esa variable para partir los datos</b>. Es una propiedad del modelo entrenado, no del mundo.</p></div>
+  </div>
+  <div class="callout volt reveal"><p>Se sostiene: <b>"en estos datos, el tipo de suscriptor es la variable que más usó el modelo para separar consumos altos de bajos"</b>. No se sostiene: "el tipo de suscriptor causa el consumo".</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="El árbol de decisión: las 20 preguntas">
+  <p class="kicker reveal">El único algoritmo que se puede dibujar y leer sin álgebra</p>
+  <h2 class="reveal">Un árbol juega a las veinte preguntas</h2>
+  <div class="fig-wrap reveal">
+    <svg class="fig" viewBox="0 0 960 310" role="img" aria-label="Esquema de un árbol de decisión. La raíz pregunta si el estrato es público u oficial. Si la respuesta es sí, la hoja predice consumo promedio alto. Si es no, aparece una segunda pregunta sobre el número de suscriptores, que se abre en dos hojas: consumo medio y consumo bajo.">
+      <rect class="boxr acc" x="330" y="14" width="300" height="46" rx="4"></rect>
+      <text class="t on" x="480" y="43" text-anchor="middle">¿ESTRATO = Público / Oficial?</text>
+      <path class="edge" d="M400 60 V90 H180 V116"></path>
+      <path class="edge" d="M560 60 V90 H760 V116"></path>
+      <text class="t sm" x="250" y="84">sí</text>
+      <text class="t sm" x="690" y="84">no</text>
+      <rect class="node leaf" x="40" y="116" width="280" height="46" rx="4"></rect>
+      <text class="lbl" x="180" y="145" text-anchor="middle">consumo alto</text>
+      <rect class="boxr acc" x="620" y="116" width="280" height="46" rx="4"></rect>
+      <text class="t on" x="760" y="145" text-anchor="middle">¿SUSCRIPTORES &gt; 500?</text>
+      <path class="edge" d="M690 162 V192 H520 V218"></path>
+      <path class="edge" d="M830 162 V192 H840 V218"></path>
+      <text class="t sm" x="580" y="186">sí</text>
+      <text class="t sm" x="852" y="186">no</text>
+      <rect class="node leaf" x="400" y="218" width="240" height="46" rx="4"></rect>
+      <text class="lbl" x="520" y="247" text-anchor="middle">consumo medio</text>
+      <rect class="node leaf" x="700" y="218" width="240" height="46" rx="4"></rect>
+      <text class="lbl" x="820" y="247" text-anchor="middle">consumo bajo</text>
+      <text class="note" x="20" y="222">Cada nodo es una pregunta</text>
+      <text class="note" x="20" y="246">sobre una variable.</text>
+      <text class="note" x="20" y="292">Cada hoja es una predicción, y la pregunta de cada nodo la elige el algoritmo.</text>
+    </svg>
+  </div>
+  <p class="lead reveal"><span class="term">max_depth</span> es cuántas preguntas seguidas se permiten. Pocas: no alcanza a captar el patrón. Demasiadas: una pregunta por fila, que es memorizar.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Resumen del bloque 1">
+  <p class="kicker reveal">Lo que hay que llevarse aunque se olvide todo lo demás</p>
+  <h2 class="reveal">Resumen del bloque</h2>
+  <ul class="bullets reveal">
+    <li class="on"><b>Entrenar es deducir una regla a partir de ejemplos</b>, no programarla. Los ejemplos determinan lo que el modelo puede reconocer.</li>
+    <li class="on"><b>Mire el tipo de la columna objetivo:</b> número es regresión, categoría es clasificación.</li>
+    <li class="on"><b>El 20% se aparta antes de entrenar</b> y solo esa medida se reporta. Autocalificarse el taller no cuenta.</li>
+    <li class="no"><b>Gap mayor a 0.10 es sobreajuste</b>, y un puntaje perfecto en entrenamiento es mala noticia.</li>
+    <li class="on"><b>Dos métricas siempre</b>, y comparadas contra el modelo que responde el promedio.</li>
+    <li class="no"><b>Importancia no es causalidad.</b> Igual que la correlación de la clase 5.</li>
+  </ul>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 2 ======================= -->
+<section class="slide divider" data-block="2" data-title="Divisoria · Bloque 2">
+  <span class="n">02</span>
+  <svg class="branch" viewBox="0 0 320 26" aria-hidden="true">
+    <path d="M2 13H120 M120 13V4H240 M120 13V22H240"></path>
+    <circle cx="120" cy="13" r="5"></circle>
+  </svg>
+  <p class="kicker">Bloque dos</p>
+  <h2>Demo &middot; Lo recorre usted</h2>
+  <p class="lead">Abra <span class="term">demo/demo.ipynb</span> y avance solo, a su ritmo. <b>El código ya está escrito:</b> se ejecuta, se entiende y se responden las preguntas de interpretación. Nadie lo va a dictar desde aquí. Yo camino por el salón resolviendo dudas.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="El dataset del demo">
+  <p class="kicker reveal">El mismo de las clases 1, 4 y 5. Es a propósito: hoy lo nuevo es el modelo, no el dominio</p>
+  <h2 class="reveal">Consumo de agua de Empocaldas</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>datasets/HISTORICO_CONSUMO.csv &middot; 21.816 filas x 12 columnas &middot; una fila = un municipio, año, mes y estrato</caption>
+      <thead><tr><th scope="col">Columna</th><th scope="col">Qué mide</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="mono">AÑO</span>, <span class="mono">MES</span>, <span class="mono">MUNICIPIO</span></th><td>Periodo y lugar del registro. 24 valores de municipio, de 2015 a 2023</td></tr>
+        <tr><th scope="row"><span class="mono">ESTRATO</span></th><td>Tipo de suscriptor: Estrato1 a Estrato6, Industrial, Comercial, Público / Oficial</td></tr>
+        <tr><th scope="row"><span class="mono">No. SUSCRIPTORES ACUEDUCTO</span></th><td>Cuántos suscriptores hay en esa combinación</td></tr>
+        <tr><th scope="row"><span class="mono">CONSUMO M3 ACUEDUCTO</span></th><td>Consumo total del grupo, en m3</td></tr>
+        <tr class="on"><th scope="row"><span class="mono">PROMEDIO CONSUMO ACUEDUCTO</span></th><td><b>Consumo por suscriptor. Esto es lo que se va a predecir</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">La pregunta que se le puede hacer a este archivo: <b>¿se puede estimar el consumo por suscriptor de una zona sin historia?</b> Es un número, entonces regresión. El promedio real ronda los 17 m3 al mes: ese es el orden de magnitud contra el que hay que leer cualquier error.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="El recorrido, a nivel general">
+  <p class="kicker reveal">Lo que van a hacer, sin desarrollarlo aquí. Los números salen ejecutando</p>
+  <h2 class="reveal">De un archivo sucio a una frase que se puede decir en una reunión</h2>
+  <div class="cols c3 reveal">
+    <div class="col on"><span class="k">Primero</span><h3>Preparar y decidir</h3>
+      <p>Limpiar con una regla que uno <b>decide y verifica</b>, filtrar lo imposible, y elegir qué entra en <span class="term">X</span> y qué sería hacer trampa.</p></div>
+    <div class="col volt"><span class="k">Después</span><h3>Entrenar y medir</h3>
+      <p>Apartar el examen, los cinco pasos de scikit-learn, y la tabla de profundidades donde <b>el sobreajuste se ve</b> en vez de creerse.</p></div>
+    <div class="col warn"><span class="k">Siempre</span><h3>Reportar sin inflar</h3>
+      <p>Dos métricas, el piso contra el modelo tonto, y las importancias leídas como asociación. <b>Un modelo mediocre bien reportado vale más que uno excelente inventado.</b></p></div>
+  </div>
+  <div class="callout reveal"><p><strong>Hay una tabla que no voy a adelantar:</strong> el mismo árbol, con la fuga metida a propósito, se ve muchísimo mejor que el honesto. Descubrir ese número ejecutando vale más que oírmelo contar.</p></div>
+</section>
+
+<section class="slide" data-block="2" data-title="Cómo se recorre el cuaderno">
+  <p class="kicker reveal">Se lee antes de ejecutar &middot; nadie va adelantado ni atrasado</p>
+  <h2 class="reveal">Cómo se recorre el cuaderno</h2>
+  <div class="cols c3 reveal">
+    <div class="col on"><span class="k">Uno</span><h3>Todo el código está escrito</h3>
+      <p>Aquí no se teclea nada: se ejecuta, se mira la salida y se lee la explicación que está justo encima. Escribir código es el bloque 3, con el reto.</p></div>
+    <div class="col volt"><span class="k">Dos</span><h3>Catorce preguntas de interpretación</h3>
+      <p>Con la respuesta plegada debajo. Se escribe la propia <b>primero</b> y se abre después. Qué significa el número, no cuál fue: eso es lo que se pregunta en la sustentación.</p></div>
+    <div class="col warn"><span class="k">Tres</span><h3>Las cajas de fundamento</h3>
+      <p>Qué es una semilla, por qué el modelo solo entiende números, qué significa el guion bajo final. Si ya lo tiene claro se puede saltar.</p></div>
+  </div>
+  <div class="callout reveal"><p><strong>Yo estoy caminando.</strong> Levante la mano en el momento en que algo no cuadre, no al final. Hay tres errores provocados a propósito con <span class="term">try / except</span>: cuando vea uno, no es que se le rompió el cuaderno.</p></div>
+</section>
+
+<!-- ======================= DIVISORIA BLOQUE 3 ======================= -->
+<section class="slide divider" data-block="3" data-title="Divisoria · Bloque 3">
+  <span class="n">03</span>
+  <svg class="branch" viewBox="0 0 320 26" aria-hidden="true">
+    <path d="M2 13H120 M120 13V4H240 M120 13V22H240"></path>
+    <circle cx="120" cy="13" r="5"></circle>
+  </svg>
+  <p class="kicker">Bloque tres</p>
+  <h2>Reto &middot; Su primer modelo, solo</h2>
+  <p class="lead">Otro dominio, otro archivo, otra escala, la misma técnica. Abra <span class="term">reto/reto_starter.ipynb</span> y trabaje por su cuenta. Yo sigo caminando por el salón; lo que no alcance a cerrar en el salón se cierra en casa.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="El dataset del reto">
+  <p class="kicker reveal">No hay archivo CSV: el dataset viene dentro de scikit-learn</p>
+  <h2 class="reveal">Diez mediciones, 442 pacientes</h2>
+  <p class="lead reveal">Se llama <span class="term">load_diabetes</span> y se importa desde <span class="term">sklearn.datasets</span>: viene dentro de la librería, así que no hay archivo que descargar ni ruta que equivocar. La línea exacta está escrita en la primera celda del starter.</p>
+  <div class="cols c3 reveal">
+    <div class="col on"><span class="k">Los datos</span><h3>442 filas, 10 variables</h3>
+      <p>Edad, sexo, índice de masa corporal, presión arterial y seis análisis de sangre. Todas numéricas y ya estandarizadas.</p></div>
+    <div class="col on"><span class="k">La variable objetivo</span><h3>Progresión a un año</h3>
+      <p>Un número continuo. <b>La primera pregunta del reto es responder por escrito si esto es regresión o clasificación, y por qué.</b></p></div>
+    <div class="col volt"><span class="k">Limpieza</span><h3>Ninguna</h3>
+      <p>Sin nulos, sin convenciones raras. Hoy el trabajo es el modelo, no el archivo.</p></div>
+  </div>
+  <p class="lead reveal">La pregunta de fondo: ¿se puede anticipar la progresión de la enfermedad a partir de las mediciones de hoy? Y si se puede, ¿qué medición es la que más informa?</p>
+</section>
+
+<section class="slide" data-block="3" data-title="Aviso: aquí todo sobreajusta">
+  <p class="kicker reveal">Léalo antes de empezar, no después de frustrarse</p>
+  <p class="claim reveal">En este dataset <mark>todos los modelos sobreajustan</mark>. Incluso el más simple.</p>
+  <p class="lead reveal">442 filas y diez variables ruidosas es un problema difícil, y un árbol de decisión individual no es la herramienta adecuada. <b>No hizo nada mal.</b> La conclusión correcta no es "encontré el mejor modelo", es algo del estilo: el mejor <span class="term">max_depth</span> está entre 3 y 5, con un R2 de prueba alrededor de 0.33, y aun así el gap supera 0.10.</p>
+  <div class="callout warn reveal"><p><b>Que un modelo salga malo no es un error suyo. No reportarlo sí lo es.</b> El semestre pasado varios escondieron el gap, y eso es lo único de esta lista que sí cuenta como falla.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Las cuatro partes del reto">
+  <p class="kicker reveal">Se trabaja en clase con acompañamiento; lo que quede se cierra en casa</p>
+  <h2 class="reveal">Qué hay que entregar</h2>
+  <ol class="steps reveal">
+    <li><b>Cargar, explorar y partir.</b> 80/20 con <span class="term">random_state=42</span>, y por escrito: ¿regresión o clasificación, y por qué?</li>
+    <li><b>Curva de overfitting.</b> Un árbol por cada <span class="term">max_depth</span> en 2, 3, 5, 10, 20 y None. Tabla con gap, gráfico de las dos curvas, y la profundidad elegida <b>justificada con el gap</b>.</li>
+    <li><b>Clasificador.</b> Terciles con <span class="term">pd.qcut</span>, tres profundidades, y la accuracy contra el punto de referencia: adivinar acierta un tercio.</li>
+    <li><b>Importancia de variables.</b> Gráfico ordenado, e interpretación que diga <b>explícitamente que no es causalidad</b>.</li>
+  </ol>
+  <p class="lead reveal">Opcional, para cerrar en casa: <span class="term">min_samples_leaf</span> como segunda palanca contra el sobreajuste, la comparación contra el modelo tonto y dibujar el árbol con <span class="term">plot_tree</span>.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="Dónde se va a atascar">
+  <p class="kicker reveal">Cuatro tropiezos previstos, con su salida</p>
+  <div class="cols c2 reveal">
+    <div class="col warn"><span class="k">El bucle guarda solo el último</span><h3>Falta el append</h3>
+      <p>El <span class="term">append</span> va <b>dentro</b> del bucle, no después.</p></div>
+    <div class="col warn"><span class="k">TypeError al imprimir</span><h3>None no es texto</h3>
+      <p><span class="term">max_depth=None</span> rompe el formato: hay que envolverlo en <span class="term">str()</span>. La pista está en el starter.</p></div>
+    <div class="col warn"><span class="k">Categorías desbalanceadas</span><h3>Terciles, no valores fijos</h3>
+      <p><span class="term">pd.qcut(y, 3, labels=[...])</span> corta por terciles y deja los tres grupos parecidos.</p></div>
+    <div class="col warn"><span class="k">Métricas cruzadas</span><h3>No se mezclan</h3>
+      <p>Clasificación usa <span class="term">accuracy_score</span>; regresión usa <span class="term">r2_score</span> y <span class="term">mean_absolute_error</span>.</p></div>
+  </div>
+  <div class="callout reveal"><p><b>Para el segundo:</b> el starter trae escrita, en un comentario, la línea de impresión que envuelve la profundidad en <span class="term">str()</span> antes de darle formato. No hay que inventarla: hay que leerla.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Cómo se valora el reto">
+  <p class="kicker reveal">Este reto no produce nota ni cumplido: es práctica con el instrumento de los momentos</p>
+  <h2 class="reveal">Saber, Ser y Hacer</h2>
+  <div class="cols c3 reveal">
+    <div class="col on"><span class="k">Saber</span><h3>El criterio</h3>
+      <p>La profundidad elegida se justifica <b>con el gap</b>, no con el máximo de la prueba. Y las importancias se leen como asociación, no como causa.</p></div>
+    <div class="col on"><span class="k">Ser</span><h3>La honestidad</h3>
+      <p>El sobreajuste se reporta. Ninguna métrica de entrenamiento se presenta como el desempeño del modelo.</p></div>
+    <div class="col on"><span class="k">Hacer</span><h3>La ejecución</h3>
+      <p>Partición con semilla, evaluación <b>solo</b> sobre prueba, las seis profundidades con tabla y gráfico, terciles bien construidos y accuracy comparada contra el punto de referencia.</p></div>
+  </div>
+  <div class="callout warn reveal"><p><b>Topes por omisión</b>, que ponen techo a una dimensión y nunca restan: reportar la métrica de entrenamiento o esconder el gap deja <b>Ser</b> en Insuficiente; concluir que <span class="term">max_depth=None</span> es el mejor modelo porque su entrenamiento da 1.000, o leer la importancia como causalidad, deja <b>Saber</b> en Insuficiente.</p></div>
+</section>
+
+<!-- ======================= CIERRE ======================= -->
+<section class="slide" data-title="Cierre: la capa de ML del Momento 3">
+  <p class="kicker reveal">La sección de machine learning de su proyecto final</p>
+  <h2 class="reveal">Cuatro preguntas, y son la plantilla</h2>
+  <ol class="steps reveal">
+    <li><b>¿Qué predijo?</b> La variable objetivo, y por qué le importa a alguien.</li>
+    <li><b>¿Es regresión o clasificación?</b> Y por qué esa y no la otra.</li>
+    <li><b>¿Cómo evaluó?</b> La métrica sobre el conjunto de <b>prueba</b>, más el gap contra entrenamiento.</li>
+    <li><b>¿Qué decisión soporta la predicción?</b> Si no soporta ninguna, el modelo sobra.</li>
+  </ol>
+  <div class="callout reveal"><p><b>La estructura del Momento 2 se conserva.</b> El machine learning es una capa que se agrega a la narrativa que ya tienen, no un reemplazo. El dashboard y el modelo son el medio; la historia sigue siendo el entregable.</p></div>
+</section>
+
+<section class="slide" data-title="Los tres errores que hunden la sustentación">
+  <p class="kicker reveal">Vistos el semestre pasado, los tres</p>
+  <h2 class="reveal">Lo que no puede pasar en la clase 15</h2>
+  <ul class="bullets reveal">
+    <li class="no"><b>Reportar la métrica de entrenamiento</b> como si fuera el desempeño del modelo. Es autocalificarse el taller.</li>
+    <li class="no"><b>Meter en X una variable que es la respuesta disfrazada.</b> El R2 se dispara y el modelo no sirve para nada.</li>
+    <li class="no"><b>Entrenar un modelo que no responde ninguna</b> de las preguntas de investigación del proyecto.</li>
+  </ul>
+  <div class="callout volt reveal"><p>Y el requisito de la clase 13 sigue en pie: <b>mínimo dos intervalos de confianza y una prueba de hipótesis</b>. La capa de machine learning se suma a eso; no lo reemplaza.</p></div>
+</section>
+
+<section class="slide" data-title="Cierre">
+  <p class="kicker reveal">Nos vemos en la clase 15</p>
+  <p class="claim reveal">Ya saben entrenar un modelo. <span>Lo difícil es decir la verdad sobre él.</span></p>
+  <p class="lead reveal">La próxima clase es la sustentación del Momento 3: el proyecto completo, con los cuatro bloques del proceso, en un turno por equipo con el mismo formato de los momentos 1 y 2. Lleven el gap escrito, no escondido.</p>
+</section>
+
+</main>
+
+<script>
+/* ============================================================================
+   CONTROLADOR DE DIAPOSITIVAS (invariante 1)
+   Mismos atajos y misma navegación en las 16 clases del curso.
+   Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
+   swipe táctil · rueda del ratón.
+   ========================================================================= */
+class SlidePresentation {
+  constructor(root){
+    this.slides = [...root.querySelectorAll('.slide')];
+    this.i = 0;
+    this.bar = document.querySelector('.progress-bar');
+    this.dotsNav = document.querySelector('.nav-dots');
+    this.chip = document.querySelector('.block-chip');
+    this.index = document.querySelector('.slide-index');
+    this.blockNames = {'1':'Bloque 1 · Teoría','2':'Bloque 2 · Demo guiado','3':'Bloque 3 · Reto'};
+
+    this.buildFooters();
+    this.buildDots();
+    this.buildIndex();
+    this.bindKeys();
+    this.bindPointer();
+    this.observe();
+    this.sync();
+  }
+
+  /* Invariante 7: el marcado institucional va en el pie de TODAS las slides.
+     Se inyecta desde aquí para que no pueda faltar en ninguna. */
+  buildFooters(){
+    this.slides.forEach(s => {
+      const f = document.createElement('p');
+      f.className = 'slide-footer';
+      const b = s.dataset.block;
+      f.innerHTML = '<span>Analítica de Datos · Clase 14 · M3</span>' +
+        (b ? '<span class="fb">Bloque ' + b + '</span>' : '');
+      s.appendChild(f);
+    });
+  }
+
+  buildDots(){
+    this.slides.forEach((s, k) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Ir a la diapositiva ' + (k + 1) + ': ' + (s.dataset.title || ''));
+      b.addEventListener('click', () => this.go(k));
+      this.dotsNav.appendChild(b);
+    });
+    this.dots = [...this.dotsNav.children];
+  }
+
+  buildIndex(){
+    const ol = this.index.querySelector('ol');
+    let lastBlock;
+    this.slides.forEach((s, k) => {
+      const b = s.dataset.block || null;
+      if (b !== lastBlock){
+        const h = document.createElement('li');
+        h.className = 'bk';
+        h.textContent = b ? this.blockNames[b] : (k === 0 ? 'Apertura' : 'Cierre');
+        ol.appendChild(h);
+        lastBlock = b;
+      }
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerHTML = '<span class="ix">' + String(k + 1).padStart(2, '0') + '</span>';
+      btn.appendChild(document.createTextNode(s.dataset.title || ''));
+      btn.addEventListener('click', () => { this.toggleIndex(false); this.go(k); });
+      li.appendChild(btn);
+      ol.appendChild(li);
+    });
+  }
+
+  go(n){
+    this.i = Math.max(0, Math.min(n, this.slides.length - 1));
+    this.slides[this.i].scrollIntoView({behavior: 'smooth', block: 'start'});
+    this.sync();
+  }
+  next(){ this.go(this.i + 1); }
+  prev(){ this.go(this.i - 1); }
+
+  sync(){
+    this.bar.style.width = ((this.i + 1) / this.slides.length * 100) + '%';
+    this.dots.forEach((d, k) => d.setAttribute('aria-current', String(k === this.i)));
+    const slide = this.slides[this.i];
+    const b = slide.dataset.block;
+    if (b && !slide.classList.contains('divider')){
+      this.chip.textContent = 'Bloque ' + b;
+      this.chip.hidden = false;
+    } else {
+      this.chip.hidden = true;
+    }
+  }
+
+  bindKeys(){
+    addEventListener('keydown', e => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const fwd  = ['ArrowRight', 'ArrowDown', ' ', 'Spacebar', 'PageDown'];
+      const back = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+      if (fwd.includes(e.key))       { e.preventDefault(); this.next(); }
+      else if (back.includes(e.key)) { e.preventDefault(); this.prev(); }
+      else if (e.key === 'Home')     { e.preventDefault(); this.go(0); }
+      else if (e.key === 'End')      { e.preventDefault(); this.go(this.slides.length - 1); }
+      else if (e.key === 'Escape')   { e.preventDefault(); this.toggleIndex(); }
+    });
+  }
+
+  bindPointer(){
+    let x0 = null, lock = false;
+    addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, {passive: true});
+    addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) (dx < 0 ? this.next() : this.prev());
+      x0 = null;
+    }, {passive: true});
+    addEventListener('wheel', e => {
+      if (lock || Math.abs(e.deltaY) < 20) return;
+      lock = true;
+      (e.deltaY > 0 ? this.next() : this.prev());
+      setTimeout(() => { lock = false; }, 600);
+    }, {passive: true});
+  }
+
+  toggleIndex(force){
+    const open = force === undefined ? !this.index.classList.contains('open') : force;
+    this.index.classList.toggle('open', open);
+  }
+
+  /* Anima la entrada de cada slide y mantiene la barra y los dots sincronizados
+     cuando se navega con scroll o swipe en vez de con el teclado. */
+  observe(){
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('in-view');
+        const k = this.slides.indexOf(en.target);
+        if (k !== -1 && k !== this.i){ this.i = k; this.sync(); }
+      });
+    }, {threshold: 0.55});
+    this.slides.forEach(s => io.observe(s));
+  }
+}
+
+addEventListener('DOMContentLoaded', () => new SlidePresentation(document.body));
+</script>
+</body>
+</html>

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 13 · Estadística inferencial | Analítica de Datos</title>
+<meta name="description" content="Clase 13 de Analítica de Datos: estadística inferencial. Muestra y población, distribuciones, intervalos de confianza y lo que el 95% sí significa, pruebas de hipótesis con la analogía del tribunal, p-valor y sus tres malinterpretaciones, errores tipo I y II, y por qué significativo no es importante. Demo con scipy sobre indicadores educativos del MEN y reto de inferencia con reporte en lenguaje de negocio.">
+<style>
+/* ============================================================================
+   CLASE 13 — "TINTA NOCTURNA"
+   Estética documentada en clase13/slides/ESTETICA.md
+   Contrato invariante: design/CONTRATO.md (9 invariantes)
+
+   Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
+   Todo el CSS, el JS y las cuatro figuras (SVG inline) viven en este archivo.
+
+   Motivo rector: Paper & Ink invertido. La clase 4 fue pergamino y tinta —
+   describir lo que se midió. La 13 es la misma familia tipográfica a fondo de
+   tinta: ahora se afirma algo sobre lo que NO se midió, y se afirma a oscuras.
+   Dos colores con significado fijo en todo el deck, y nunca otro:
+     verdigris (--hit)  = el método acertó / evidencia a favor
+     óxido    (--miss)  = el método falló / la trampa / lo que está mal
+   Un color no decora nada aquí: si algo es verdigris u óxido, es porque
+   significa acierto o fallo. Es la misma disciplina que el deck pide en el reto.
+
+   Las cuatro figuras NO son ilustraciones: salen de correr el mismo código del
+   demo, con las mismas semillas (13, 7, 2013, 1305) sobre el mismo CSV. Lo que
+   se proyecta es literalmente lo que al estudiante le va a salir en su cuaderno.
+
+   Restricción del contrato respetada por construccion: el deck no lleva NINGUN
+   bloque de codigo, en ningun bloque. Los nombres de funciones se escriben con
+   `.term`, que es texto corrido. El codigo vive en el cuaderno, ya escrito.
+   ========================================================================= */
+
+/* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
+:root{
+  --bg:#14110D;          /* tinta cálida, casi negra */
+  --bg2:#1A1611;         /* fondo de las divisorias */
+  --surface:#211C15;     /* bloques de código */
+  --surface-2:#272117;
+  --line:#3B3227;        /* filete */
+  --fg:#EFE6D5;          /* pergamino */
+  --muted:#A8977E;       /* secundario, AA sobre #14110D */
+  --accent:#D4703F;      /* óxido: el acento del deck */
+  --accent-ink:#14110D;
+  --hit:#7FB3A6;         /* verdigris: acierto */
+  --miss:#D4703F;        /* óxido: fallo, trampa, error */
+  --neutral:#8B7F6B;     /* dato sin énfasis */
+  --code-fg:#EFE6D5;
+
+  --font-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --font-body:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* Escala tipográfica. El piso del invariante 6 no se negocia. */
+  --fs-title:clamp(1.9rem,5.2vw,4.2rem);
+  --fs-h2:clamp(1.5rem,3.2vw,2.7rem);
+  --fs-h3:clamp(1.05rem,1.9vw,1.5rem);
+  --fs-body:clamp(0.95rem,1.55vw,1.4rem);
+  --fs-small:clamp(0.78rem,1.02vw,0.95rem);
+  --fs-micro:clamp(0.66rem,0.85vw,0.8rem);
+  --fs-code:clamp(0.85rem,1.18vw,1.24rem);
+
+  --pad:clamp(1.4rem,3.6vw,4rem);
+  --gap:clamp(0.55rem,1.4vw,1.4rem);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+body{
+  height:100%;overflow-x:hidden;
+  background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);font-size:var(--fs-body);line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+/* Invariante 6: piso absoluto de 22px reales a 1280x720 en adelante. */
+@media (min-width:1200px){body{font-size:max(22px,var(--fs-body))}}
+
+/* Atmósfera: dos manchas de luz muy tenues. Es todo el ornamento del deck. */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 12% -10%,rgba(212,112,63,.10),transparent 58%),
+    radial-gradient(90% 80% at 100% 108%,rgba(127,179,166,.07),transparent 60%);
+}
+
+/* ---- Invariante 9: viewport fitting. Nunca hay scroll dentro de una slide ---- */
+.slide{
+  width:100vw;height:100vh;height:100dvh;overflow:hidden;
+  padding:var(--pad) calc(var(--pad) + 1.6rem) calc(var(--pad) + 1.1rem) var(--pad);
+  scroll-snap-align:start;
+  display:flex;flex-direction:column;justify-content:center;gap:var(--gap);
+  position:relative;z-index:1;
+}
+.slide > *{max-width:100%}
+
+/* Marcado institucional (invariante 7). Lo inyecta el JS en TODAS las slides. */
+.slide-footer{
+  position:absolute;left:var(--pad);right:var(--pad);bottom:calc(var(--pad)/2.2);
+  display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  font-family:var(--font-mono);
+  font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+}
+.slide-footer .fb{color:var(--accent)}
+/* El pie es un <p> y las reglas de ancho de p (incluida la de las divisorias) lo
+   partirian en dos lineas. Esta regla tiene mas especificidad y lo impide. */
+.slide > .slide-footer{max-width:none}
+.slide-footer span{white-space:nowrap}
+
+/* ---- Tipografía ---- */
+h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:600;
+   line-height:1.02;letter-spacing:-.02em;max-width:18ch}
+h1 em{font-style:italic;color:var(--accent)}
+h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:600;
+   line-height:1.08;letter-spacing:-.015em;max-width:27ch}
+h3{font-family:var(--font-display);font-size:var(--fs-h3);font-weight:600}
+p{max-width:62ch}
+strong{color:var(--accent);font-weight:600}
+.kicker{font-family:var(--font-mono);font-size:var(--fs-small);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted)}
+.lead{color:var(--muted);max-width:58ch}
+.rule{height:1px;width:100%;background:var(--line);flex:none}
+.rule.acc{height:3px;width:clamp(70px,11vw,150px);background:var(--accent)}
+.claim{font-family:var(--font-display);font-weight:600;letter-spacing:-.02em;
+  font-size:clamp(1.5rem,4vw,3.3rem);line-height:1.1;max-width:26ch}
+.claim span{color:var(--accent)}
+.claim span.hit{color:var(--hit)}
+/* Nombres de funciones dentro de texto corrido. NO es un bloque de código:
+   se usa también en el bloque 1, donde el contrato lo permite explícitamente. */
+.term{font-family:var(--font-mono);font-size:.86em;color:var(--hit);white-space:nowrap}
+.num{font-family:var(--font-mono);font-size:.92em;color:var(--fg)}
+.big{position:absolute;right:calc(var(--pad)/1.1);top:50%;transform:translateY(-50%);
+  font-family:var(--font-display);font-weight:600;font-size:clamp(6rem,19vw,15rem);line-height:1;
+  color:var(--surface-2);pointer-events:none;user-select:none;z-index:0}
+.slide > :not(.big):not(.slide-footer){position:relative;z-index:1}
+
+/* ---- Portada ---- */
+.cover .who{color:var(--muted);font-size:var(--fs-small);letter-spacing:.06em}
+.cover .who b{color:var(--fg);font-weight:600}
+
+/* ---- Listas ---- */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.9rem)}
+/* El item es un bloque, no un flex container: con display:flex cada nodo de texto
+   y cada <strong> del item se vuelve un flex item independiente y el contenido se
+   compone en columnas en vez de fluir inline. El marcador es un inline-block, que
+   conserva la alineacion por baseline, y la sangria francesa (padding-left mas
+   text-indent negativo del mismo valor) reproduce el ancho del marcador mas su
+   separacion, de modo que la composicion no cambia.
+   1.2em = .5em de marcador mas .7em de separacion. */
+ul.bullets li{display:block;max-width:64ch;padding-left:1.2em;text-indent:-1.2em}
+ul.bullets li::before{content:"";display:inline-block;width:.5em;height:.5em;margin-right:.7em;
+  background:var(--neutral);transform:translateY(-.1em)}
+ul.bullets li.on::before{background:var(--hit)}
+ul.bullets li.no::before{background:var(--miss)}
+ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.9rem)}
+/* El contador en un ::before inline-block reporta ancho 0 en Chrome: hay que darselo
+   explicito. 1.205em y 1em van en la escala del marcador (.85em); 1.874em va en la
+   del item y es donde arranca el texto. */
+ol.steps li{counter-increment:s;display:block;max-width:66ch;padding-left:1.874em;
+  text-indent:-1.874em}
+ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-mono);
+  color:var(--accent);font-size:.85em;display:inline-block;width:1.205em;margin-right:1em}
+ul.check{list-style:none;display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(.25rem,.8vh,.6rem) clamp(1rem,3vw,3rem)}
+/* Misma sangria francesa. Los 2px son el borde de la casilla, que no entra en su
+   width (content-box): .72em de casilla mas 2px de filete mas .65em de separacion. */
+ul.check li{display:block;font-size:clamp(.85rem,1.25vw,1.32rem);line-height:1.3;
+  padding-left:calc(1.37em + 2px);text-indent:calc(-1.37em - 2px)}
+ul.check li::before{content:"";display:inline-block;width:.72em;height:.72em;margin-right:.65em;
+  border:1px solid var(--neutral);transform:translateY(.02em)}
+
+/* ---- Columnas ---- */
+.cols{display:grid;gap:clamp(.7rem,1.8vw,2.2rem)}
+.cols.c4{grid-template-columns:repeat(4,1fr)}
+.cols.c3{grid-template-columns:repeat(3,1fr)}
+.cols.c2{grid-template-columns:repeat(2,1fr)}
+.col{border-top:1px solid var(--line);padding-top:.6em;min-width:0;
+  display:flex;flex-direction:column;gap:.3em}
+.col.on{border-top:3px solid var(--hit)}
+.col.warn{border-top:3px solid var(--miss)}
+.col .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted)}
+.col.on .k{color:var(--hit)}
+.col.warn .k{color:var(--miss)}
+.col p{font-size:clamp(.85rem,1.2vw,1.3rem);color:var(--muted);line-height:1.35;max-width:none}
+.col p b{color:var(--fg);font-weight:600}
+
+/* ---- Tablas: solo filetes horizontales ---- */
+.table-wrap{flex:1;min-height:0;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:clamp(.8rem,1.14vw,1.26rem);line-height:1.32}
+caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:var(--fs-micro);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:.6em}
+th,td{border-bottom:1px solid var(--line);padding:clamp(.26rem,.66vw,.62rem) clamp(.35rem,.7vw,.8rem);
+  text-align:left;vertical-align:top}
+thead th{font-family:var(--font-mono);font-weight:400;font-size:.86em;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--fg)}
+tbody th{font-weight:600;color:var(--fg)}
+tbody th .mono,td .mono{font-family:var(--font-mono);font-size:.92em}
+tbody tr.on th{color:var(--hit)}
+tbody tr.no th{color:var(--miss)}
+td em{font-style:normal;color:var(--muted)}
+td b{color:var(--fg);font-weight:600}
+td.si{color:var(--hit)}
+td.no{color:var(--miss)}
+
+/* ---- Cita / advertencia ---- */
+.callout{border-left:3px solid var(--hit);padding-left:clamp(.7rem,1.6vw,1.3rem);max-width:70ch}
+.callout.warn{border-left-color:var(--miss)}
+.callout p{max-width:none;color:var(--muted)}
+.callout p b{color:var(--fg);font-weight:600}
+
+/* ---- Enfrentamiento correcto / incorrecto ---- */
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:clamp(.8rem,2vw,2.4rem)}
+.vs-card{border-top:3px solid var(--miss);padding-top:.6em;display:flex;flex-direction:column;gap:.4em}
+.vs-card.ok{border-top-color:var(--hit)}
+.vs-card .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--miss)}
+.vs-card.ok .k{color:var(--hit)}
+.vs-card q{font-family:var(--font-display);font-size:clamp(1rem,1.7vw,1.5rem);line-height:1.3;
+  display:block;quotes:"\201C" "\201D"}
+.vs-card p{font-size:clamp(.82rem,1.15vw,1.2rem);color:var(--muted);max-width:none}
+
+/* ---- La fórmula del intervalo (bloque 1: texto, no código) ---- */
+.formula{font-family:var(--font-mono);font-size:clamp(.9rem,1.6vw,1.6rem);line-height:1.9;
+  color:var(--fg);border-left:3px solid var(--accent);padding-left:clamp(.8rem,1.8vw,1.5rem)}
+.formula .er{color:var(--hit)}
+.formula .lb{color:var(--muted);font-size:.8em;letter-spacing:.1em;text-transform:uppercase}
+
+/* ---- Gráficos SVG ---- */
+.fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+svg.fig{width:100%;height:auto;max-height:52vh;display:block}
+svg.fig .ax{stroke:var(--muted);stroke-width:1;fill:none;opacity:.75}
+svg.fig .grid{stroke:var(--line);stroke-width:1;fill:none}
+svg.fig .tick{font-family:var(--font-mono);font-size:14px;fill:var(--muted)}
+svg.fig .axlab{font-family:var(--font-mono);font-size:15px;fill:var(--muted)}
+svg.fig .figtitle{font-family:var(--font-mono);font-size:16px;fill:var(--fg)}
+svg.fig .truth{stroke:var(--fg);stroke-width:2;fill:none}
+svg.fig .truthlab{font-family:var(--font-mono);font-size:15px;fill:var(--fg)}
+svg.fig .hit{stroke:var(--hit);stroke-width:2.4;stroke-linecap:round;fill:none}
+svg.fig .miss{stroke:var(--miss);stroke-width:4;stroke-linecap:round;fill:none}
+svg.fig .hitd{fill:var(--hit)}
+svg.fig .missd,svg.fig .missdot{fill:var(--miss)}
+svg.fig .misslab{font-family:var(--font-mono);font-size:14px;fill:var(--miss)}
+svg.fig .hitlab{font-family:var(--font-mono);font-size:15px;fill:var(--hit)}
+svg.fig .barA{fill:var(--neutral)}
+svg.fig .barB{fill:var(--hit)}
+svg.fig .barMiss{fill:var(--miss)}
+svg.fig .ring1,svg.fig .ring2,svg.fig .ring3{fill:none;stroke:var(--line);stroke-width:1.5}
+svg.fig .ring1{stroke:var(--neutral)}
+svg.fig .truthdot{fill:var(--fg)}
+svg.fig .bandzone{fill:var(--hit);fill-opacity:.20;stroke:var(--hit);stroke-width:1.5}
+svg.fig .boxA{fill:var(--hit);fill-opacity:.45;stroke:var(--hit);stroke-width:1.5}
+svg.fig .boxB{fill:var(--miss);fill-opacity:.40;stroke:var(--miss);stroke-width:1.5}
+svg.fig .median{stroke:var(--fg);stroke-width:2.5}
+svg.fig .whisk{stroke:var(--muted);stroke-width:1.5;fill:none}
+svg.fig .outlier{fill:var(--muted)}
+svg.fig .bracket{fill:none;stroke:var(--muted);stroke-width:1.5}
+
+/* ---- Código (solo bloques 2 y 3) ---- */
+pre{background:var(--surface);color:var(--code-fg);border-left:3px solid var(--accent);
+  padding:clamp(.6rem,1.3vw,1.1rem) clamp(.8rem,1.6vw,1.4rem);overflow:hidden;
+  font-family:var(--font-mono);font-size:var(--fs-code);line-height:1.5;max-width:min(100%,86ch)}
+pre code{font:inherit;color:inherit;background:none}
+pre .c{color:#8B7F6B}      /* comentario */
+pre .k{color:#7FB3A6}      /* palabra clave o función */
+pre .s{color:#C9A227}      /* cadena */
+pre .n{color:#D9A26B}      /* número */
+pre .e{color:#D4703F}      /* lo que está mal */
+.out{font-family:var(--font-mono);font-size:clamp(.8rem,1.1vw,1.16rem);color:var(--muted);
+  line-height:1.5;border-left:3px solid var(--line);padding-left:clamp(.7rem,1.5vw,1.2rem)}
+.out b{color:var(--fg);font-weight:600}
+.out .hit{color:var(--hit)}
+.out .miss{color:var(--miss)}
+
+/* ---- Divisorias de bloque (invariante 3) ---- */
+.divider{justify-content:center;gap:clamp(.35rem,.9vw,.9rem);background:var(--bg2)}
+.divider .n{font-family:var(--font-display);font-weight:600;line-height:.8;letter-spacing:-.05em;
+  font-size:clamp(4.5rem,16vw,13rem);color:var(--surface-2)}
+.divider .rule.acc{width:100%;height:5px;background:var(--accent)}
+.divider h2{font-size:clamp(1.7rem,4.4vw,3.4rem);max-width:22ch}
+.divider p{max-width:54ch}
+
+/* ---- Navegación (invariante 1) ---- */
+.progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
+  z-index:120;transition:width .3s var(--ease)}
+.nav-dots{position:fixed;right:clamp(.45rem,1.1vw,1rem);top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:clamp(3px,.4vh,6px);z-index:120}
+.nav-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--muted);
+  background:transparent;cursor:pointer}
+.nav-dots button[aria-current="true"]{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
+.nav-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.block-chip{position:fixed;top:clamp(.6rem,1.6vh,1.2rem);right:clamp(1.4rem,3vw,2.6rem);z-index:120;
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent-ink);background:var(--accent);padding:.35em .8em}
+.block-chip[hidden]{display:none}
+
+/* Índice de slides (Esc) */
+.slide-index{position:fixed;inset:0;z-index:200;background:rgba(20,17,13,.985);
+  padding:clamp(1.2rem,4vw,3rem);overflow:auto;display:none}
+.slide-index.open{display:block}
+.slide-index h2{margin-bottom:1rem;color:var(--accent)}
+.slide-index ol{list-style:none;columns:2;column-gap:2.5rem;font-size:clamp(.78rem,1.05vw,.95rem)}
+.slide-index li{break-inside:avoid;margin-bottom:.35em}
+.slide-index button{background:none;border:0;color:var(--fg);font:inherit;text-align:left;
+  cursor:pointer;padding:.15em 0;width:100%}
+.slide-index button:hover,.slide-index button:focus-visible{color:var(--accent)}
+.slide-index .ix{font-family:var(--font-mono);color:var(--muted);margin-right:.6em}
+.slide-index .bk{color:var(--accent);font-family:var(--font-mono);font-size:.8em;
+  letter-spacing:.16em;text-transform:uppercase;margin:1.2em 0 .4em;break-after:avoid}
+
+/* ---- Animaciones de entrada: una sola, sobria ---- */
+.reveal{opacity:0;transform:translateY(16px);
+  transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.slide.in-view .reveal{opacity:1;transform:none}
+.slide.in-view .reveal:nth-child(1){transition-delay:.04s}
+.slide.in-view .reveal:nth-child(2){transition-delay:.10s}
+.slide.in-view .reveal:nth-child(3){transition-delay:.16s}
+.slide.in-view .reveal:nth-child(4){transition-delay:.22s}
+.slide.in-view .reveal:nth-child(5){transition-delay:.28s}
+.slide.in-view .reveal:nth-child(6){transition-delay:.34s}
+
+/* ---- Breakpoints obligatorios de alto (invariante 9) ---- */
+@media (max-height:700px){
+  :root{--pad:clamp(1rem,2.4vw,2rem);--gap:clamp(.4rem,1vw,.9rem)}
+  svg.fig{max-height:48vh}
+}
+@media (max-height:600px){
+  :root{--fs-title:clamp(1.6rem,4.2vw,2.8rem);--fs-h2:clamp(1.2rem,2.9vw,2rem);
+        --fs-h3:clamp(.95rem,1.6vw,1.2rem)}
+  .big{display:none}
+  svg.fig{max-height:44vh}
+}
+@media (max-height:500px){
+  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-code:clamp(.72rem,1vw,.9rem)}
+  .nav-dots{display:none}
+  svg.fig{max-height:40vh}
+}
+@media (max-width:900px){
+  .cols.c4{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:600px){
+  .cols.c4,.cols.c3,.cols.c2,.versus{grid-template-columns:1fr}
+  ul.check{grid-template-columns:1fr}
+  .slide-index ol{columns:1}
+}
+
+/* ---- prefers-reduced-motion (invariante 9) ---- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+
+/* ============================================================================
+   IMPRESIÓN A PDF (invariante 5) — idéntica en los 16 decks.
+   Una slide por página, horizontal, fondo claro, sin dots ni barra.
+   Este deck es oscuro: la hoja invierte los tokens. Las figuras SVG están
+   pintadas con var(--...), así que se repintan solas sin tocar el marcado.
+   ========================================================================= */
+@media print{
+  @page{size:landscape;margin:0}
+  :root{--bg:#fff;--bg2:#f5f3ef;--surface:#f4f2ee;--surface-2:#e9e6df;--line:#c9c4bb;
+        --fg:#111;--muted:#4a463f;--accent:#9C4A1A;--accent-ink:#fff;
+        --hit:#1F6B5C;--miss:#9C4A1A;--neutral:#8C8477;--code-fg:#111}
+  html,body{height:auto;background:#fff!important;color:#111!important}
+  body::before{display:none!important}
+  .slide{height:100vh;page-break-after:always;break-after:page;
+    background:#fff!important;color:#111!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .divider{background:#fff!important;border-top:8px solid #9C4A1A}
+  .divider .n{color:#e9e6df}
+  pre{background:#f4f2ee!important;color:#111!important;border:1px solid #c9c4bb;
+    border-left:3px solid #9C4A1A}
+  pre .c{color:#6b665d!important} pre .k{color:#1F6B5C!important} pre .s{color:#7A5A00!important}
+  pre .n{color:#8A5A00!important} pre .e{color:#9C4A1A!important}
+  .big{display:none}
+  .progress-bar,.nav-dots,.slide-index,.block-chip{display:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" role="presentation"></div>
+<nav class="nav-dots" aria-label="Navegación de diapositivas"></nav>
+<div class="block-chip" hidden></div>
+
+<div class="slide-index" role="dialog" aria-label="Índice de diapositivas" aria-modal="true">
+  <h2>Índice</h2>
+  <ol></ol>
+</div>
+
+<main>
+
+<!-- ======================= PORTADA ======================= -->
+<section class="slide cover" data-title="Portada">
+  <p class="kicker reveal">Analítica de Datos &middot; Clase 13 &middot; Momento 3</p>
+  <div class="rule acc reveal"></div>
+  <h1 class="reveal">Estadística <em>inferencial</em></h1>
+  <p class="lead reveal">Qué puedo afirmar sobre lo que <b>no</b> medí, y con cuánta seguridad.</p>
+  <p class="who reveal"><b>Julián Garzón</b> &middot; Ingeniería de Sistemas &middot; Universidad Cooperativa de Colombia</p>
+</section>
+
+<!-- ======================= OBJETIVOS ======================= -->
+<section class="slide" data-title="Lo que van a poder hacer al salir">
+  <p class="kicker reveal">Objetivos verificables &middot; se comprueban hoy, no en la clase 15</p>
+  <h2 class="reveal">Al final de hoy, usted puede hacer esto solo</h2>
+  <ol class="steps reveal">
+    <li>Explicar por qué una muestra no es la población, y qué se rompe cuando se olvida.</li>
+    <li>Construir un intervalo de confianza y <b>enunciar lo que sí significa</b>.</li>
+    <li>Escribir H0 y H1 de una pregunta de negocio, <b>antes</b> de tocar los datos.</li>
+    <li>Definir el p-valor empezando por "<b>si</b> H0 fuera cierta".</li>
+    <li>Distinguir error tipo I de error tipo II y decir cuál cuesta más caro.</li>
+    <li>Redactar una conclusión con tamaño del efecto, intervalo, p-valor y frase llana.</li>
+  </ol>
+  <div class="callout warn reveal"><p>El objetivo 2 y el 4 son <b>los que más se fallan y más caro cuestan</b>: un informe puede tener el código perfecto y la conclusión al revés, y eso no lo detecta ningún intérprete de Python.</p></div>
+</section>
+
+<!-- ============================================================
+     BLOQUE 1 · TEORÍA — cero código, por contrato
+     ============================================================ -->
+<section class="slide divider" data-block="1" data-title="Divisoria · Bloque 1 · Teoría">
+  <p class="n reveal">01</p>
+  <div class="rule acc reveal"></div>
+  <h2 class="reveal">Bloque 1 &middot; Teoría</h2>
+  <p class="lead reveal">Sin código, a propósito. Hoy la sintaxis es lo barato: son cuatro llamadas. Lo caro es entender qué se puede afirmar y qué no. Si el concepto y el código llegan mezclados, el concepto pierde.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Hook: la deserción de Colombia">
+  <p class="kicker reveal">Antes de proyectar nada &middot; respondan en voz alta</p>
+  <h2 class="reveal">El Ministerio mide la deserción escolar en 33 departamentos. Le da 4,0 %.</h2>
+  <p class="claim reveal">¿Cuál es la deserción escolar <span>de Colombia</span>?</p>
+  <p class="lead reveal">Alguien va a decir 4,0 %. Y 4,0 % es lo que midieron <b>en esos departamentos, ese año, con esos formularios</b>. La pregunta de hoy es otra: qué puedo afirmar sobre la realidad, y con cuánta seguridad, partiendo de una medición que sé imperfecta.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Descriptiva frente a inferencial">
+  <p class="big" aria-hidden="true">?</p>
+  <p class="kicker reveal">La frase de hoy &middot; se va a repetir tres veces</p>
+  <p class="claim reveal">La estadística descriptiva describe lo que mediste.<br><span>La inferencial afirma algo sobre lo que no mediste.</span></p>
+  <p class="lead reveal">Las clases 4 y 5 fueron descripción: media, mediana, correlación, todo sobre las filas que estaban en el archivo. Hoy se da un salto de tipo distinto: usar esas filas para decir algo sobre las filas que <b>no</b> están.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="La sopa: muestra y población">
+  <p class="kicker reveal">La analogía que ya conocen &middot; muestreo</p>
+  <h2 class="reveal">Nadie se toma la olla entera para saber si le falta sal</h2>
+  <div class="cols c3 reveal">
+    <div class="col"><span class="k">Población</span><h3>La olla completa</h3><p>Todo lo que quisiera medir. Casi nunca es accesible: cuesta plata, cuesta tiempo, o sencillamente no existe todavía.</p></div>
+    <div class="col on"><span class="k">Muestra</span><h3>La cucharada</h3><p>Lo que sí medí. Funciona con una condición: que la olla esté revuelta. Una cucharada del borde de una olla quieta no dice nada de la olla.</p></div>
+    <div class="col warn"><span class="k">El error</span><h3>Confundirlas</h3><p>Reportar la cucharada como si fuera la olla. Es el error de decir "la deserción de Colombia es 4,0 %" cuando lo que se midió fue una muestra.</p></div>
+  </div>
+  <div class="callout reveal"><p>Todo lo que sigue hoy sale de una sola pregunta: <b>¿cuánto se parece mi cucharada a la olla?</b> No "¿acerté?", que no se puede saber, sino "¿cuánto puedo equivocarme?".</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Tres estudios, tres respuestas distintas">
+  <p class="kicker reveal">Mismo país, mismo indicador, mismo método &middot; tres equipos distintos</p>
+  <h2 class="reveal">Los tres midieron bien. A los tres les dio distinto.</h2>
+  <div class="cols c3 reveal">
+    <div class="col"><span class="k">Estudio 1</span><h3 class="num">85,58 %</h3><p>n = 30 departamentos-año, tomados al azar.</p></div>
+    <div class="col"><span class="k">Estudio 2</span><h3 class="num">87,28 %</h3><p>n = 30, mismo procedimiento, otro sorteo.</p></div>
+    <div class="col"><span class="k">Estudio 3</span><h3 class="num">82,59 %</h3><p>n = 30, mismo procedimiento, otro sorteo.</p></div>
+  </div>
+  <p class="lead reveal">Ninguno se equivocó. La diferencia no es un error de nadie: es la <b>variabilidad de muestreo</b>, y es la condición permanente del oficio. La estadística inferencial no la elimina. La mide, y la reporta.</p>
+  <div class="callout reveal"><p>Estos tres números salen del cuaderno del demo, con la semilla fija en <span class="term">13</span>. Hoy, en el bloque 2, los van a ver aparecer en su propia pantalla.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Las cuatro distribuciones">
+  <p class="kicker reveal">No es un tramo de fórmulas &middot; es reconocer la forma que espero</p>
+  <h2 class="reveal">Cuatro formas, cuatro tipos de pregunta</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col">Distribución</th><th scope="col">Qué modela</th><th scope="col">Ejemplo colombiano</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">Normal</th><td>Medidas que se acumulan alrededor de un centro por muchas causas pequeñas</td><td>Estatura de los estudiantes de la UCC; puntaje global del Saber Pro</td></tr>
+        <tr><th scope="row">Binomial</th><td>Número de éxitos en n intentos con dos resultados posibles</td><td>De 40 estudiantes matriculados, cuántos aprueban el semestre</td></tr>
+        <tr><th scope="row">Poisson</th><td>Número de eventos en un intervalo fijo; eventos raros e independientes</td><td>Reclamos de facturación que le entran a Empocaldas en un día</td></tr>
+        <tr><th scope="row">Exponencial</th><td>Tiempo de espera <em>entre</em> dos eventos</td><td>Minutos entre dos llamadas al 123</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p>Poisson y exponencial son <b>la misma historia contada de dos maneras</b>. "Cuántos buses pasan en una hora" es Poisson. "Cuántos minutos hasta el próximo bus" es exponencial.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Por qué la normal domina el resto de la clase">
+  <p class="kicker reveal">462 tasas de matriculación reales, y las medias de 1.000 estudios sobre ellas</p>
+  <h2 class="reveal">Los datos no son normales. Sus promedios sí tienden a serlo.</h2>
+  <div class="fig-wrap reveal"><svg class="fig" viewBox="0 0 1000 330" role="img" aria-label="A la izquierda, la distribucion de las 462 tasas de matriculacion; a la derecha, la distribucion de las medias de mil estudios de treinta datos cada uno, mucho mas concentrada y acampanada."><g transform="translate(0,0)"><g><text class="figtitle" x="46" y="16">Los DATOS: 462 tasas de matriculación</text><rect class="barA" x="46.0" y="270.7" width="13.4" height="15.3"/><rect class="barA" x="60.4" y="245.2" width="13.4" height="40.8"/><rect class="barA" x="74.8" y="275.8" width="13.4" height="10.2"/><rect class="barA" x="89.2" y="280.9" width="13.4" height="5.1"/><rect class="barA" x="103.6" y="280.9" width="13.4" height="5.1"/><rect class="barA" x="118.0" y="265.6" width="13.4" height="20.4"/><rect class="barA" x="132.4" y="265.6" width="13.4" height="20.4"/><rect class="barA" x="146.8" y="280.9" width="13.4" height="5.1"/><rect class="barA" x="161.2" y="235.0" width="13.4" height="51.0"/><rect class="barA" x="175.6" y="255.4" width="13.4" height="30.6"/><rect class="barA" x="190.0" y="260.5" width="13.4" height="25.5"/><rect class="barA" x="204.4" y="255.4" width="13.4" height="30.6"/><rect class="barA" x="218.8" y="219.7" width="13.4" height="66.3"/><rect class="barA" x="233.2" y="189.1" width="13.4" height="96.9"/><rect class="barA" x="247.6" y="184.0" width="13.4" height="102.0"/><rect class="barA" x="262.0" y="224.8" width="13.4" height="61.2"/><rect class="barA" x="276.4" y="173.8" width="13.4" height="112.2"/><rect class="barA" x="290.8" y="173.8" width="13.4" height="112.2"/><rect class="barA" x="305.2" y="87.2" width="13.4" height="198.8"/><rect class="barA" x="319.6" y="158.5" width="13.4" height="127.5"/><rect class="barA" x="334.0" y="178.9" width="13.4" height="107.1"/><rect class="barA" x="348.4" y="148.4" width="13.4" height="137.6"/><rect class="barA" x="362.8" y="112.7" width="13.4" height="173.3"/><rect class="barA" x="377.2" y="26.0" width="13.4" height="260.0"/><rect class="barA" x="391.6" y="97.4" width="13.4" height="188.6"/><rect class="barA" x="406.0" y="122.9" width="13.4" height="163.1"/><rect class="barA" x="420.4" y="235.0" width="13.4" height="51.0"/><rect class="barA" x="434.8" y="189.1" width="13.4" height="96.9"/><rect class="barA" x="449.2" y="270.7" width="13.4" height="15.3"/><rect class="barA" x="463.6" y="260.5" width="13.4" height="25.5"/><line class="ax" x1="46" y1="286" x2="478" y2="286"/><text class="tick" x="46.0" y="304" text-anchor="middle">52</text><text class="tick" x="154.0" y="304" text-anchor="middle">65</text><text class="tick" x="262.0" y="304" text-anchor="middle">78</text><text class="tick" x="370.0" y="304" text-anchor="middle">91</text><text class="tick" x="478.0" y="304" text-anchor="middle">104</text><line class="truth" x1="323.9" y1="26" x2="323.9" y2="286"/><text class="axlab" x="262" y="322" text-anchor="middle">Tasa de matriculación (%)</text></g></g><g transform="translate(508,0)"><g><text class="figtitle" x="46" y="16">Las MEDIAS de 1.000 estudios de n = 30</text><rect class="barB" x="46.0" y="280.0" width="13.4" height="6.0"/><rect class="barB" x="60.4" y="280.0" width="13.4" height="6.0"/><rect class="barB" x="74.8" y="280.0" width="13.4" height="6.0"/><rect class="barB" x="89.2" y="280.0" width="13.4" height="6.0"/><rect class="barB" x="103.6" y="280.0" width="13.4" height="6.0"/><rect class="barB" x="118.0" y="259.1" width="13.4" height="26.9"/><rect class="barB" x="132.4" y="232.2" width="13.4" height="53.8"/><rect class="barB" x="146.8" y="229.2" width="13.4" height="56.8"/><rect class="barB" x="161.2" y="226.2" width="13.4" height="59.8"/><rect class="barB" x="175.6" y="169.4" width="13.4" height="116.6"/><rect class="barB" x="190.0" y="145.5" width="13.4" height="140.5"/><rect class="barB" x="204.4" y="166.5" width="13.4" height="119.5"/><rect class="barB" x="218.8" y="91.7" width="13.4" height="194.3"/><rect class="barB" x="233.2" y="32.0" width="13.4" height="254.0"/><rect class="barB" x="247.6" y="82.8" width="13.4" height="203.2"/><rect class="barB" x="262.0" y="46.9" width="13.4" height="239.1"/><rect class="barB" x="276.4" y="26.0" width="13.4" height="260.0"/><rect class="barB" x="290.8" y="29.0" width="13.4" height="257.0"/><rect class="barB" x="305.2" y="61.9" width="13.4" height="224.1"/><rect class="barB" x="319.6" y="121.6" width="13.4" height="164.4"/><rect class="barB" x="334.0" y="112.7" width="13.4" height="173.3"/><rect class="barB" x="348.4" y="172.4" width="13.4" height="113.6"/><rect class="barB" x="362.8" y="190.4" width="13.4" height="95.6"/><rect class="barB" x="377.2" y="211.3" width="13.4" height="74.7"/><rect class="barB" x="391.6" y="247.1" width="13.4" height="38.9"/><rect class="barB" x="406.0" y="244.2" width="13.4" height="41.8"/><rect class="barB" x="420.4" y="268.1" width="13.4" height="17.9"/><rect class="barB" x="434.8" y="271.1" width="13.4" height="14.9"/><rect class="barB" x="449.2" y="280.0" width="13.4" height="6.0"/><rect class="barB" x="463.6" y="274.0" width="13.4" height="12.0"/><line class="ax" x1="46" y1="286" x2="478" y2="286"/><text class="tick" x="46.0" y="304" text-anchor="middle">79</text><text class="tick" x="154.0" y="304" text-anchor="middle">82</text><text class="tick" x="262.0" y="304" text-anchor="middle">85</text><text class="tick" x="370.0" y="304" text-anchor="middle">88</text><text class="tick" x="478.0" y="304" text-anchor="middle">91</text><line class="truth" x1="271.4" y1="26" x2="271.4" y2="286"/><text class="axlab" x="262" y="322" text-anchor="middle">Media muestral (%)</text></g></g></svg></div>
+  <p class="lead reveal">A la izquierda, los datos: asimétricos, con cola. A la derecha, las medias de 1.000 muestras de 30 datos cada una: acampanadas y mucho más apretadas. Eso es el <b>teorema del límite central</b>, y es el permiso que hace funcionar todo lo que sigue.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Error estándar y desviación estándar">
+  <p class="kicker reveal">La confusión que produce la mitad de los intervalos absurdos</p>
+  <h2 class="reveal">Dos dispersiones distintas, y una lleva raíz de n</h2>
+  <div class="cols c2 reveal">
+    <div class="col"><span class="k">Desviación estándar</span><h3 class="num">10,41</h3><p>Qué tan dispersos están <b>los datos individuales</b> alrededor de su media. Es una propiedad del fenómeno: se achica solo si el fenómeno cambia.</p></div>
+    <div class="col on"><span class="k">Error estándar</span><h3 class="num">1,90</h3><p>Qué tan dispersa estaría <b>la media</b> si repitiera el estudio. Es una propiedad de mi diseño: se achica cuando recojo más datos.</p></div>
+  </div>
+  <div class="callout reveal"><p>La dispersión real de aquellas 1.000 medias simuladas fue <b>1,92</b>. La fórmula predijo <b>1,90</b>. No es una convención cómoda: es lo que efectivamente pasa. Y cuadruplicar la muestra reduce el error estándar <b>a la mitad</b>, no a la cuarta parte.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="La diana: estimación puntual e intervalo">
+  <p class="kicker reveal">La analogía de la arquería &middot; el centro de la diana es el valor real, y nunca se ve</p>
+  <h2 class="reveal">Una flecha, o una zona declarada antes de disparar</h2>
+  <div class="fig-wrap reveal"><svg class="fig" viewBox="0 0 1000 300" role="img" aria-label="Dos dianas: a la izquierda una estimacion puntual, una sola flecha que cae cerca pero no en el centro; a la derecha un intervalo de confianza, una franja declarada que contiene el centro."><circle class="ring3" cx="250" cy="150" r="105"/><circle class="ring2" cx="250" cy="150" r="72"/><circle class="ring1" cx="250" cy="150" r="39"/><circle class="truthdot" cx="250" cy="150" r="5"/><text class="figtitle" x="250" y="278" text-anchor="middle">Estimación puntual</text><text class="tick" x="250" y="296" text-anchor="middle">una flecha</text><circle class="ring3" cx="750" cy="150" r="105"/><circle class="ring2" cx="750" cy="150" r="72"/><circle class="ring1" cx="750" cy="150" r="39"/><circle class="truthdot" cx="750" cy="150" r="5"/><text class="figtitle" x="750" y="278" text-anchor="middle">Intervalo de confianza</text><text class="tick" x="750" y="296" text-anchor="middle">una franja declarada</text><circle class="miss d" cx="292" cy="118" r="7"/><circle class="missdot" cx="292" cy="118" r="7"/><text class="misslab" x="306" y="112">4,04 %</text><rect class="bandzone" x="700" y="45" width="112" height="210" rx="6"/><text class="hitlab" x="756" y="34" text-anchor="middle">entre 3,9 % y 4,2 %</text></svg></div>
+  <p class="lead reveal">La estimación puntual es precisa y casi seguramente equivocada. El intervalo es menos preciso y acierta muchas más veces. Un intervalo de 0 % a 100 % nunca se equivoca <b>y no sirve para nada</b>: por eso la convención se paró en algún punto intermedio.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="La fórmula del intervalo">
+  <p class="kicker reveal">En el tablero, sin código &middot; el código son cuatro llamadas y llegan después</p>
+  <h2 class="reveal">Todo el intervalo cabe en una línea</h2>
+  <div class="formula reveal">
+    IC = media &plusmn; t &times; <span class="er">( desviación estándar / raíz de n )</span><br>
+    <span class="lb">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error estándar</span>
+  </div>
+  <ul class="bullets reveal">
+    <li><b>media</b>: el centro, que sale de mi muestra.</li>
+    <li><b>t</b>: cuánto me alejo del centro; lo fija el nivel de confianza que pedí.</li>
+    <li class="on"><b>error estándar</b>: el tamaño de un paso. Es el único término que puedo mover recogiendo más datos.</li>
+  </ul>
+  <div class="callout reveal"><p>Cuando lleguemos al código, el error estándar es lo que va en el parámetro <span class="term">scale</span>. Poner ahí la desviación estándar no da error: da un intervalo silenciosamente absurdo.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Qué mueve el ancho del intervalo">
+  <p class="kicker reveal">Tres palancas, y solo una está en sus manos</p>
+  <h2 class="reveal">Angosto es una afirmación fuerte. Ancho es una afirmación prudente.</h2>
+  <div class="cols c3 reveal">
+    <div class="col on"><span class="k">Más datos</span><h3>Más angosto</h3><p>La única palanca que usted controla de verdad. Entra por la raíz de n, así que rinde cada vez menos.</p></div>
+    <div class="col"><span class="k">Más dispersión</span><h3>Más ancho</h3><p>Propiedad del fenómeno, no del analista. Se reporta, no se arregla.</p></div>
+    <div class="col warn"><span class="k">Más confianza</span><h3>Más ancho</h3><p>Pedir acertar 99 de cada 100 veces en vez de 95 obliga a declarar una zona más grande. La confianza se paga en precisión.</p></div>
+  </div>
+  <div class="callout reveal"><p>Sobre los mismos 462 registros: al 90 % el intervalo mide <b>1,60</b> puntos de ancho; al 95 %, <b>1,90</b>; al 99 %, <b>2,50</b>. Mismos datos, misma media, tres afirmaciones de fuerza distinta.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Qué significa de verdad el 95 %">
+  <p class="kicker reveal">Cuarenta estudios distintos sobre la misma realidad &middot; cada franja es un intervalo al 95 %</p>
+  <h2 class="reveal">El 95 % no habla de este intervalo. Habla del método.</h2>
+  <div class="fig-wrap reveal"><svg class="fig" viewBox="0 0 1000 470" role="img" aria-label="Cuarenta intervalos de confianza al 95 por ciento construidos sobre cuarenta muestras distintas; 2 no contienen el valor real."><line class="ax" x1="54" y1="428" x2="882" y2="428"/><line class="ax" x1="54.0" y1="428" x2="54.0" y2="434"/><text class="tick" x="54.0" y="452" text-anchor="middle">77</text><line class="ax" x1="261.0" y1="428" x2="261.0" y2="434"/><text class="tick" x="261.0" y="452" text-anchor="middle">81</text><line class="ax" x1="468.0" y1="428" x2="468.0" y2="434"/><text class="tick" x="468.0" y="452" text-anchor="middle">85</text><line class="ax" x1="675.0" y1="428" x2="675.0" y2="434"/><text class="tick" x="675.0" y="452" text-anchor="middle">89</text><line class="ax" x1="882.0" y1="428" x2="882.0" y2="434"/><text class="tick" x="882.0" y="452" text-anchor="middle">93</text><text class="axlab" x="468" y="466" text-anchor="middle">Tasa de matriculación (%)</text><line class="truth" x1="500.3" y1="18" x2="500.3" y2="428"/><text class="truthlab" x="508.3" y="14">el valor real: 85,53 %</text><line class="hit" x1="448.1" y1="34.0" x2="749.4" y2="34.0"/><circle class="hitd" cx="598.8" cy="34.0" r="2.6"/><line class="hit" x1="351.7" y1="44.0" x2="733.5" y2="44.0"/><circle class="hitd" cx="542.6" cy="44.0" r="2.6"/><line class="hit" x1="329.2" y1="54.0" x2="704.4" y2="54.0"/><circle class="hitd" cx="516.8" cy="54.0" r="2.6"/><line class="hit" x1="280.0" y1="64.0" x2="659.8" y2="64.0"/><circle class="hitd" cx="469.9" cy="64.0" r="2.6"/><line class="hit" x1="373.0" y1="74.0" x2="736.8" y2="74.0"/><circle class="hitd" cx="554.9" cy="74.0" r="2.6"/><line class="hit" x1="485.9" y1="84.0" x2="791.3" y2="84.0"/><circle class="hitd" cx="638.6" cy="84.0" r="2.6"/><line class="hit" x1="230.9" y1="94.0" x2="676.4" y2="94.0"/><circle class="hitd" cx="453.6" cy="94.0" r="2.6"/><line class="hit" x1="351.7" y1="104.0" x2="647.7" y2="104.0"/><circle class="hitd" cx="499.7" cy="104.0" r="2.6"/><line class="hit" x1="291.9" y1="114.0" x2="680.9" y2="114.0"/><circle class="hitd" cx="486.4" cy="114.0" r="2.6"/><line class="hit" x1="98.4" y1="124.0" x2="552.2" y2="124.0"/><circle class="hitd" cx="325.3" cy="124.0" r="2.6"/><line class="hit" x1="309.4" y1="134.0" x2="667.0" y2="134.0"/><circle class="hitd" cx="488.2" cy="134.0" r="2.6"/><line class="hit" x1="180.0" y1="144.0" x2="618.2" y2="144.0"/><circle class="hitd" cx="399.1" cy="144.0" r="2.6"/><line class="hit" x1="148.8" y1="154.0" x2="615.7" y2="154.0"/><circle class="hitd" cx="382.3" cy="154.0" r="2.6"/><line class="hit" x1="190.1" y1="164.0" x2="552.3" y2="164.0"/><circle class="hitd" cx="371.2" cy="164.0" r="2.6"/><line class="hit" x1="480.9" y1="174.0" x2="767.5" y2="174.0"/><circle class="hitd" cx="624.2" cy="174.0" r="2.6"/><line class="hit" x1="456.9" y1="184.0" x2="797.2" y2="184.0"/><circle class="hitd" cx="627.1" cy="184.0" r="2.6"/><line class="hit" x1="393.4" y1="194.0" x2="796.1" y2="194.0"/><circle class="hitd" cx="594.7" cy="194.0" r="2.6"/><line class="hit" x1="404.8" y1="204.0" x2="711.4" y2="204.0"/><circle class="hitd" cx="558.1" cy="204.0" r="2.6"/><line class="hit" x1="445.2" y1="214.0" x2="690.9" y2="214.0"/><circle class="hitd" cx="568.1" cy="214.0" r="2.6"/><line class="hit" x1="431.6" y1="224.0" x2="739.7" y2="224.0"/><circle class="hitd" cx="585.6" cy="224.0" r="2.6"/><line class="miss" x1="525.8" y1="234.0" x2="837.6" y2="234.0"/><circle class="missd" cx="681.7" cy="234.0" r="2.6"/><text class="misslab" x="846.6" y="238.0">no contiene</text><line class="hit" x1="147.1" y1="244.0" x2="579.3" y2="244.0"/><circle class="hitd" cx="363.2" cy="244.0" r="2.6"/><line class="hit" x1="137.1" y1="254.0" x2="594.7" y2="254.0"/><circle class="hitd" cx="365.9" cy="254.0" r="2.6"/><line class="hit" x1="111.6" y1="264.0" x2="582.6" y2="264.0"/><circle class="hitd" cx="347.1" cy="264.0" r="2.6"/><line class="hit" x1="190.7" y1="274.0" x2="694.4" y2="274.0"/><circle class="hitd" cx="442.6" cy="274.0" r="2.6"/><line class="hit" x1="187.9" y1="284.0" x2="608.7" y2="284.0"/><circle class="hitd" cx="398.3" cy="284.0" r="2.6"/><line class="hit" x1="201.8" y1="294.0" x2="584.3" y2="294.0"/><circle class="hitd" cx="393.0" cy="294.0" r="2.6"/><line class="hit" x1="178.3" y1="304.0" x2="566.6" y2="304.0"/><circle class="hitd" cx="372.5" cy="304.0" r="2.6"/><line class="hit" x1="354.5" y1="314.0" x2="694.9" y2="314.0"/><circle class="hitd" cx="524.7" cy="314.0" r="2.6"/><line class="hit" x1="203.4" y1="324.0" x2="605.0" y2="324.0"/><circle class="hitd" cx="404.2" cy="324.0" r="2.6"/><line class="hit" x1="200.7" y1="334.0" x2="629.7" y2="334.0"/><circle class="hitd" cx="415.2" cy="334.0" r="2.6"/><line class="hit" x1="335.1" y1="344.0" x2="721.2" y2="344.0"/><circle class="hitd" cx="528.1" cy="344.0" r="2.6"/><line class="miss" x1="532.9" y1="354.0" x2="797.0" y2="354.0"/><circle class="missd" cx="665.0" cy="354.0" r="2.6"/><text class="misslab" x="806.0" y="358.0">no contiene</text><line class="hit" x1="458.1" y1="364.0" x2="798.4" y2="364.0"/><circle class="hitd" cx="628.3" cy="364.0" r="2.6"/><line class="hit" x1="390.1" y1="374.0" x2="705.0" y2="374.0"/><circle class="hitd" cx="547.5" cy="374.0" r="2.6"/><line class="hit" x1="215.8" y1="384.0" x2="644.5" y2="384.0"/><circle class="hitd" cx="430.2" cy="384.0" r="2.6"/><line class="hit" x1="355.8" y1="394.0" x2="692.9" y2="394.0"/><circle class="hitd" cx="524.4" cy="394.0" r="2.6"/><line class="hit" x1="262.7" y1="404.0" x2="623.1" y2="404.0"/><circle class="hitd" cx="442.9" cy="404.0" r="2.6"/><line class="hit" x1="340.9" y1="414.0" x2="747.9" y2="414.0"/><circle class="hitd" cx="544.4" cy="414.0" r="2.6"/><line class="hit" x1="394.6" y1="424.0" x2="727.3" y2="424.0"/><circle class="hitd" cx="561.0" cy="424.0" r="2.6"/></svg></div>
+  <p class="lead reveal">La línea vertical es el valor real, que en la vida real nunca se ve. De estos 40 intervalos, <b>2 no lo contienen</b>. Sobre 200 estudios simulados acertaron 190: <b>95,0 %</b>. Los que fallan no están mal calculados: son la parte que el método promete fallar.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="La frase correcta y la incorrecta">
+  <p class="kicker reveal">Tramo crítico &middot; si el bloque se atrasa, se recorta cualquier cosa menos esta</p>
+  <h2 class="reveal">Dos frases sobre el mismo intervalo. Una es falsa.</h2>
+  <div class="versus reveal">
+    <div class="vs-card">
+      <span class="k">Incorrecto</span>
+      <q>Hay 95 % de probabilidad de que el valor real esté en este intervalo.</q>
+      <p>Le atribuye azar al valor real. El valor real es <b>fijo</b>: la deserción de Colombia es un número, no una lotería. Este intervalo o lo contiene o no lo contiene, y ya está decidido. Lo que falta no es probabilidad, es información.</p>
+    </div>
+    <div class="vs-card ok">
+      <span class="k">Correcto</span>
+      <q>Si repitiera este estudio 100 veces, unos 95 de los intervalos que construya contendrían el valor real.</q>
+      <p>Le atribuye el azar a lo que efectivamente varía: <b>el intervalo</b>, que cambia con cada muestra. El 95 % es la tasa de acierto del procedimiento, medida a lo largo de muchas repeticiones.</p>
+    </div>
+  </div>
+  <div class="callout warn reveal"><p>En la rúbrica del reto esto es un tope: escribir la frase de la izquierda le pone techo a la dimensión <b>Saber</b>, por correcto que esté el código.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="El tribunal">
+  <p class="kicker reveal">La analogía de las pruebas de hipótesis</p>
+  <h2 class="reveal">Un juicio, con los mismos papeles repartidos</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col">En el tribunal</th><th scope="col">En la prueba de hipótesis</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">El acusado es inocente hasta que se demuestre lo contrario</th><td><b>H0</b>: no hay efecto, no hay diferencia</td></tr>
+        <tr><th scope="row">La fiscalía acusa</th><td><b>H1</b>: sí hay efecto, sí hay diferencia</td></tr>
+        <tr><th scope="row">Las pruebas presentadas</th><td>Los datos de la muestra</td></tr>
+        <tr><th scope="row">"Más allá de toda duda razonable"</th><td>El nivel alfa, 0,05 por convención</td></tr>
+        <tr class="on"><th scope="row">Veredicto: culpable</th><td>Rechazamos H0</td></tr>
+        <tr class="no"><th scope="row">Veredicto: <b>no culpable</b></th><td><b>No rechazamos</b> H0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn reveal"><p>Un tribunal nunca declara "inocente": declara "no culpable". <b>Nunca se acepta H0, solo se falla en rechazarla.</b> Ausencia de evidencia no es evidencia de ausencia.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Los cuatro pasos">
+  <p class="big" aria-hidden="true">4</p>
+  <p class="kicker reveal">El mismo orden en el demo, en el reto y en el proyecto final</p>
+  <h2 class="reveal">Cuatro pasos, y el primero va antes de mirar los datos</h2>
+  <ol class="steps reveal">
+    <li><b>Plantear.</b> H0 y H1, en español, <b>antes</b> de calcular nada. Escribirlas después es hacer trampa con uno mismo.</li>
+    <li><b>Elegir alfa.</b> 0,05 salvo que haya una razón, y la razón se escribe.</li>
+    <li><b>Calcular.</b> El estadístico de prueba y el p-valor.</li>
+    <li><b>Decidir y redactar.</b> Si p &lt; alfa, se rechaza H0. Y la conclusión se escribe en lenguaje de negocio, no de estadística.</li>
+  </ol>
+  <div class="callout reveal"><p>Ejemplo, hecho en vivo con ustedes: "¿la deserción es distinta en departamentos urbanizados y en rurales dispersos?" &rarr; H0: las medias son iguales. H1: son distintas. <b>Nótese que H0 siempre es la aburrida.</b></p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Definición del p-valor">
+  <p class="kicker reveal">Se dicta &middot; cópienla literal, con el "si" incluido</p>
+  <p class="claim reveal">El p-valor es la probabilidad de observar datos así de extremos, o más, <span>si H0 fuera cierta</span>.</p>
+  <p class="lead reveal">Todo el sentido de la definición está en las últimas cuatro palabras. El p-valor <b>parte</b> de suponer que H0 es cierta y, desde ahí, pregunta qué tan raros serían mis datos. Es una demostración por contradicción, la misma lógica de las matemáticas: asumo la explicación aburrida y veo si mis datos son compatibles con ella.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Las tres malinterpretaciones del p-valor">
+  <p class="kicker reveal">Las tres van a aparecer en los informes &middot; hay que reconocerlas escritas</p>
+  <h2 class="reveal">Tres frases que suenan bien y son falsas</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col">La frase</th><th scope="col">Por qué está mal</th></tr></thead>
+      <tbody>
+        <tr class="no"><th scope="row">"p = 0,03, entonces hay 3 % de probabilidad de que H0 sea cierta"</th><td>El p-valor <b>asume</b> que H0 es cierta. No puede devolverle la probabilidad de aquello que dio por supuesto.</td></tr>
+        <tr class="no"><th scope="row">"p = 0,06, entonces no hay efecto"</th><td>Significa que no encontró evidencia suficiente. No es lo mismo que haber demostrado que no hay nada.</td></tr>
+        <tr class="no"><th scope="row">"p pequeñísimo, entonces el efecto es grande"</th><td>El p-valor mezcla tamaño del efecto con tamaño de muestra. Con n grande, casi todo sale significativo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p>Para responder "qué tan probable es mi hipótesis" hace falta estadística bayesiana y probabilidades previas, que este curso no cubre. Lo que sí se exige hoy es <b>no afirmar que el p-valor lo responde</b>.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Alfa se puede ver">
+  <p class="kicker reveal">2.000 pruebas en un mundo donde H0 es cierta &middot; no hay ninguna diferencia que encontrar</p>
+  <h2 class="reveal">Alfa no es un umbral: es una tasa de error que usted acepta</h2>
+  <div class="fig-wrap reveal"><svg class="fig" viewBox="0 0 1000 330" role="img" aria-label="Histograma de dos mil p-valores obtenidos en un mundo donde la hipotesis nula es cierta: la distribucion es plana y aun asi 105 pruebas quedaron por debajo de 0,05."><rect class="barMiss" x="60.0" y="51.6" width="44.3" height="226.4"/><rect class="barA" x="105.8" y="42.9" width="44.3" height="235.1"/><rect class="barA" x="151.6" y="51.6" width="44.3" height="226.4"/><rect class="barA" x="197.4" y="45.1" width="44.3" height="232.9"/><rect class="barA" x="243.2" y="55.9" width="44.3" height="222.1"/><rect class="barA" x="289.0" y="62.3" width="44.3" height="215.7"/><rect class="barA" x="334.8" y="77.4" width="44.3" height="200.6"/><rect class="barA" x="380.6" y="62.3" width="44.3" height="215.7"/><rect class="barA" x="426.4" y="83.9" width="44.3" height="194.1"/><rect class="barA" x="472.2" y="68.8" width="44.3" height="209.2"/><rect class="barA" x="518.0" y="75.3" width="44.3" height="202.7"/><rect class="barA" x="563.8" y="51.6" width="44.3" height="226.4"/><rect class="barA" x="609.6" y="71.0" width="44.3" height="207.0"/><rect class="barA" x="655.4" y="103.3" width="44.3" height="174.7"/><rect class="barA" x="701.2" y="53.7" width="44.3" height="224.3"/><rect class="barA" x="747.0" y="30.0" width="44.3" height="248.0"/><rect class="barA" x="792.8" y="75.3" width="44.3" height="202.7"/><rect class="barA" x="838.6" y="62.3" width="44.3" height="215.7"/><rect class="barA" x="884.4" y="55.9" width="44.3" height="222.1"/><rect class="barA" x="930.2" y="66.7" width="44.3" height="211.3"/><line class="ax" x1="60" y1="278" x2="976" y2="278"/><text class="tick" x="60.0" y="298" text-anchor="middle">0</text><text class="tick" x="289.0" y="298" text-anchor="middle">0,25</text><text class="tick" x="518.0" y="298" text-anchor="middle">0,5</text><text class="tick" x="747.0" y="298" text-anchor="middle">0,75</text><text class="tick" x="976.0" y="298" text-anchor="middle">1,0</text><line class="truth" x1="105.8" y1="24" x2="105.8" y2="278"/><text class="truthlab" x="115.8" y="34">alfa = 0,05</text><text class="axlab" x="518" y="320" text-anchor="middle">p-valor obtenido</text><text class="axlab" transform="rotate(-90 18 165)" x="18" y="165" text-anchor="middle">Número de pruebas</text></svg></div>
+  <p class="lead reveal">Los dos grupos salen de la misma bolsa, así que <b>ninguna</b> de las 2.000 pruebas tenía nada que encontrar. Y aun así <b>105</b> dijeron "significativo": el <b>5,2 %</b>. Eso no es un defecto del método. Eso <b>es</b> alfa = 0,05: uno de cada veinte, por diseño.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="0,05 es una convención">
+  <p class="kicker reveal">Fisher, años veinte &middot; le pareció cómodo, y quedó</p>
+  <h2 class="reveal">No hay nada matemáticamente especial en 0,05</h2>
+  <div class="cols c3 reveal">
+    <div class="col"><span class="k">Física de partículas</span><h3 class="num">p &lt; 0,0000003</h3><p>Cinco sigma. Anunciar una partícula que no existe cuesta una década de credibilidad.</p></div>
+    <div class="col on"><span class="k">Medicina, ciencias sociales</span><h3 class="num">0,05</h3><p>La convención heredada. Es la que usa este curso, y se usa <b>sabiendo</b> que es una convención.</p></div>
+    <div class="col"><span class="k">Investigación exploratoria</span><h3 class="num">0,10</h3><p>Cuando dejar pasar un efecto real cuesta más que perseguir uno falso.</p></div>
+  </div>
+  <div class="callout warn reveal"><p>El umbral debería depender del costo de equivocarse, y ese costo lo pone el negocio, no la estadística. Corolario, en voz alta: <b>p = 0,049 y p = 0,051 son en la práctica el mismo resultado.</b> Caen en lados distintos de una línea arbitraria, nada más.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Significativo no es importante">
+  <p class="kicker reveal">La misma diferencia real de 0,3 puntos porcentuales, medida sobre muestras cada vez más grandes</p>
+  <h2 class="reveal">Lo único que cambia es cuánta gente se midió. El veredicto se voltea.</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col">n por grupo</th><th scope="col">Diferencia observada</th><th scope="col">p-valor</th><th scope="col">¿Significativo?</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" class="mono">50</th><td class="mono">0,308</td><td class="mono">0,701</td><td class="no">no</td></tr>
+        <tr><th scope="row" class="mono">200</th><td class="mono">-0,141</td><td class="mono">0,743</td><td class="no">no</td></tr>
+        <tr><th scope="row" class="mono">1.000</th><td class="mono">0,198</td><td class="mono">0,330</td><td class="no">no</td></tr>
+        <tr class="on"><th scope="row" class="mono">5.000</th><td class="mono">0,304</td><td class="mono">&lt; 0,001</td><td class="si">sí</td></tr>
+        <tr class="on"><th scope="row" class="mono">20.000</th><td class="mono">0,294</td><td class="mono">&lt; 0,001</td><td class="si">sí</td></tr>
+        <tr class="on"><th scope="row" class="mono">100.000</th><td class="mono">0,312</td><td class="mono">&lt; 0,001</td><td class="si">sí</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p>La significancia estadística responde <b>"¿es real?"</b>. El tamaño del efecto responde <b>"¿me importa?"</b>. Son dos preguntas distintas y su informe necesita las dos. Por eso el reporte de esta clase empieza por el tamaño del efecto y no por el p-valor.</p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Errores tipo I y tipo II">
+  <p class="kicker reveal">Dos formas de equivocarse, y no se pueden minimizar las dos a la vez</p>
+  <h2 class="reveal">Condenar a un inocente, o soltar a un culpable</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col"></th><th scope="col">H0 es cierta en la realidad</th><th scope="col">H0 es falsa en la realidad</th></tr></thead>
+      <tbody>
+        <tr class="no"><th scope="row">Rechazo H0</th><td><b>Error tipo I</b> &mdash; falso positivo. Condenar a un inocente. Su probabilidad es alfa.</td><td class="si">Correcto</td></tr>
+        <tr><th scope="row">No rechazo H0</th><td class="si">Correcto</td><td class="no"><b>Error tipo II</b> &mdash; falso negativo. Soltar a un culpable.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p>Bajar alfa de 0,05 a 0,01 reduce el tipo I y <b>aumenta</b> el tipo II. Un tamizaje de cáncer prefiere el tipo I: asustar a alguien sano se corrige después; mandar a la casa a alguien enfermo, no. Un sistema judicial prefiere lo contrario. <b>La estadística no decide eso: lo decide quien asume el costo.</b></p></div>
+</section>
+
+<section class="slide" data-block="1" data-title="Resumen del bloque 1">
+  <p class="kicker reveal">Seis frases &middot; si algo se les olvida hoy, que no sea esto</p>
+  <h2 class="reveal">Lo que hay que poder decir sin apuntes</h2>
+  <ul class="bullets reveal">
+    <li>La muestra no es la población, y la diferencia entre las dos se mide, no se ignora.</li>
+    <li class="on">El 95 % es la tasa de acierto del <b>método</b>, no la certeza sobre este intervalo.</li>
+    <li>El error estándar lleva raíz de n; la desviación estándar, no.</li>
+    <li class="on">El p-valor empieza por "<b>si</b> H0 fuera cierta". Todo lo demás son malinterpretaciones.</li>
+    <li class="no">Nunca se acepta H0. Solo se falla en rechazarla.</li>
+    <li class="no">Significativo no es importante: primero el tamaño del efecto, después el p-valor.</li>
+  </ul>
+  <div class="callout reveal"><p>Todo lo que viene son cuatro llamadas: <span class="term">stats.sem</span>, <span class="term">stats.t.interval</span>, <span class="term">stats.ttest_1samp</span> y <span class="term">stats.ttest_ind</span>. Ya están escritas en el cuaderno. Lo difícil ya pasó, y no era el código.</p></div>
+</section>
+
+<!-- ============================================================
+     BLOQUE 2 · DEMO GUIADO — el cuaderno lo explica todo
+     ============================================================ -->
+<section class="slide divider" data-block="2" data-title="Divisoria · Bloque 2 · Demo guiado">
+  <p class="n reveal">02</p>
+  <div class="rule acc reveal"></div>
+  <h2 class="reveal">Bloque 2 &middot; Demo guiado</h2>
+  <p class="lead reveal">El cuaderno lo recorre <b>usted</b>, a su ritmo. <b>El código ya está escrito:</b> se ejecuta, se mira la salida y se responden las preguntas de interpretación. Aquí solo digo qué archivo es y qué van a hacer; lo demás lo explica el cuaderno. Yo circulo por el salón.</p>
+</section>
+
+<section class="slide" data-block="2" data-title="El dataset del demo">
+  <p class="kicker reveal">clase13/demo/demo.ipynb &middot; ruta de datos: ../datos/educacion_estadisticas.csv</p>
+  <h2 class="reveal">Educación básica y media, departamento por departamento</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>datasets/educacion_estadisticas.csv &middot; 482 filas x 37 columnas, 462 utilizables &middot; una fila = un departamento y un año, 2011-2024 &middot; origen: Ministerio de Educación vía datos.gov.co</caption>
+      <thead><tr><th scope="col">Columna</th><th scope="col">Qué mide</th><th scope="col">Unidad</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="mono">ano</span> &middot; <span class="mono">c_digo_departamento</span></th><td>Cuándo y dónde. El código DANE es la llave: un código no tiene ortografía</td><td>Entero</td></tr>
+        <tr class="on"><th scope="row"><span class="mono">tasa_matriculacion_5_16</span></th><td>Porcentaje de la población de 5 a 16 años matriculada</td><td>%</td></tr>
+        <tr class="on"><th scope="row"><span class="mono">desercion</span></th><td>Porcentaje de estudiantes que abandonan el año</td><td>%</td></tr>
+        <tr><th scope="row"><span class="mono">grupo_territorial</span></th><td><b>No viene en el archivo.</b> Lo construimos nosotros a partir del código DANE: urbanizado, rural disperso, y el resto queda fuera</td><td>Categórica</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn reveal"><p><b>Esa última fila es una decisión metodológica, no un dato</b>, y se declara cada vez que se reporte un resultado que la use. Si alguien cuestiona el criterio, tiene razón en cuestionarlo: eso es exactamente lo que un analista hace con la agrupación de otro. El cuaderno trae los códigos a la vista y la limpieza ya explicada.</p></div>
+</section>
+
+<section class="slide" data-block="2" data-title="El recorrido, a nivel general">
+  <p class="kicker reveal">Lo que van a hacer, sin desarrollarlo aquí</p>
+  <h2 class="reveal">Ver el mecanismo antes de usarlo</h2>
+  <div class="cols c3 reveal">
+    <article class="col"><span class="k">Primero</span><h3>Se simula para poder verlo</h3><p>El cuaderno fabrica una población, saca mil estudios de ella y dibuja lo que ninguna clase teórica puede mostrar: <b>cómo se mueve una respuesta cuando el estudio se repite</b>. De ahí sale el error estándar, y sale visto, no creído.</p></article>
+    <article class="col on"><span class="k">Después</span><h3>Se estima con un intervalo</h3><p>La fórmula del bloque 1, en una llamada. Y enseguida la prueba que la pone a prueba: doscientos estudios, doscientos intervalos, y el conteo de cuántos atraparon la verdad.</p></article>
+    <article class="col"><span class="k">Al final</span><h3>Se decide con una prueba</h3><p>Los cuatro pasos sobre datos reales: contra una meta y entre dos grupos. Y el reporte, que es lo que se entrega: tamaño del efecto, intervalo, p-valor y n.</p></article>
+  </div>
+  <div class="callout reveal"><p><b>Hay dos figuras que no voy a adelantar</b>, y son el corazón del cuaderno: una donde unos intervalos aparecen en rojo sin que nadie se haya equivocado, y otra con miles de pruebas hechas en un mundo donde no hay absolutamente nada que encontrar. Verlas ejecutando vale más que oírmelas contar.</p></div>
+</section>
+
+<section class="slide" data-block="2" data-title="Cómo se recorre el cuaderno">
+  <p class="kicker reveal">Se lee antes de ejecutar &middot; nadie va adelantado ni atrasado</p>
+  <h2 class="reveal">Cómo se recorre el cuaderno</h2>
+  <div class="cols c3 reveal">
+    <article class="col"><span class="k">Uno</span><h3>Todo el código está escrito</h3><p>Aquí no se teclea nada: se ejecuta, se mira la salida y se lee la explicación que está justo encima. Escribir código es el bloque 3, y es lo que se entrega.</p></article>
+    <article class="col on"><span class="k">Dos</span><h3>Quince preguntas de interpretación</h3><p>Con la respuesta plegada debajo. Se escribe la propia <b>primero</b> y se abre después. Qué significa el número, no cuál fue: esta es la clase donde el número correcto con la frase equivocada está mal.</p></article>
+    <article class="col"><span class="k">Tres</span><h3>Los recuadros de fundamento</h3><p>Qué es de verdad una muestra, qué significa el 95 %, qué mide un p-valor. Si ya lo tiene claro se puede saltar; si no, es lo que más le va a servir en la clase 15.</p></article>
+  </div>
+  <div class="callout reveal"><p><b>Yo estoy caminando.</b> Levante la mano en el momento en que algo no cuadre, no al final. Si una celda de simulación no le da lo mismo que al de al lado, revise que ejecutó desde arriba: las semillas están fijas y a todo el salón le tiene que dar idéntico.</p></div>
+</section>
+
+<!-- ============================================================
+     BLOQUE 3 · RETO
+     ============================================================ -->
+<section class="slide divider" data-block="3" data-title="Divisoria · Bloque 3 · Reto">
+  <p class="n reveal">03</p>
+  <div class="rule acc reveal"></div>
+  <h2 class="reveal">Bloque 3 &middot; Reto</h2>
+  <p class="lead reveal">Ahora usted solo, con otras variables y una comparación que no apareció en el demo. Es el entregable de la clase, y es literalmente una sección de su proyecto final.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="La situación">
+  <p class="kicker reveal">clase13/reto/README.md &middot; reto_starter.ipynb</p>
+  <h2 class="reveal">Es analista contratado por el Ministerio de Educación</h2>
+  <ol class="steps reveal">
+    <li>¿Qué podemos afirmar sobre los indicadores nacionales, y con cuánta seguridad?</li>
+    <li>¿Los departamentos urbanizados y los rurales dispersos tienen resultados académicos distintos?</li>
+    <li>¿La cobertura educativa cambió entre la década pasada y la actual?</li>
+  </ol>
+  <p class="claim reveal">Su trabajo no es responder sí o no.<br><span>Es responder con cuánta certeza, y de cuánto.</span></p>
+</section>
+
+<section class="slide" data-block="3" data-title="Mismo archivo, otras variables">
+  <p class="kicker reveal">Excepción declarada a la regla del curso &middot; y la razón, dicha en voz alta</p>
+  <h2 class="reveal">El archivo es el mismo. Ninguna de las cinco variables aparece en el demo.</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col"></th><th scope="col">Demo</th><th scope="col">Reto</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Archivo</th><td class="mono">educacion_estadisticas.csv</td><td>el mismo</td></tr>
+        <tr class="on"><th scope="row">Variables de los intervalos</th><td class="mono">tasa_matriculacion_5_16</td><td class="mono">cobertura_neta, aprobacion, repitencia</td></tr>
+        <tr class="on"><th scope="row">Variables de las pruebas</th><td class="mono">desercion</td><td class="mono">aprobacion, cobertura_bruta</td></tr>
+        <tr class="on"><th scope="row">Comparaciones</th><td>Urbanizado vs rural disperso</td><td>Lo mismo <b>y</b> 2011-2018 vs 2019-2024</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p>Traer un archivo nuevo gastaría media hora en limpiar y explorar un dominio nuevo, que es justo lo que ya se evaluó en el Momento 1. Manteniendo el archivo, todo el bloque se va en lo que hoy se está aprendiendo: <b>plantear, calcular y redactar</b>.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Qué hay que entregar">
+  <p class="kicker reveal">Cuatro partes &middot; lo que no se cierre en clase se cierra en casa</p>
+  <h2 class="reveal">Cuatro partes, y la tercera es la que más pesa en la práctica</h2>
+  <div class="cols c4 reveal">
+    <div class="col on"><span class="k">Parte 1</span><h3>Tres intervalos</h3><p>Al 95 % para cobertura neta, aprobación y repitencia. Con n, media, desviación <b>y una frase de interpretación correcta</b> por cada uno.</p></div>
+    <div class="col on"><span class="k">Parte 2</span><h3>Dos pruebas</h3><p>Con los cuatro pasos completos. Prueba A: aprobación por territorio. Prueba B: cobertura bruta entre periodos. Descriptivos antes del test.</p></div>
+    <div class="col on"><span class="k">Parte 3</span><h3>Resumen ejecutivo</h3><p>De cinco a siete frases para un funcionario. <b>Sin</b> las palabras p-valor, hipótesis nula, significativo ni t-test. Con números y con recomendación.</p></div>
+    <div class="col on"><span class="k">Parte 4</span><h3>Dos figuras</h3><p>Barras de error con los tres intervalos, y boxplot comparativo con la anotación del resultado.</p></div>
+  </div>
+  <div class="callout reveal"><p>En las barras de error, <span class="term">yerr</span> es la <b>mitad</b> del ancho del intervalo, no el intervalo completo. Es el atasco de todos los semestres.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="La advertencia: p-hacking">
+  <p class="big" aria-hidden="true">B</p>
+  <p class="kicker reveal">Léala antes de empezar, no cuando le pase</p>
+  <h2 class="reveal">Una de las dos pruebas no va a dar significativa</h2>
+  <p class="lead reveal">Eso es un resultado, no un error. <b>No cambie los grupos, ni el corte de años, ni la columna, buscando que baje de 0,05.</b> Eso se llama p-hacking: si prueba veinte variantes con alfa = 0,05, espera un falso positivo por puro azar. Lo vieron hace unas diapositivas: 105 de 2.000 pruebas gritaron "significativo" sin que hubiera nada.</p>
+  <div class="callout reveal"><p>El informe correcto dice: <b>"no encontramos evidencia suficiente de que la cobertura bruta haya cambiado entre los dos periodos"</b>, con el número y el intervalo al lado. Punto. Un resultado no significativo bien reportado vale más que uno significativo fabricado.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="Dónde se atascan">
+  <p class="kicker reveal">En orden de frecuencia real &middot; revise esto antes de levantar la mano</p>
+  <h2 class="reveal">Seis atascos, y los seis tienen la misma cara todos los semestres</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th scope="col">Lo que ve</th><th scope="col">Lo que pasó</th></tr></thead>
+      <tbody>
+        <tr class="no"><th scope="row">El intervalo sale <span class="mono">(nan, nan)</span></th><td>Falta el <span class="mono">.dropna()</span>. Es el error número uno de la clase.</td></tr>
+        <tr class="no"><th scope="row">Los tres intervalos dan casi idénticos</th><td>Calculó tres veces la misma columna. Imprima el <span class="mono">len()</span> de cada serie.</td></tr>
+        <tr class="no"><th scope="row">El intervalo sale absurdamente ancho</th><td>Puso la desviación estándar en <span class="mono">scale</span>. Falta dividir por raíz de n.</td></tr>
+        <tr class="no"><th scope="row">Error de longitudes en la prueba</th><td>Usó <span class="mono">ttest_rel</span>. Son grupos independientes: va <span class="mono">ttest_ind</span>.</td></tr>
+        <tr class="no"><th scope="row">Escribió H0 después de ver el p-valor</th><td>H0 va primero. Es el paso 1 de los 4, y no es un formalismo.</td></tr>
+        <tr class="no"><th scope="row">El resumen ejecutivo dice "p-valor"</th><td>Se reescribe. El funcionario no sabe qué es y no tiene por qué.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" data-block="3" data-title="Con qué se valora el reto">
+  <p class="kicker reveal">Este reto es práctica: no produce nota ni cumplido</p>
+  <h2 class="reveal">El mismo instrumento de las sustentaciones, para llegar familiarizado</h2>
+  <div class="cols c3 reveal">
+    <div class="col on"><span class="k">Saber</span><h3>La interpretación</h3><p>Los cuatro pasos con H0 y H1 escritas <b>antes</b> del cálculo. Ninguna de las tres malinterpretaciones del p-valor, ninguna aceptación de H0.</p></div>
+    <div class="col on"><span class="k">Ser</span><h3>La honestidad</h3><p>El resultado no significativo se reporta como tal, sin maquillarlo. Y el resumen ejecutivo sin jerga, con números y con recomendación.</p></div>
+    <div class="col on"><span class="k">Hacer</span><h3>La corrección técnica</h3><p><span class="mono">dropna()</span> aplicado, error estándar en <span class="mono">scale</span>, <span class="mono">equal_var=False</span>, n reportado, y figuras que se leen solas.</p></div>
+  </div>
+  <div class="callout warn reveal"><p>Antes de entregar: <b>Kernel &rarr; Restart and Run All</b> tiene que correr de punta a punta sin errores. Un cuaderno que no corre le pone techo a <b>Hacer</b>, por buena que sea la redacción.</p></div>
+</section>
+
+<!-- ======================= CIERRE ======================= -->
+<section class="slide" data-title="Cierre: lo que se exige en el Momento 3">
+  <p class="kicker reveal">Anuncio para el proyecto final &middot; clase 15</p>
+  <h2 class="reveal">Esto que hicieron hoy es una sección de su entrega final</h2>
+  <p class="claim reveal">Mínimo <span>dos intervalos de confianza y una prueba de hipótesis</span> sobre su propio dataset.</p>
+  <p class="lead reveal">Reportados con el formato de hoy: tamaño del efecto, intervalo, p-valor y conclusión en lenguaje llano. Vayan pensando desde ya <b>cuáles dos variables</b> de su proyecto se prestan para esto: no todas se prestan, y descubrirlo en la clase 15 es tarde.</p>
+</section>
+
+<section class="slide" data-title="Cierre">
+  <p class="kicker reveal">Nos vemos en la clase 14</p>
+  <p class="claim reveal">Hoy aprendieron a afirmar con incertidumbre.<br><span class="hit">La próxima, a predecir con ella.</span></p>
+  <p class="lead reveal">Clase 14: introducción a machine learning, sobre el consumo de agua de Empocaldas, el mismo dataset de las clases 1, 4 y 5. Y ahí va a volver la misma pregunta de hoy con otro traje: <b>el modelo acertó en estos datos, ¿acierta en los que no vio?</b></p>
+</section>
+
+</main>
+
+<script>
+/* ============================================================================
+   CONTROLADOR DE DIAPOSITIVAS (invariante 1)
+   Mismos atajos y misma navegación en las 16 clases del curso.
+   Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
+   swipe táctil · rueda del ratón.
+   ========================================================================= */
+class SlidePresentation {
+  constructor(root){
+    this.slides = [...root.querySelectorAll('.slide')];
+    this.i = 0;
+    this.bar = document.querySelector('.progress-bar');
+    this.dotsNav = document.querySelector('.nav-dots');
+    this.chip = document.querySelector('.block-chip');
+    this.index = document.querySelector('.slide-index');
+    this.blockNames = {'1':'Bloque 1 · Teoría','2':'Bloque 2 · Demo guiado','3':'Bloque 3 · Reto'};
+
+    this.buildFooters();
+    this.buildDots();
+    this.buildIndex();
+    this.bindKeys();
+    this.bindPointer();
+    this.observe();
+    this.sync();
+  }
+
+  /* Invariante 7: el marcado institucional va en el pie de TODAS las slides.
+     Se inyecta desde aquí para que no pueda faltar en ninguna. */
+  buildFooters(){
+    this.slides.forEach(s => {
+      const f = document.createElement('p');
+      f.className = 'slide-footer';
+      const b = s.dataset.block;
+      f.innerHTML = '<span>Analítica de Datos · Clase 13 · M3</span>' +
+        (b ? '<span class="fb">Bloque ' + b + '</span>' : '');
+      s.appendChild(f);
+    });
+  }
+
+  buildDots(){
+    this.slides.forEach((s, k) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Ir a la diapositiva ' + (k + 1) + ': ' + (s.dataset.title || ''));
+      b.addEventListener('click', () => this.go(k));
+      this.dotsNav.appendChild(b);
+    });
+    this.dots = [...this.dotsNav.children];
+  }
+
+  buildIndex(){
+    const ol = this.index.querySelector('ol');
+    let lastBlock;
+    this.slides.forEach((s, k) => {
+      const b = s.dataset.block || null;
+      if (b !== lastBlock){
+        const h = document.createElement('li');
+        h.className = 'bk';
+        h.textContent = b ? this.blockNames[b] : (k === 0 ? 'Apertura' : 'Cierre');
+        ol.appendChild(h);
+        lastBlock = b;
+      }
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerHTML = '<span class="ix">' + String(k + 1).padStart(2, '0') + '</span>';
+      btn.appendChild(document.createTextNode(s.dataset.title || ''));
+      btn.addEventListener('click', () => { this.toggleIndex(false); this.go(k); });
+      li.appendChild(btn);
+      ol.appendChild(li);
+    });
+  }
+
+  go(n){
+    this.i = Math.max(0, Math.min(n, this.slides.length - 1));
+    this.slides[this.i].scrollIntoView({behavior: 'smooth', block: 'start'});
+    this.sync();
+  }
+  next(){ this.go(this.i + 1); }
+  prev(){ this.go(this.i - 1); }
+
+  sync(){
+    this.bar.style.width = ((this.i + 1) / this.slides.length * 100) + '%';
+    this.dots.forEach((d, k) => d.setAttribute('aria-current', String(k === this.i)));
+    const slide = this.slides[this.i];
+    const b = slide.dataset.block;
+    if (b && !slide.classList.contains('divider')){
+      this.chip.textContent = 'Bloque ' + b;
+      this.chip.hidden = false;
+    } else {
+      this.chip.hidden = true;
+    }
+  }
+
+  bindKeys(){
+    addEventListener('keydown', e => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const fwd  = ['ArrowRight', 'ArrowDown', ' ', 'Spacebar', 'PageDown'];
+      const back = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+      if (fwd.includes(e.key))       { e.preventDefault(); this.next(); }
+      else if (back.includes(e.key)) { e.preventDefault(); this.prev(); }
+      else if (e.key === 'Home')     { e.preventDefault(); this.go(0); }
+      else if (e.key === 'End')      { e.preventDefault(); this.go(this.slides.length - 1); }
+      else if (e.key === 'Escape')   { e.preventDefault(); this.toggleIndex(); }
+    });
+  }
+
+  bindPointer(){
+    let x0 = null, lock = false;
+    addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, {passive: true});
+    addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) (dx < 0 ? this.next() : this.prev());
+      x0 = null;
+    }, {passive: true});
+    addEventListener('wheel', e => {
+      if (lock || Math.abs(e.deltaY) < 20) return;
+      lock = true;
+      (e.deltaY > 0 ? this.next() : this.prev());
+      setTimeout(() => { lock = false; }, 600);
+    }, {passive: true});
+  }
+
+  toggleIndex(force){
+    const open = force === undefined ? !this.index.classList.contains('open') : force;
+    this.index.classList.toggle('open', open);
+  }
+
+  /* Anima la entrada de cada slide y mantiene la barra y los dots sincronizados
+     cuando se navega con scroll o swipe en vez de con el teclado. */
+  observe(){
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('in-view');
+        const k = this.slides.indexOf(en.target);
+        if (k !== -1 && k !== this.i){ this.i = k; this.sync(); }
+      });
+    }, {threshold: 0.55});
+    this.slides.forEach(s => io.observe(s));
+  }
+}
+
+addEventListener('DOMContentLoaded', () => new SlidePresentation(document.body));
+</script>
+</body>
+</html>
