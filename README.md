@@ -34,11 +34,11 @@ Se hace **una sola vez en el semestre**.
 Abra una terminal, ubíquese en la carpeta donde quiera guardar el curso y ejecute:
 
 ```bash
-git clone URL_DEL_REPOSITORIO analitica-datos
+git clone https://github.com/juliangarzon/analitica-datos-estudiantes.git analitica-datos
 cd analitica-datos
 ```
 
-La URL se anuncia en la clase 1 y queda en el aula virtual.
+La URL también queda publicada en el aula virtual.
 
 ### Cada semana: actualizar
 
@@ -80,6 +80,12 @@ Los notebooks leen los datos con una ruta relativa: desde `clase04/demo.ipynb`, 
 `../datos/HISTORICO_CONSUMO.csv`. **Esa ruta funciona sola si usted no mueve las carpetas.** Si abre el
 notebook desde otro sitio y le da `FileNotFoundError`, casi siempre es eso.
 
+**Todos los `demo.ipynb` y `reto.ipynb` empiezan igual:** una celda de texto *Antes de empezar* con la
+rutina y los tres errores más frecuentes, y una celda de código que verifica el entorno (intérprete
+correcto, librerías instaladas, CSV en su sitio). Ejecútela primero, siempre. Si falla, no siga: la
+salida le dice qué hacer y a qué sección de [INSTALACION.md](INSTALACION.md) ir. El detalle está en la
+sección 9.1 de ese manual.
+
 No todas las clases tienen los cuatro archivos:
 
 | Clase | Qué trae |
@@ -103,7 +109,7 @@ resuelve en los primeros minutos.
 El resumen, si ya sabe lo que hace:
 
 ```bash
-git clone URL_DEL_REPOSITORIO analitica-datos
+git clone https://github.com/juliangarzon/analitica-datos-estudiantes.git analitica-datos
 cd analitica-datos
 python3 -m venv .venv                 # en Windows: python -m venv .venv
 source .venv/bin/activate             # en Windows: .venv\Scripts\Activate.ps1
@@ -111,7 +117,8 @@ pip install -r requirements.txt
 ```
 
 Y después, abrir `verificacion.ipynb` en VSCode con el kernel de `.venv` y ejecutarlo entero.
-Requiere **Python 3.10 o superior**; se probó con 3.12.
+Requiere **Python 3.12 o superior**; se probó con 3.12. El `requirements.txt` fija versiones mínimas
+para `pandas`, `numpy`, `scipy` y `scikit-learn`, y el porqué está en `INSTALACION.md`, sección 3.1.
 
 Cada semana, lo único que hay que repetir es `git pull` y activar el entorno.
 

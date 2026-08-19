@@ -3,13 +3,21 @@
 # Instalación, con el entorno virtual activo:
 #     pip install -r requirements.txt
 #
-# Sin versiones fijas a propósito: el curso no fija ninguna, y clavar versiones que nadie eligió
-# genera conflictos de instalación que no aportan nada pedagógicamente. Requiere Python 3.10 o
-# superior.
+# Requiere Python 3.12 o superior.
+#
+# Cuatro librerías llevan PISO DE VERSIÓN (>=), y solo esas cuatro. Son las que producen los
+# números que aparecen en los cuadernos: si su versión cambia, cambian los resultados, y el
+# verificador de los retos —que compara una huella de su resultado contra la esperada— empieza a
+# rechazar respuestas que están bien. El piso es la versión con la que el material está verificado.
+#
+# Piso, no clavo: `>=` deja instalar versiones más nuevas. Lo que no se permite es instalar una
+# más vieja que la verificada. El porqué, en INSTALACION.md, sección 3.1.
+#
+# Las demás no llevan piso: dibujan o sirven de entorno, y su versión no cambia ningún número.
 
 # Manipulación y análisis
-pandas
-numpy
+pandas>=3.0.5
+numpy>=2.5.2
 
 # Visualización estática
 matplotlib
@@ -20,8 +28,8 @@ plotly
 streamlit
 
 # Estadística inferencial y machine learning (clases 13 y 14)
-scipy
-scikit-learn
+scipy>=1.18.0
+scikit-learn>=1.9.0
 
 # Entorno de notebooks. ipykernel es lo que VSCode necesita para ejecutar los .ipynb;
 # jupyterlab es la alternativa si prefiere trabajar en el navegador.

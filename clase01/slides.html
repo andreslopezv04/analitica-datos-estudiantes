@@ -107,13 +107,25 @@ strong{color:var(--accent);font-weight:700}
 
 /* ---- Listas ---- */
 ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.4rem,1.1vh,.95rem)}
-ul.bullets li{display:flex;gap:.7em;align-items:baseline;max-width:60ch}
-ul.bullets li::before{content:"";flex:none;width:.55em;height:.55em;background:var(--accent);
-  transform:translateY(-.1em)}
+/* El item es un bloque, no un flex container: con display:flex cada nodo de texto
+   y cada <strong> del item se vuelve un flex item independiente y el contenido se
+   compone en columnas en vez de fluir inline. El marcador es un inline-block, que
+   conserva la alineacion por baseline, y la sangria francesa (padding-left mas
+   text-indent negativo del mismo valor) reproduce el ancho del marcador mas su
+   separacion, de modo que la composicion no cambia.
+   1.25em = .55em de marcador mas .7em de separacion. */
+ul.bullets li{display:block;max-width:60ch;padding-left:1.25em;text-indent:-1.25em}
+ul.bullets li::before{content:"";display:inline-block;width:.55em;height:.55em;margin-right:.7em;
+  background:var(--accent);transform:translateY(-.1em)}
 ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.85rem)}
-ol.steps li{counter-increment:s;display:flex;gap:.85em;align-items:baseline;max-width:62ch}
+/* El contador en un ::before inline-block reporta ancho 0 en Chrome: hay que darselo
+   explicito. 1.205em y 1em van en la escala del propio marcador (.85em): son los
+   22.53px del contador y los 18.7px de separacion medidos antes del cambio.
+   1.874em va en la escala del item: es donde arranca el texto. */
+ol.steps li{counter-increment:s;display:block;max-width:62ch;padding-left:1.874em;
+  text-indent:-1.874em}
 ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-mono);
-  color:var(--accent);font-size:.85em;flex:none}
+  color:var(--accent);font-size:.85em;display:inline-block;width:1.205em;margin-right:1em}
 
 /* ---- Tarjetas ---- */
 .cards{display:grid;gap:clamp(.4rem,.9vw,.95rem);
@@ -159,6 +171,11 @@ td b{color:var(--fg)}
 .callout p b{color:var(--fg)}
 
 /* ---- Divisorias de bloque (invariante 3) ---- */
+/* El pie lo inyecta el JS como <p>, asi que .divider p{max-width:NNch} tambien lo
+   alcanzaba y lo estrangulaba a ~275px: en las divisorias el pie se partia en dos
+   lineas mientras en el resto del deck iba en una. Dos clases ganan en especificidad
+   a clase+tipo, de modo que el pie recupera el ancho completo sin tocar el parrafo. */
+.divider .slide-footer{max-width:none}
 .divider{background:var(--accent);color:var(--accent-ink);justify-content:center;gap:clamp(.4rem,1vw,1rem)}
 .divider .n{font-family:var(--font-display);font-weight:800;line-height:.78;letter-spacing:-.05em;
   font-size:clamp(4.5rem,17vw,15rem);color:var(--accent-ink);opacity:.16}
@@ -310,6 +327,10 @@ svg.fig .note{fill:var(--muted);font-size:17px}
   .divider h2,.divider .n{color:#111!important}
   .divider .n{opacity:.14}
   .divider p,.divider .kicker,.divider .slide-footer{color:#4a4a4a!important}
+  /* En pantalla el nombre del bloque va en tinta clara porque la divisoria es de color.
+     En papel la divisoria se vuelve blanca y esa tinta clara desaparecia (1:1, invisible):
+     la regla de arriba oscurece el pie pero no alcanza a .fb, que es mas especifica. */
+  .divider .slide-footer .fb{color:var(--accent)!important}
   .card.on{background:#f0e6cc!important;color:#111!important}
   .card.on h3,.card.on p,.card.on .k{color:#111!important}
   .band .b2{background:#d9c9a0!important;color:#111!important}
@@ -920,11 +941,11 @@ svg.fig .note{fill:var(--muted);font-size:17px}
   <h2 class="reveal">Cuatro decisiones que cambian el resultado</h2>
   <ol class="steps reveal">
     <li><b>El año pasa de texto a número.</b> Recién ahí se puede pedir "el último año" y comparar contra los anteriores.</li>
-    <li><b>Suscriptores y consumo se devuelven a su tamaño real, y la corrección se comprueba.</b> El archivo trae el consumo por suscriptor ya calculado: si la corrección es correcta, dividir tiene que dar ese mismo número. Cuadra en el 99,7% de las filas; el resto se descarta en vez de adivinarlo.</li>
+    <li><b>Suscriptores y consumo se devuelven a su tamaño real.</b> El archivo trae el consumo por suscriptor ya calculado: si la corrección es correcta, dividir da ese mismo número. Cuadra en el 99,7% de las filas; el resto se descarta.</li>
     <li><b>Se dejan solo los seis estratos residenciales.</b> Fuera comercial, industrial y público: la queja viene de usuarios residenciales, y un consumo industrial alto no es una anomalía, es el negocio.</li>
     <li><b>Se comparan los mismos cinco meses en todos los años.</b> 2023 solo llega hasta mayo, y enero es el mes más alto de la serie: comparar cinco meses contra doce inventaría una anomalía que no existe.</li>
   </ol>
-  <div class="callout reveal"><p><strong>La tercera decisión cambia cuál municipio sale recomendado, por eso queda escrita.</strong> Y lo que se pierde con ella también: hoy no vamos a ver nada de lo que pase en el sector comercial.</p></div>
+  <div class="callout reveal"><p><strong>La tercera decisión cambia cuál municipio sale recomendado, por eso queda escrita.</strong> Y lo que se pierde con ella también: hoy no vemos nada del sector comercial.</p></div>
 </section>
 
 <section class="slide" data-block="2" data-title="Paso 3 · Por qué es el paso más largo">
@@ -1137,7 +1158,7 @@ svg.fig .note{fill:var(--muted);font-size:17px}
     <li><b>El entorno instalado</b>: Python, VSCode y Jupyter. Si no sale, se resuelve al arrancar la clase 2.</li>
     <li><b>El repositorio del equipo creado</b>, con acceso para el profesor. Se registra y se revisa en el cierre de la clase 2: ahí van las tres entregas.</li>
   </ol>
-  <div class="callout reveal"><p><strong>La búsqueda del dataset empieza hoy, no en la clase 2.</strong> Nadie va a llegar con datos para ustedes, y nadie va a aprobar lo que traigan. La clase 2 no explora: cierra equipos, pone los datasets en común y arranca con pandas. Sin el pre-work, escoger en clase se come media sesión.</p></div>
+  <div class="callout reveal"><p><strong>La búsqueda del dataset empieza hoy, no en la clase 2.</strong> Nadie va a llegar con datos para ustedes, y nadie va a aprobar lo que traigan. La clase 2 no explora: cierra equipos y arranca con pandas. Sin el pre-work, escoger en clase se come media sesión.</p></div>
 </section>
 
 <section class="slide" data-block="3" data-title="Cierre">

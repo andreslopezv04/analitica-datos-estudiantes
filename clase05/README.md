@@ -1,4 +1,4 @@
-# Clase 5 — EDA II: bivariado y multivariado
+# Clase 5 — EDA: bivariado y multivariado
 
 **Momento 1**
 

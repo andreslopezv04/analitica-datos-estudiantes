@@ -1,4 +1,4 @@
-# Clase 4 — EDA I: estadística, GroupBy y análisis univariado
+# Clase 4 — EDA: estadística, GroupBy y análisis univariado
 
 **Momento 1**
 

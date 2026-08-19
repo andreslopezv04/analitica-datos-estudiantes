@@ -13,9 +13,9 @@ o a corregir un dato: está en el repositorio equivocado. Dé media vuelta.
 | **Estudiantes** (canal) | `/Users/juliangarzon/universdad/analitica-datos-estudiantes` — este repo | **Público.** Canal del estudiante. Solo recibe copias generadas |
 
 - Repositorio del profesor en GitHub: <https://github.com/juliangarzon/analitica-datos>
-- Repositorio de estudiantes en GitHub: `URL_DEL_REPOSITORIO` — **pendiente**, aún no se ha creado.
-  Ese marcador aparece también en `README.md` e `INSTALACION.md`; se resuelven los tres con un solo
-  find-replace cuando exista la URL. No lo invente.
+- Repositorio de estudiantes en GitHub: <https://github.com/juliangarzon/analitica-datos-estudiantes>
+  — es este repo. La misma URL aparece en `README.md` (dos veces) e `INSTALACION.md` (una vez), en
+  los comandos `git clone`. Si alguna vez cambia, hay que actualizar los tres sitios.
 
 El material llega aquí por un solo camino, ejecutado **desde el repo del profesor**:
 
