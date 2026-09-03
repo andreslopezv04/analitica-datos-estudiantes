@@ -435,7 +435,7 @@ svg.fig .arrowhead{fill:var(--accent)}
 
 <section class="slide" data-block="1" data-title="Cómo se llama lo que vamos a hacer">
   <p class="kicker reveal">Antes de la primera línea de código &middot; el nombre del oficio</p>
-  <p class="claim reveal">Las próximas cuatro clases son una sola cosa,<br>y se llama <span>EDA</span>.</p>
+  <p class="claim reveal">Esta clase, la 4 y la 5 son una sola cosa,<br>y se llama <span>EDA</span>.</p>
   <p class="lead reveal"><b>Exploratory Data Analysis</b>, en español <b>análisis exploratorio de datos</b>. Es lo primero que se hace en cualquier análisis, y consiste en <strong>entender los datos, limpiarlos y organizarlos, describirlos y relacionarlos</strong>. Aprenda la sigla hoy: es la que va a encontrar en la documentación, en cualquier curso en inglés y en una oferta de trabajo.</p>
   <div class="cards c2 reveal">
     <article class="card good"><span class="k">Sí responde</span><h3>Qué pasó, cuánto, dónde</h3>
@@ -455,26 +455,25 @@ svg.fig .arrowhead{fill:var(--accent)}
       <tbody>
         <tr><th scope="row">1. Entender el problema</th><td>Nada. El EDA no elige la pregunta: la recibe. Sin pregunta no sabe qué explorar.</td></tr>
         <tr class="on"><th scope="row">2. Entender los datos</th><td><b>Todo, y es hoy.</b> Qué hay, cuántas filas, qué tipo de dato, qué se puede preguntar.</td></tr>
-        <tr class="on"><th scope="row">3. Preparar los datos</th><td><b>Todo, y es la clase 3.</b> Lo que no está limpio no se puede describir sin mentir.</td></tr>
-        <tr class="on"><th scope="row">4. Analizar</th><td><b>Su mitad descriptiva, clases 4 y 5:</b> contar, agrupar, comparar, medir dispersión y relación.</td></tr>
+        <tr class="on"><th scope="row">3. Preparar los datos</th><td><b>Todo, y es la clase 4.</b> Lo que no está limpio no se puede describir sin mentir.</td></tr>
+        <tr class="on"><th scope="row">4. Analizar</th><td><b>Su mitad descriptiva, clase 5:</b> contar, agrupar, comparar, medir dispersión y relación.</td></tr>
         <tr><th scope="row">5. Evaluar</th><td>Después. Es decir qué <b>no</b> se puede afirmar con lo que se describió.</td></tr>
         <tr><th scope="row">6. Llevarlo a una decisión</th><td>Después, y es el Momento 2: mostrarlo y contarlo sin deformarlo.</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="lead reveal">Es la mitad del proceso, y la que sostiene a la otra. <strong>Lo que queda fuera del EDA y llega después:</strong> afirmar algo sobre lo que <b>no</b> se midió es inferencia, clase 13; decir qué va a pasar es predicción, clase 14. Las dos se paran encima de estas cuatro clases.</p>
+  <p class="lead reveal">Es la mitad del proceso, y la que sostiene a la otra. <strong>Lo que queda fuera del EDA y llega después:</strong> afirmar algo sobre lo que <b>no</b> se midió es inferencia, clase 12; decir qué va a pasar es predicción, clase 13. Las dos se paran encima de estas tres clases.</p>
 </section>
 
-<section class="slide" data-block="1" data-title="Los cuatro verbos del EDA">
-  <p class="kicker reveal">Cómo se hace &middot; un verbo por clase, y ningún orden arbitrario</p>
+<section class="slide" data-block="1" data-title="Los verbos del EDA">
+  <p class="kicker reveal">Cómo se hace &middot; tres clases, y ningún orden arbitrario</p>
   <h2 class="reveal">Entender, limpiar, describir, relacionar</h2>
   <ol class="steps reveal">
     <li><b>Entender &middot; hoy.</b> Cargar, mirar, seleccionar y filtrar: saber qué hay en la tabla antes de opinar. Quien no mira primero termina describiendo un archivo que no es el que cree.</li>
-    <li><b>Limpiar y organizar &middot; clase 3.</b> Nulos, tipos, duplicados y texto sucio. Va antes de cualquier cuenta porque un promedio sobre datos sucios no sale mal escrito: sale mal, y <b>no avisa</b>.</li>
-    <li><b>Describir &middot; clase 4.</b> Cada variable de a una: valor típico, dispersión, forma, lo que se salió de rango. Cruzar dos columnas que no se entienden por separado es adivinar con más trabajo.</li>
-    <li><b>Relacionar &middot; clase 5.</b> Unas variables contra otras: qué se mueve junto con qué, y por qué eso todavía no da derecho a hablar de causas.</li>
+    <li><b>Limpiar y organizar &middot; clase 4.</b> Nulos, tipos, duplicados y texto sucio. Va antes de cualquier cuenta porque un promedio sobre datos sucios no sale mal escrito: sale mal, y <b>no avisa</b>.</li>
+    <li><b>Describir y relacionar &middot; clase 5.</b> Primero cada variable de a una: valor típico, dispersión, forma, lo que se salió de rango. Después unas contra otras: qué se mueve junto con qué, y por qué eso todavía no da derecho a hablar de causas.</li>
   </ol>
-  <div class="callout reveal"><p><strong>Y contra la lectura fácil:</strong> el EDA <b>no es el trámite previo al análisis, es análisis</b>. La mayor parte de los hallazgos de un analista salen aquí, explorando, y no del modelo del final. Quien trate estas cuatro clases como preparación llega a la clase 6 sin nada que contar.</p></div>
+  <div class="callout reveal"><p><strong>Y contra la lectura fácil:</strong> el EDA <b>no es el trámite previo al análisis, es análisis</b>. La mayor parte de los hallazgos de un analista salen aquí, explorando, y no del modelo del final. Quien trate estas tres clases como preparación llega a la clase 6 sin nada que contar.</p></div>
 </section>
 
 <section class="slide" data-block="1" data-title="pandas es Excel sin ratón">
@@ -615,7 +614,7 @@ svg.fig .arrowhead{fill:var(--accent)}
   <div class="cards c2 reveal">
     <article class="card"><span class="k">Hoy</span><h3>Coinciden</h3>
       <p>pandas numera desde cero, así que la etiqueta de la fila y su posición dan el mismo número. Es una coincidencia, no una regla.</p></article>
-    <article class="card warn"><span class="k">Desde la clase 3</span><h3>Dejan de coincidir</h3>
+    <article class="card warn"><span class="k">Desde la clase 4</span><h3>Dejan de coincidir</h3>
       <p>Cuando borremos filas, la fila que era la número 7 <b>sigue llamándose 7</b> aunque quede en el cuarto puesto. La cédula la sigue.</p></article>
   </div>
   <div class="callout reveal"><p><strong>Regla verbal, para todo el semestre:</strong> un par de corchetes devuelve una Series; dos pares de corchetes devuelven un DataFrame. <b>No la memorice: en el bloque 2 la va a comprobar usted</b>, preguntándole a Python qué objeto tiene en la mano.</p></div>
@@ -702,9 +701,9 @@ svg.fig .arrowhead{fill:var(--accent)}
   <p class="kicker reveal">Lo que se lleva de este bloque</p>
   <h2 class="reveal">Cinco ideas, cero sintaxis</h2>
   <ol class="steps reveal">
-    <li><b>Estas cuatro clases son EDA</b>, análisis exploratorio de datos: entender, limpiar y organizar, describir y relacionar. Y el EDA <b>es</b> análisis, no el trámite previo.</li>
+    <li><b>Estas tres clases son EDA</b>, análisis exploratorio de datos: entender, limpiar y organizar, describir y relacionar. Y el EDA <b>es</b> análisis, no el trámite previo.</li>
     <li><b>Una tabla con nombres de columna e índice de fila</b> es un DataFrame; una columna suelta con su índice es una Series.</li>
-    <li><b>El índice es la etiqueta de la fila</b>, no su puesto. Hoy coinciden; en la clase 3 dejan de coincidir.</li>
+    <li><b>El índice es la etiqueta de la fila</b>, no su puesto. Hoy coinciden; en la clase 4 dejan de coincidir.</li>
     <li><b>Filtrar son dos pasos:</b> marcar la planilla completa, y después aplicarla. La planilla mide lo mismo que la tabla.</li>
     <li><b>Las preguntas se combinan</b> con y, o y no, con cada condición entre paréntesis.</li>
   </ol>
@@ -744,19 +743,19 @@ svg.fig .arrowhead{fill:var(--accent)}
     <li>Resultado: <b>las tres columnas llegaron como texto</b>, incluidas las dos que son números. No se puede filtrar por valor hasta arreglarlo.</li>
     <li>Además hay dos filas duplicadas y la columna de rubros tiene 62 valores distintos con inconsistencias de mayúsculas.</li>
   </ul>
-  <div class="callout reveal"><p><strong>Hoy parchamos lo mínimo</strong> para poder filtrar, y lo declaramos como préstamo. <b>Lo demás no se toca: eso es la clase 3</b>, y ahí se hace en serio.</p></div>
+  <div class="callout reveal"><p><strong>Hoy parchamos lo mínimo</strong> para poder filtrar, y lo declaramos como préstamo. <b>Lo demás no se toca: eso es la clase 4</b>, y ahí se hace en serio.</p></div>
 </section>
 
-<section class="slide" data-block="2" data-title="Dónde termina la clase 2 y empieza la 3">
+<section class="slide" data-block="2" data-title="Dónde termina la clase 2 y empieza la limpieza">
   <p class="kicker reveal">Por si la pregunta ya apareció: ¿y por qué no limpiamos hoy?</p>
-  <h2 class="reveal">Hoy se ve el problema, la clase 3 se decide qué hacer</h2>
+  <h2 class="reveal">Hoy se ve el problema, la clase 4 decide qué hacer</h2>
   <div class="cards c2 reveal">
     <article class="card on"><span class="k">Hoy</span><h3>Detectar</h3>
       <p>Ver que el problema existe y saber nombrarlo: esta columna tiene vacíos, el año está guardado como texto, esta categoría está escrita de dos formas. Hoy lo tocan de frente con el <b>"2,016"</b> y comparando una columna contra el tipo equivocado.</p></article>
-    <article class="card"><span class="k">Clase 3</span><h3>Arreglar</h3>
+    <article class="card"><span class="k">Clase 4</span><h3>Arreglar</h3>
       <p>Decidir qué se hace con cada uno. ¿Los vacíos se borran, se rellenan, o son la información? <b>Eso no es una técnica, es criterio</b>, y por eso ocupa una clase entera y no un párrafo de esta.</p></article>
   </div>
-  <div class="callout reveal"><p><strong>Los problemas que hoy se ven se resuelven la clase que viene</strong>, y ahí van a entender por qué no era obvio cómo. Detectar es barato; decidir es lo que cuesta.</p></div>
+  <div class="callout reveal"><p><strong>Los problemas que hoy se ven se resuelven en la clase 4</strong>, y ahí van a entender por qué no era obvio cómo. Detectar es barato; decidir es lo que cuesta.</p></div>
 </section>
 
 <section class="slide" data-block="2" data-title="El recorrido, a nivel general">
@@ -834,7 +833,7 @@ svg.fig .arrowhead{fill:var(--accent)}
     <article class="card warn"><span class="k">Tres</span><h3>Hay valores vacíos</h3>
       <p>Cuatro en la marca y uno en la antigüedad. Hoy no se arreglan: solo hay que saber que están ahí, porque pueden hacer que algo se comporte raro.</p></article>
   </div>
-  <div class="callout reveal"><p><strong>Este dataset no se limpia hoy.</strong> La limpieza es la clase 3. Hoy se filtra sobre datos sucios, que es exactamente lo que va a hacer con los datos de su proyecto.</p></div>
+  <div class="callout reveal"><p><strong>Este dataset no se limpia hoy.</strong> La limpieza es la clase 4. Hoy se filtra sobre datos sucios, que es exactamente lo que va a hacer con los datos de su proyecto.</p></div>
 </section>
 
 <section class="slide" data-block="3" data-title="Las tareas: partes 1 a 3">
@@ -910,13 +909,13 @@ svg.fig .arrowhead{fill:var(--accent)}
     <article class="card"><span class="k">Tres</span><h3>La URL del repositorio</h3>
       <p>La abro aquí mismo y confirmo que existe, que tengo acceso y que tiene al menos un commit. De ahí sale lo que se evalúa.</p></article>
   </div>
-  <div class="callout reveal"><p><strong>Si el dataset se oye flojo contra los criterios, se lo digo hoy</strong> y ustedes deciden. Vale la pena oírlo ahora: después de la clase 4, cambiarlo es rehacer el análisis completo con el mismo calendario.</p></div>
+  <div class="callout reveal"><p><strong>Si el dataset se oye flojo contra los criterios, se lo digo hoy</strong> y ustedes deciden. Vale la pena oírlo ahora: después de la clase 5, cambiarlo es rehacer el análisis completo con el mismo calendario.</p></div>
 </section>
 
 <section class="slide" data-title="Cierre">
   <p class="kicker reveal">Nos vemos en la clase 3</p>
-  <p class="claim reveal">Ya saben filtrar.<br><span>Ahora hay que limpiar.</span></p>
-  <p class="lead reveal">Hoy parchamos los tipos con dos líneas y dejamos pasar duplicados, nulos y mayúsculas inconsistentes. La próxima clase eso deja de ser un parche: nulos, duplicados, tipos y texto sucio, hechos en serio.</p>
+  <p class="claim reveal">Ya saben filtrar.<br><span>Falta limpiar.</span></p>
+  <p class="lead reveal">Hoy parchamos los tipos con dos líneas y dejamos pasar duplicados, nulos y mayúsculas inconsistentes. En la clase 4 eso deja de ser un parche: nulos, duplicados, tipos y texto sucio, hechos en serio. Antes, en la clase 3, se ve cómo apoyarse en la IA sin entregarle el criterio.</p>
 </section>
 
 </main>
@@ -924,7 +923,7 @@ svg.fig .arrowhead{fill:var(--accent)}
 <script>
 /* ============================================================================
    CONTROLADOR DE DIAPOSITIVAS (invariante 1)
-   Mismos atajos y misma navegación en las 16 clases del curso.
+   Mismos atajos y misma navegación en las 15 clases del curso.
    Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
    swipe táctil · rueda del ratón.
    ========================================================================= */

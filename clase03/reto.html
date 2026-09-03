@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 3 · Bloque 3 · Reto — Un dashboard por el bucle</title>
+<style>
+/* =====================================================================
+   Clase 3 · Reto. Estetica: Azul Ferroprusiato, en positivo.
+   El deck es el plano en negativo (tinta clara sobre azul). Este documento
+   es el mismo plano impreso: tinta ferroprusiato sobre papel. Misma paleta,
+   misma reticula, misma cota. Distinto soporte, porque se lee, no se proyecta.
+   Cero dependencias externas. Un solo archivo.
+   ===================================================================== */
+
+:root{
+  --papel:#F2F6FA;
+  --papel-2:#FFFFFF;
+  --papel-3:#E4EDF5;
+  --tinta:#0E2A47;
+  --tinta-2:#3D5F80;
+  --tinta-3:#6B87A3;
+  --filete:#BCD0E2;
+  --filete-2:#8FAEC8;
+  --ambar:#B26A00;
+  --ambar-suave:#FDF0DA;
+  --alerta:#B3341A;
+  --alerta-suave:#FBE7E2;
+  --cumple:#12694B;
+  --cumple-suave:#E0F2EA;
+  --reticula:rgba(14,42,71,.055);
+  --display:"Avenir Next","Futura","Century Gothic","Trebuchet MS",sans-serif;
+  --cuerpo:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --barra:64px;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--barra) + 16px)}
+body{
+  margin:0;
+  background-color:var(--papel);
+  background-image:
+    linear-gradient(var(--reticula) 1px,transparent 1px),
+    linear-gradient(90deg,var(--reticula) 1px,transparent 1px);
+  background-size:44px 44px;
+  color:var(--tinta);
+  font-family:var(--cuerpo);
+  font-size:17px;
+  line-height:1.62;
+  -webkit-text-size-adjust:100%;
+}
+
+/* --- Barra superior ------------------------------------------------- */
+.barra{
+  position:sticky;top:0;z-index:40;
+  height:var(--barra);
+  display:flex;align-items:center;gap:16px;
+  padding:0 20px;
+  background:rgba(242,246,250,.94);
+  backdrop-filter:saturate(160%) blur(8px);
+  border-bottom:1px solid var(--filete);
+}
+.barra .marca{font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--tinta-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.barra .marca b{color:var(--tinta);font-weight:600}
+.barra .avance{margin-left:auto;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--tinta-2);white-space:nowrap}
+.riel{width:120px;height:6px;background:var(--papel-3);border:1px solid var(--filete);border-radius:3px;overflow:hidden}
+.riel i{display:block;height:100%;width:0;background:var(--ambar);transition:width .25s ease}
+.btn-indice{
+  display:none;font:inherit;font-family:var(--mono);font-size:12px;letter-spacing:.06em;
+  text-transform:uppercase;background:var(--papel-2);color:var(--tinta);
+  border:1px solid var(--filete-2);border-radius:4px;padding:7px 12px;cursor:pointer;
+}
+.btn-indice:hover{border-color:var(--tinta-2)}
+
+/* --- Estructura ----------------------------------------------------- */
+.lienzo{display:grid;grid-template-columns:266px minmax(0,1fr);gap:38px;max-width:1280px;margin:0 auto;padding:0 24px 96px}
+
+/* --- Indice lateral ------------------------------------------------- */
+.indice{position:sticky;top:calc(var(--barra) + 24px);align-self:start;max-height:calc(100vh - var(--barra) - 48px);overflow-y:auto;padding:20px 0 24px;font-size:14px}
+.indice h2{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-3);margin:0 0 12px;font-weight:600}
+.indice ol{list-style:none;margin:0 0 18px;padding:0}
+.indice li{margin:0}
+.indice a{display:block;padding:5px 10px 5px 12px;color:var(--tinta-2);text-decoration:none;border-left:2px solid var(--filete);line-height:1.35}
+.indice a:hover{color:var(--tinta);background:var(--papel-3)}
+.indice a.aqui{color:var(--tinta);border-left-color:var(--ambar);background:var(--papel-2);font-weight:600}
+.indice a em{font-family:var(--mono);font-style:normal;font-size:11px;color:var(--tinta-3);margin-right:7px}
+.indice .rotulo{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta);border-top:1px solid var(--filete);padding-top:12px;margin:16px 0 8px;font-weight:600}
+
+/* --- Cuerpo --------------------------------------------------------- */
+.doc{min-width:0;padding-top:20px}
+
+.portada{border:1px solid var(--filete-2);background:var(--papel-2);padding:34px 32px;margin-bottom:34px;position:relative}
+.portada .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ambar);margin:0 0 14px;font-weight:600}
+.portada h1{font-family:var(--display);font-size:clamp(28px,4.4vw,44px);line-height:1.08;margin:0 0 16px;font-weight:600;letter-spacing:-.015em}
+.portada h1 em{font-style:italic;color:var(--tinta-2)}
+.portada p{margin:0 0 14px;max-width:62ch;color:var(--tinta-2)}
+.portada p.fuerte{color:var(--tinta);font-size:19px}
+.portada .ficha{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:22px;padding-top:18px;border-top:1px solid var(--filete);font-family:var(--mono);font-size:12px;color:var(--tinta-3);letter-spacing:.04em}
+.portada .ficha b{color:var(--tinta-2);font-weight:600}
+
+.cota{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--tinta-3)}
+.cota::before,.cota::after{content:"";height:1px;background:var(--filete-2);flex:0 0 18px}
+.cota::after{flex:1}
+
+.tramo{margin:52px 0 30px;border-top:2px solid var(--tinta);padding-top:20px}
+.tramo .num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ambar);font-weight:600}
+.tramo h2{font-family:var(--display);font-size:clamp(23px,3.1vw,32px);line-height:1.15;margin:8px 0 12px;font-weight:600}
+.tramo p{margin:0;max-width:64ch;color:var(--tinta-2)}
+
+section.paso{margin:0 0 38px;scroll-margin-top:calc(var(--barra) + 20px)}
+section.paso > h3{
+  font-family:var(--display);font-size:clamp(19px,2.4vw,25px);line-height:1.22;
+  margin:0 0 14px;font-weight:600;display:flex;gap:14px;align-items:baseline;
+}
+section.paso > h3 .n{
+  font-family:var(--mono);font-size:13px;color:var(--papel-2);background:var(--tinta);
+  padding:3px 9px;border-radius:3px;flex:0 0 auto;letter-spacing:.06em;position:relative;top:-3px;
+}
+section.paso p{margin:0 0 14px;max-width:66ch}
+section.paso ul,section.paso ol{margin:0 0 16px;padding-left:0;list-style:none;max-width:66ch}
+section.paso ul li,section.paso ol li{position:relative;padding-left:22px;text-indent:0;margin-bottom:8px}
+section.paso ul li::before{content:"—";position:absolute;left:0;color:var(--filete-2)}
+section.paso ol{counter-reset:li}
+section.paso ol li{counter-increment:li;padding-left:30px}
+section.paso ol li::before{content:counter(li) ".";position:absolute;left:0;font-family:var(--mono);font-size:13px;color:var(--ambar);font-weight:600}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.88em;background:var(--papel-3);border:1px solid var(--filete);border-radius:3px;padding:1px 5px}
+
+/* --- Bloques -------------------------------------------------------- */
+.caja{border:1px solid var(--filete-2);background:var(--papel-2);padding:18px 20px;margin:0 0 18px}
+.caja > :last-child{margin-bottom:0}
+.caja .rotulo{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--tinta-3);margin:0 0 10px;font-weight:600}
+.caja.dice{border-left:3px solid var(--ambar);background:var(--ambar-suave);border-color:#E9D3A9}
+.caja.dice .rotulo{color:var(--ambar)}
+.caja.ojo{border-left:3px solid var(--alerta);background:var(--alerta-suave);border-color:#EDC8BE}
+.caja.ojo .rotulo{color:var(--alerta)}
+.caja.bien{border-left:3px solid var(--cumple);background:var(--cumple-suave);border-color:#B9DECD}
+.caja.bien .rotulo{color:var(--cumple)}
+
+.codigo{position:relative;margin:0 0 18px}
+.codigo .cabecera{display:flex;align-items:center;gap:10px;background:var(--tinta);color:var(--papel);padding:7px 12px;font-family:var(--mono);font-size:12px;letter-spacing:.05em}
+.codigo .cabecera .ruta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.codigo .cabecera button{
+  margin-left:auto;font:inherit;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;background:transparent;color:var(--papel);
+  border:1px solid rgba(242,246,250,.4);border-radius:3px;padding:3px 9px;cursor:pointer;flex:0 0 auto;
+}
+.codigo .cabecera button:hover{background:rgba(242,246,250,.14)}
+.codigo pre{
+  margin:0;padding:16px;background:var(--papel-2);border:1px solid var(--filete-2);border-top:0;
+  overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.6;color:var(--tinta);
+  white-space:pre;tab-size:2;
+}
+.codigo.roto pre{border-color:#EDC8BE;background:var(--alerta-suave)}
+.codigo.roto .cabecera{background:var(--alerta)}
+
+.tabla{overflow-x:auto;margin:0 0 18px;border:1px solid var(--filete-2);background:var(--papel-2)}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:460px}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--filete);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--tinta-2);background:var(--papel-3);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td code{background:transparent;border:0;padding:0;color:var(--tinta-2)}
+
+details.pliegue{border:1px solid var(--filete-2);background:var(--papel-2);margin:0 0 18px}
+details.pliegue > summary{
+  cursor:pointer;padding:12px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tinta-2);list-style:none;user-select:none;
+}
+details.pliegue > summary::-webkit-details-marker{display:none}
+details.pliegue > summary::before{content:"+ ";color:var(--ambar);font-weight:700}
+details.pliegue[open] > summary::before{content:"- "}
+details.pliegue[open] > summary{border-bottom:1px solid var(--filete);color:var(--tinta)}
+details.pliegue .interior{padding:16px}
+details.pliegue .interior > :last-child{margin-bottom:0}
+
+/* --- Banco de trabajo (widgets) ------------------------------------- */
+.banco{border:1px solid var(--tinta);background:var(--papel-2);margin:0 0 20px}
+.banco > .cabecera{
+  display:flex;align-items:center;gap:12px;background:var(--tinta);color:var(--papel);
+  padding:10px 14px;font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+}
+.banco > .cabecera .etq{margin-left:auto;color:#A9C2D9;letter-spacing:.05em;text-transform:none;font-size:11px}
+.banco .interior{padding:16px}
+.banco label{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--tinta-2);margin:0 0 6px;font-weight:600}
+.banco textarea,.banco input[type=text]{
+  width:100%;font-family:var(--mono);font-size:13px;line-height:1.55;color:var(--tinta);
+  background:var(--papel);border:1px solid var(--filete-2);border-radius:3px;padding:10px 12px;
+  resize:vertical;
+}
+.banco textarea:focus,.banco input[type=text]:focus{outline:2px solid var(--ambar);outline-offset:-1px;border-color:var(--ambar)}
+.banco .campo{margin-bottom:14px}
+.banco .campo:last-of-type{margin-bottom:12px}
+.banco .fila{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.banco button.accion{
+  font:inherit;font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+  background:var(--tinta);color:var(--papel);border:1px solid var(--tinta);border-radius:3px;
+  padding:9px 16px;cursor:pointer;font-weight:600;
+}
+.banco button.accion:hover{background:var(--tinta-2);border-color:var(--tinta-2)}
+.banco button.accion.suave{background:transparent;color:var(--tinta)}
+.banco button.accion.suave:hover{background:var(--papel-3);color:var(--tinta)}
+.veredicto{margin-top:14px;border:1px solid var(--filete-2);background:var(--papel);padding:0}
+.veredicto:empty{display:none}
+.veredicto .titulo{font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;padding:9px 14px;font-weight:600;border-bottom:1px solid var(--filete)}
+.veredicto.ok .titulo{background:var(--cumple-suave);color:var(--cumple)}
+.veredicto.falla .titulo{background:var(--alerta-suave);color:var(--alerta)}
+.veredicto.neutro .titulo{background:var(--papel-3);color:var(--tinta-2)}
+.veredicto .cuerpo{padding:12px 14px;font-size:14.5px}
+.veredicto ul{margin:0;padding:0;list-style:none}
+.veredicto li{position:relative;padding-left:20px;margin-bottom:8px;line-height:1.5}
+.veredicto li:last-child{margin-bottom:0}
+.veredicto li::before{content:"›";position:absolute;left:2px;color:var(--alerta);font-weight:700}
+.veredicto.ok li::before{content:"+";color:var(--cumple)}
+.veredicto .nota{margin-top:10px;padding-top:10px;border-top:1px dashed var(--filete-2);font-size:13px;color:var(--tinta-3)}
+.salida-prompt{margin-top:14px}
+.salida-prompt pre{
+  margin:0;padding:14px;background:var(--tinta);color:#EDF3F9;border-radius:3px;
+  font-family:var(--mono);font-size:12.5px;line-height:1.6;overflow-x:auto;white-space:pre-wrap;
+  word-break:break-word;max-height:340px;overflow-y:auto;
+}
+
+/* --- Cierre --------------------------------------------------------- */
+.cierre{border:1px solid var(--tinta);background:var(--papel-2);padding:26px 24px;margin-top:44px}
+.cierre h2{font-family:var(--display);font-size:26px;margin:0 0 14px;font-weight:600}
+.pie{margin-top:34px;padding-top:16px;border-top:1px solid var(--filete);font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--tinta-3);display:flex;flex-wrap:wrap;gap:6px 20px}
+
+.arriba{
+  position:fixed;right:20px;bottom:20px;z-index:30;
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--tinta);color:var(--papel);border:0;border-radius:4px;padding:10px 14px;
+  cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.arriba.visible{opacity:.92;pointer-events:auto}
+
+/* --- Angosto -------------------------------------------------------- */
+@media (max-width:1000px){
+  .lienzo{grid-template-columns:minmax(0,1fr);gap:0;padding:0 18px 80px}
+  .btn-indice{display:inline-block}
+  .indice{
+    position:fixed;top:var(--barra);left:0;right:0;bottom:0;z-index:35;
+    background:var(--papel);border-bottom:1px solid var(--filete);
+    max-height:none;padding:20px 20px 40px;display:none;overflow-y:auto;
+  }
+  .indice.abierto{display:block}
+  .doc{padding-top:18px}
+}
+@media (max-width:560px){
+  body{font-size:16px}
+  .portada{padding:24px 20px}
+  .banco .interior,.caja{padding:14px}
+  .codigo pre{font-size:12.5px}
+}
+
+/* --- Impresion ------------------------------------------------------ */
+@media print{
+  html{scroll-behavior:auto}
+  body{background:#fff;background-image:none;color:#111;font-size:11pt;line-height:1.45}
+  .barra,.indice,.arriba,.btn-indice,.codigo .cabecera button,.banco button,.banco .fila{display:none !important}
+  .lienzo{display:block;max-width:none;padding:0}
+  .doc{padding:0}
+  section.paso{page-break-inside:avoid;margin-bottom:22px}
+  .tramo{page-break-before:always;border-top:2px solid #17456E}
+  .portada{border:1px solid #999}
+  .caja,.banco,.tabla,.codigo pre,details.pliegue{border-color:#999;background:#fff}
+  .codigo pre{background:#f6f6f6}
+  .banco > .cabecera,.codigo .cabecera{background:#17456E;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  details.pliegue{border:1px solid #999}
+  details.pliegue > summary{border-bottom:1px solid #ccc}
+  details.pliegue .interior{display:block !important}
+  .banco textarea{border:1px solid #999;min-height:70px}
+  a{color:#17456E;text-decoration:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="barra">
+  <button class="btn-indice" id="btnIndice" aria-expanded="false" aria-controls="indice">Índice</button>
+  <div class="marca"><b>Analítica de Datos</b> · Clase 3 · Momento 1 · Bloque 3 · Reto</div>
+  <div class="avance"><span id="avanceTexto">0 de 0</span><span class="riel"><i id="avanceRiel"></i></span></div>
+</div>
+
+<div class="lienzo">
+
+<nav class="indice" id="indice" aria-label="Índice del documento">
+  <h2>Índice</h2>
+  <div class="rotulo">La consigna</div>
+  <ol>
+    <li><a href="#consigna"><em>01</em>Qué hay que construir</a></li>
+    <li><a href="#encuadre"><em>02</em>Por qué puede hacerlo hoy</a></li>
+    <li><a href="#datos"><em>03</em>El dataset, que se lo damos</a></li>
+    <li><a href="#espera"><em>04</em>Qué se espera del dashboard</a></li>
+  </ol>
+  <div class="rotulo">El bucle</div>
+  <ol>
+    <li><a href="#t0"><em>T0</em>La pregunta que responde</a></li>
+    <li><a href="#t1"><em>T1</em>Especificar</a></li>
+    <li><a href="#t2"><em>T2</em>Planear</a></li>
+    <li><a href="#t3"><em>T3</em>Ejecutar</a></li>
+    <li><a href="#t4"><em>T4</em>Validar</a></li>
+    <li><a href="#t5"><em>T5</em>Reflexión</a></li>
+  </ol>
+  <div class="rotulo">Antes de cerrar</div>
+  <ol>
+    <li><a href="#correr"><em>05</em>Cómo se corre lo que escriba la IA</a></li>
+    <li><a href="#checklist"><em>06</em>Checklist del dashboard</a></li>
+    <li><a href="#errores"><em>07</em>Errores que van a pasar</a></li>
+    <li><a href="#valoracion"><em>08</em>Qué se entrega y qué se valora</a></li>
+    <li><a href="#opcional"><em>09</em>Opcional, en casa</a></li>
+    <li><a href="#cierre"><em>10</em>Llevarse las respuestas</a></li>
+  </ol>
+</nav>
+
+<main class="doc">
+
+<header class="portada">
+  <p class="kicker">Bloque 3 · Reto</p>
+  <h1>Un dashboard que usted no va a programar:<br><em>especificar, planear, ejecutar, validar</em></h1>
+  <p class="fuerte">En equipo, construyan un dashboard sobre el dataset que les damos, recorriendo
+  el bucle completo con las cuatro skills del catálogo. Usted especifica, planea y valida. La IA
+  escribe el código.</p>
+  <p>Es el mismo trabajo del demo, sin el paso a paso. Allá el profesor conducía y usted replicaba;
+  aquí tiene el objetivo, las expectativas y el criterio, y el camino lo decide su equipo.</p>
+  <div class="ficha">
+    <span><b>Dataset</b> saber_pro.csv, dado</span>
+    <span><b>Forma</b> 25.362 filas × 20 columnas</span>
+    <span><b>Equipos</b> de 1 o 2</span>
+    <span><b>Entregable</b> ninguno</span>
+    <span><b>Nota</b> no produce</span>
+  </div>
+</header>
+
+<div class="cota">La consigna</div>
+
+<section class="paso" id="consigna">
+  <h3><span class="n">01</span> Qué hay que construir</h3>
+  <p>Un <strong>dashboard</strong> —un tablero: una pantalla con filtros, indicadores y gráficos que
+  se mueven juntos— sobre <code>saber_pro.csv</code>, que responda una pregunta que su equipo eligió
+  antes de calcular nada.</p>
+  <p>Y hay una segunda mitad, que es la que de verdad se practica hoy: el dashboard tiene que salir
+  del <strong>bucle</strong>, recorrido en orden, con <strong>una skill del catálogo por tramo</strong>.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Tramo</th><th>Skill del catálogo</th><th>Qué queda escrito</th></tr></thead>
+      <tbody>
+        <tr><td><b>Especificar</b></td><td><code>especifica-encargo</code></td><td>El encargo: objetivo, alcance, insumos y criterio de aceptación</td></tr>
+        <tr><td><b>Planear</b></td><td><code>planea-trabajo</code></td><td>Los pasos, cada uno con su comprobación</td></tr>
+        <tr><td><b>Ejecutar</b></td><td><code>ejecuta-plan</code></td><td>Un paso por vez, con su comprobación y su resumen</td></tr>
+        <tr><td><b>Validar</b></td><td><code>valida-resultado</code></td><td>El veredicto contra el criterio de aceptación, condición por condición</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="caja">
+    <p class="rotulo">Las cuatro no saben que hoy hay un dashboard</p>
+    <p>Ninguna menciona un dataset, ni una columna, ni un gráfico: sirven igual para un informe o
+    para el trabajo de otra materia. <strong>Lo específico de hoy lo ponen ustedes</strong>, y sobre
+    todo en la Tarea 4: encima del procedimiento del skill van las <strong>cuatro preguntas del
+    analista</strong>, que son de la disciplina y no del método.</p>
+  </div>
+  <div class="caja dice">
+    <p class="rotulo">La regla que ordena el reto</p>
+    <p><strong>Nada de código antes de que exista la especificación escrita.</strong> Si el equipo
+    abre el chat y pide "hazme un dashboard de este CSV", el reto se saltó entero: eso ya lo saben
+    hacer, y no es lo que se practica hoy.</p>
+    <p>Al final del bloque su equipo tiene <strong>cinco cosas</strong>: la especificación, el plan,
+    el dashboard corriendo, el veredicto de la validación, y la lista de lo que cambiaría en la
+    siguiente vuelta.</p>
+  </div>
+  <div class="caja">
+    <p class="rotulo">Qué NO hace falta</p>
+    <ul>
+      <li>No hace falta instalar Node, ni un CLI, ni tener cuenta en nada. Las skills se usan
+      pegando su texto en cualquier chatbot: el documento arma el texto por usted.</li>
+      <li>No hace falta saber Plotly ni Streamlit. Se ve en la clase 9, y no se necesita hoy.</li>
+      <li>No hace falta limpiar el dataset primero. Si algo hay que arreglar, va a salir de la
+      validación, que es exactamente donde tiene que salir.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="paso" id="encuadre">
+  <h3><span class="n">02</span> Por qué puede hacerlo hoy, y qué le queda por aprender</h3>
+  <p>Van a construir un dashboard interactivo sin haber escrito nunca una línea de Plotly ni de
+  Streamlit. <strong>Eso no es un atajo ni un préstamo: es la tesis del curso.</strong> Un analista
+  responde por el resultado, no por la sintaxis. La sintaxis se delega; el criterio no.</p>
+  <div class="caja dice">
+    <p class="rotulo">Hoy y la clase 9 no son lo mismo, y la diferencia importa</p>
+    <div class="tabla">
+      <table>
+        <thead><tr><th></th><th>Hoy, clase 3</th><th>Clase 9</th></tr></thead>
+        <tbody>
+          <tr><th>Qué se aprende</th><td>El <b>método</b>: en qué orden se trabaja con una IA para que el resultado sea comprobable</td><td>El <b>criterio</b>: qué gráfico para qué pregunta, qué filtro sirve a un decisor, qué es ruido</td></tr>
+          <tr><th>Quién elige el gráfico</th><td>Lo propone la IA, usted acepta o rechaza con lo que sabe hoy</td><td>Lo decide usted, y sabe defender por qué ése y no otro</td></tr>
+          <tr><th>Qué se lleva</th><td>Un dashboard que corre y un veredicto sobre si sirve</td><td>La capacidad de decir por qué un dashboard que corre igual no sirve</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Una IA le entrega un dashboard en diez minutos. <strong>Saber si ese dashboard sirve es otra
+    cosa, y todavía no la tienen.</strong> Hoy practican el método; la clase 9 les da el criterio con
+    el que ese método se vuelve peligroso de lo bueno.</p>
+  </div>
+  <p>Consecuencia práctica para hoy: cuando la IA proponga un gráfico y usted no sepa juzgar si es el
+  adecuado, <strong>anótelo</strong> en la reflexión de la Tarea 5. Esa lista es la agenda de la
+  clase 9, escrita por ustedes.</p>
+</section>
+
+<section class="paso" id="datos">
+  <h3><span class="n">03</span> El dataset, que se lo damos</h3>
+  <p>Hoy no busca datos: el archivo está en el repositorio del curso, en
+  <code>datos/saber_pro.csv</code>. Es el mismo para todos los equipos, así que las diferencias entre
+  dashboards van a venir de las preguntas y del criterio, que es lo que se está practicando.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td>Qué es</td><td>Resultados de las pruebas Saber Pro de estudiantes de la Universidad Nacional de Colombia, 2018-2022</td></tr>
+        <tr><td>Forma</td><td>25.362 filas × 20 columnas</td></tr>
+        <tr><td>Procedencia</td><td>Snapshot local del portal de datos abiertos (datos.gov.co, recurso <code>g6ci-7e9g</code>). Sin datos personales: no trae nombres ni documentos</td></tr>
+        <tr><td>Estado</td><td><strong>Tal como se descargó.</strong> No está limpio, y no hace falta limpiarlo antes de empezar</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Las 20 columnas, con su nombre exacto. Cópielas cuando le toque escribir la especificación: un
+  encargo que nombra las columnas reales produce código que corre a la primera.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Para agrupar y filtrar</th><th>Qué trae</th></tr></thead>
+      <tbody>
+        <tr><td><code>year</code></td><td>Año de presentación: 2018 a 2022</td></tr>
+        <tr><td><code>sede_admision</code></td><td>8 sedes: Bogotá, Medellín, Manizales, Palmira, Orinoquía, Amazonía, Tumaco, Caribe</td></tr>
+        <tr><td><code>facultad</code></td><td>19 facultades</td></tr>
+        <tr><td><code>programa</code></td><td>66 programas académicos</td></tr>
+        <tr><td><code>area_cine</code></td><td>8 áreas de conocimiento</td></tr>
+        <tr><td><code>sexo</code>, <code>estrato</code>, <code>tipo_col</code>, <code>mod_adm</code></td><td>Sexo, estrato socioeconómico, tipo de colegio de origen, modalidad de admisión</td></tr>
+        <tr><td><code>dep_proc</code>, <code>ciu_proc</code></td><td>Departamento y ciudad de procedencia</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Para medir</th><th>Qué trae</th></tr></thead>
+      <tbody>
+        <tr><td><code>puntaje_global</code></td><td>Puntaje global de la prueba</td></tr>
+        <tr><td><code>punt_comp_ciud</code>, <code>punt_comu_escr</code>, <code>punt_ingles</code>, <code>punt_lect_crit</code>, <code>punt_razo_cuant</code></td><td>Los cinco componentes: competencias ciudadanas, comunicación escrita, inglés, lectura crítica, razonamiento cuantitativo</td></tr>
+        <tr><td><code>nivel_ingles</code></td><td>Nivel de inglés en letra: -A1, A1, A2, B1, B2</td></tr>
+        <tr><td><code>edad</code>, <code>pbm</code></td><td>Edad y puntaje básico de matrícula</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="caja">
+    <p class="rotulo">Cómo se abre, si quiere mirarlo antes</p>
+    <p>Con lo de la clase 2 basta. No es obligatorio: es para que nadie especifique a ciegas.</p>
+  </div>
+  <div class="codigo">
+    <div class="cabecera"><span class="ruta">Mirar el dataset, con lo de la clase 2</span><button type="button" data-copiar="miradaCSV">Copiar</button></div>
+<pre id="miradaCSV">import pandas as pd
+
+datos = pd.read_csv("../datos/saber_pro.csv")
+print(datos.shape)
+print(datos.columns.tolist())
+datos.head()</pre>
+  </div>
+</section>
+
+<section class="paso" id="espera">
+  <h3><span class="n">04</span> Qué se espera del dashboard</h3>
+  <p>Esto no se lo adivina: se lo decimos antes de que empiece, para que el equipo sepa a qué apunta
+  y para que la especificación de la Tarea 1 tenga contra qué escribirse.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Cuántos</th><th>Qué</th><th>La condición, que es la que importa</th></tr></thead>
+      <tbody>
+        <tr><td><b>3</b></td><td>Filtros</td><td>Que alguien que tuviera que decidir algo los usaría de verdad. Un filtro que nadie movería sobra</td></tr>
+        <tr><td><b>3</b></td><td>Indicadores (KPI)</td><td>Que respondan una pregunta, no que cuenten algo. "Cuántas filas hay" no es un indicador</td></tr>
+        <tr><td><b>3</b></td><td>Gráficos</td><td>Que reaccionen a los filtros, y que cada uno tenga un título que diga <b>qué se ve</b>, no cómo se llama el gráfico</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="caja dice">
+    <p class="rotulo">La regla que descarta la mitad de los dashboards del mundo</p>
+    <p><strong>Cada elemento responde una pregunta escrita.</strong> Nueve elementos, nueve preguntas.
+    Si un gráfico está porque quedaba bonito o porque la IA lo puso, sobra. La prueba se hace en voz
+    alta: <em>"si quito esto, ¿qué pregunta deja de tener respuesta?"</em>. Si no hay respuesta, fuera.</p>
+  </div>
+  <p>Y tres condiciones de que la cosa funcione, que se comprueban moviendo el mouse:</p>
+  <ul>
+    <li>Los tres filtros funcionan <strong>por separado y combinados</strong>.</li>
+    <li>Al mover un filtro, <strong>cambian</strong> los indicadores y los gráficos. Si no cambia nada,
+    el filtro está desconectado, aunque se vea.</li>
+    <li>Apretar los filtros hasta dejar el conjunto vacío <strong>no rompe la aplicación</strong>: avisa.</li>
+  </ul>
+  <div class="caja">
+    <p class="rotulo">Por qué justo tres, tres y tres</p>
+    <p>Porque es lo que el <strong>Momento 2</strong> va a pedirle a su equipo sobre su propio dataset,
+    ya con la clase 9 encima y con nota de por medio. Hoy es un ensayo sin consecuencias, con datos
+    que no son suyos y sin la parte difícil. Que le suene la cifra cuando llegue allá es intencional.</p>
+  </div>
+</section>
+
+<div class="tramo" id="bucle">
+  <div class="num">El bucle, en seis tareas</div>
+  <h2>Especificar, planear, ejecutar, validar</h2>
+  <p>Cada tarea tiene su caja. Lo que escriba se guarda en su navegador y se puede exportar al final.
+  Las cajas no son el entregable: son para que el equipo no discuta de memoria.</p>
+</div>
+
+<section class="paso" id="t0">
+  <h3><span class="n">T0</span> La pregunta que el dashboard responde</h3>
+  <p>Antes de la especificación va una decisión que ninguna herramienta puede tomar por usted:
+  <strong>para quién es este dashboard y qué tendría que poder decidir con él</strong>.</p>
+  <p>Escriban una pregunta principal y dos de apoyo. Concretas: "¿el desempeño es parejo entre sedes?"
+  sirve; "analizar los datos de Saber Pro" no es una pregunta.</p>
+  <div class="banco">
+    <div class="cabecera"><span>Punto de partida</span></div>
+    <div class="interior">
+      <div class="campo">
+        <label for="t0_quien">Quién usaría este dashboard, y qué decide con él</label>
+        <textarea id="t0_quien" data-guardar rows="3" placeholder="Ejemplo: la vicerrectoría académica, para decidir en qué sede y en qué componente concentrar el refuerzo del próximo año."></textarea>
+      </div>
+      <div class="campo">
+        <label for="t0_pregunta">La pregunta principal</label>
+        <textarea id="t0_pregunta" data-guardar rows="2"></textarea>
+      </div>
+      <div class="campo">
+        <label for="t0_apoyo">Las dos preguntas de apoyo</label>
+        <textarea id="t0_apoyo" data-guardar rows="3"></textarea>
+      </div>
+      <div class="campo">
+        <label for="t0_columnas">Las columnas que van a hacer falta, con el nombre exacto del CSV</label>
+        <textarea id="t0_columnas" data-guardar rows="3" placeholder="year, sede_admision, facultad, puntaje_global, punt_ingles"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="caja ojo">
+    <p class="rotulo">El error número uno de esta tarea</p>
+    <p>Elegir la pregunta <em>después</em> de ver qué gráficos salen bonitos. Se nota siempre: el
+    dashboard termina contando lo que era fácil de contar, no lo que alguien necesitaba saber.</p>
+  </div>
+</section>
+
+<section class="paso" id="t1">
+  <h3><span class="n">T1</span> Especificar, con <code>especifica-encargo</code></h3>
+  <p>Escriba el encargo en sus palabras y páselo por la skill. Lo que vuelve es una especificación con
+  alcance, datos necesarios y <strong>criterio de aceptación</strong>: la lista de condiciones que el
+  resultado tendrá que cumplir, escrita antes de que el resultado exista.</p>
+  <div class="caja">
+    <p class="rotulo">Cómo se usa una skill sin instalar nada</p>
+    <ol>
+      <li>Escriba su encargo en la caja de abajo.</li>
+      <li>Apriete el botón: el documento arma el texto que hay que pegar en el chatbot.</li>
+      <li>Abra el archivo <code>skills/especifica-encargo/SKILL.md</code>, copie su contenido y
+      péguelo donde el texto lo pide.</li>
+      <li>Lea lo que vuelve <strong>contra el bloque de formato de ese mismo archivo</strong>: si el
+      skill prometía cinco secciones y volvieron tres, el que está mal es el skill.</li>
+    </ol>
+  </div>
+  <div class="banco">
+    <div class="cabecera"><span>Banco de trabajo · especificar</span><span class="etq">arma el texto para el chatbot</span></div>
+    <div class="interior">
+      <div class="campo">
+        <label for="t1_encargo">Su encargo, en sus palabras</label>
+        <textarea id="t1_encargo" data-guardar rows="5" placeholder="Necesito un dashboard sobre saber_pro.csv que muestre... para que la vicerrectoría pueda decidir..."></textarea>
+      </div>
+      <div class="fila">
+        <button type="button" class="accion" data-prompt="especifica-encargo" data-origen="t1_encargo" data-destino="t1_prompt">Armar el texto</button>
+        <button type="button" class="accion suave" data-copiar-destino="t1_prompt">Copiar el texto</button>
+      </div>
+      <div class="salida-prompt" id="t1_prompt"></div>
+      <div class="campo" style="margin-top:14px">
+        <label for="t1_criterio">Del resultado, pegue aquí solo el criterio de aceptación</label>
+        <textarea id="t1_criterio" data-guardar rows="6" placeholder="Las condiciones que el dashboard tendrá que cumplir para darse por bueno."></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="caja dice">
+    <p class="rotulo">El criterio de aceptación es la pieza que sostiene el resto del reto</p>
+    <p>En la Tarea 4 va a validar <strong>contra esto</strong>. Si el criterio dice "que se vea bien",
+    la validación no va a poder decir nada. Si dice "los tres filtros cambian los tres indicadores" y
+    "ningún promedio sale fuera del rango de la prueba", la validación se vuelve un procedimiento de
+    diez minutos.</p>
+    <p><strong>Discútalo con la skill si el encargo está mal planteado.</strong> Está escrita para
+    preguntar antes de redactar: contéstele.</p>
+  </div>
+</section>
+
+<section class="paso" id="t2">
+  <h3><span class="n">T2</span> Planear, con <code>planea-trabajo</code></h3>
+  <p>Pase la especificación por la segunda skill. Lo que vuelve son los pasos, y cada uno con
+  <strong>su comprobación</strong>: cómo se sabrá que ese paso quedó bien antes de pasar al siguiente.</p>
+  <div class="banco">
+    <div class="cabecera"><span>Banco de trabajo · planear</span><span class="etq">arma el texto para el chatbot</span></div>
+    <div class="interior">
+      <div class="campo">
+        <label for="t2_entrada">La especificación de la Tarea 1 (o su resumen, si es muy larga)</label>
+        <textarea id="t2_entrada" data-guardar rows="5"></textarea>
+      </div>
+      <div class="fila">
+        <button type="button" class="accion" data-prompt="planea-trabajo" data-origen="t2_entrada" data-destino="t2_prompt">Armar el texto</button>
+        <button type="button" class="accion suave" data-copiar-destino="t2_prompt">Copiar el texto</button>
+        <button type="button" class="accion suave" data-clonar="t1_criterio" data-destino="t2_entrada">Traer el criterio de la T1</button>
+      </div>
+      <div class="salida-prompt" id="t2_prompt"></div>
+      <div class="campo" style="margin-top:14px">
+        <label for="t2_pasos">Los pasos del plan, cada uno con su comprobación</label>
+        <textarea id="t2_pasos" data-guardar rows="7" placeholder="1. Cargar el CSV y confirmar 25.362 filas — comprobación: datos.shape&#10;2. ..."></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="caja ojo">
+    <p class="rotulo">Un plan sin comprobaciones no es un plan</p>
+    <p>Es una lista de deseos. Si un paso no dice cómo se sabrá que salió bien, ese paso no se puede
+    ejecutar de a uno, y en la Tarea 3 se van a comer los seis de un tirón. Devuélvalo.</p>
+  </div>
+</section>
+
+<section class="paso" id="t3">
+  <h3><span class="n">T3</span> Ejecutar, con <code>ejecuta-plan</code></h3>
+  <p>Aquí sale el código, y aquí es donde el equipo tiene que aguantarse las ganas de pedirlo todo de
+  una vez. La skill impone lo contrario: <strong>un paso, su comprobación, y parar</strong>.</p>
+  <div class="banco">
+    <div class="cabecera"><span>Banco de trabajo · ejecutar</span><span class="etq">arma el texto para el chatbot</span></div>
+    <div class="interior">
+      <div class="campo">
+        <label for="t3_entrada">El plan de la Tarea 2, y en qué paso va</label>
+        <textarea id="t3_entrada" data-guardar rows="5"></textarea>
+      </div>
+      <div class="fila">
+        <button type="button" class="accion" data-prompt="ejecuta-plan" data-origen="t3_entrada" data-destino="t3_prompt">Armar el texto</button>
+        <button type="button" class="accion suave" data-copiar-destino="t3_prompt">Copiar el texto</button>
+        <button type="button" class="accion suave" data-clonar="t2_pasos" data-destino="t3_entrada">Traer el plan de la T2</button>
+      </div>
+      <div class="salida-prompt" id="t3_prompt"></div>
+      <div class="campo" style="margin-top:14px">
+        <label for="t3_bitacora">Bitácora: qué paso ejecutó, qué comprobó y qué encontró</label>
+        <textarea id="t3_bitacora" data-guardar rows="6"></textarea>
+      </div>
+    </div>
+  </div>
+  <p>El código se guarda en un archivo llamado <code>tablero.py</code>, en la carpeta donde tenga los
+  datos. Cómo se corre está en la sección <a href="#correr">05</a>, y conviene leerla antes de pedir el
+  primer paso: hay una decisión que tomar ahí que cambia lo que le pide a la IA.</p>
+  <div class="caja dice">
+    <p class="rotulo">Lo que sí es suyo en este tramo</p>
+    <p>Usted no va a leer el código línea por línea, y no tiene que hacerlo. Lo que sí hace: correrlo,
+    mirar lo que sale, y decidir si eso es lo que pidió. <strong>Un paso que no se comprobó no está
+    hecho</strong>, aunque el código haya corrido sin errores.</p>
+  </div>
+</section>
+
+<section class="paso" id="t4">
+  <h3><span class="n">T4</span> Validar, con <code>valida-resultado</code></h3>
+  <p>Con el dashboard corriendo, páselo por la cuarta skill: el encargo de la T1, lo que ve en
+  pantalla, y el veredicto <strong>condición por condición</strong> contra el criterio de aceptación
+  que escribieron antes de calcular nada.</p>
+  <p>Eso es lo que la skill hace, y es todo lo que puede hacer sola: comparar un resultado contra un
+  criterio escrito. <strong>Lo que la skill no trae son las cuatro preguntas del analista</strong>,
+  porque son de nuestro oficio y no del método. Las ponen ustedes, encima del veredicto, y aquí
+  aplicadas a un dashboard:</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>La pregunta del analista</th><th>Aplicada a un dashboard</th></tr></thead>
+      <tbody>
+        <tr><td><b>¿El número tiene sentido?</b></td><td>Los puntajes de esta prueba viven en un rango conocido. Un promedio fuera de ese rango no es un error de sintaxis: es un dato que no era un dato</td></tr>
+        <tr><td><b>¿La forma cuadra?</b></td><td>Filtre por una sede y mire el conteo. ¿Cuadra con lo que esperaba? ¿Sumadas las ocho sedes dan el total?</td></tr>
+        <tr><td><b>¿Responde la pregunta que hice?</b></td><td>La de la Tarea 0. El caso peligroso: el dashboard corre, se ve profesional, y contesta otra cosa</td></tr>
+        <tr><td><b>¿Cambió algo?</b></td><td>Mueva cada filtro. Si un indicador no se mueve nunca, está desconectado</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="banco">
+    <div class="cabecera"><span>Banco de trabajo · validar</span><span class="etq">arma el texto para el chatbot</span></div>
+    <div class="interior">
+      <div class="campo">
+        <label for="t4_entrada">Qué está validando: el encargo, y qué ve en pantalla</label>
+        <textarea id="t4_entrada" data-guardar rows="5"></textarea>
+      </div>
+      <div class="fila">
+        <button type="button" class="accion" data-prompt="valida-resultado" data-origen="t4_entrada" data-destino="t4_prompt">Armar el texto</button>
+        <button type="button" class="accion suave" data-copiar-destino="t4_prompt">Copiar el texto</button>
+      </div>
+      <div class="salida-prompt" id="t4_prompt"></div>
+      <div class="campo" style="margin-top:14px">
+        <label for="t4_veredicto">Su veredicto: condición por condición, y después las cuatro preguntas. Y qué encontró que no esperaba</label>
+        <textarea id="t4_veredicto" data-guardar rows="7"></textarea>
+      </div>
+      <div class="campo">
+        <label for="t4_accion">Si algo falló: ¿qué parte de la especificación lo permitió?</label>
+        <textarea id="t4_accion" data-guardar rows="3"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="caja dice">
+    <p class="rotulo">Cuando la validación falla, se vuelve a especificar</p>
+    <p>No se parcha el resultado. Un dashboard que responde otra cosa casi siempre viene de un encargo
+    que pedía otra cosa. Arreglar la salida esconde el problema y lo devuelve la próxima vez, cuando
+    ya nadie se acuerde.</p>
+    <p><strong>Que la validación falle es el mejor resultado posible de hoy</strong>, siempre que el
+    equipo sepa decir por qué falló. Un reto donde todo salió bien a la primera casi siempre significa
+    que se validó por encima.</p>
+  </div>
+</section>
+
+<section class="paso" id="t5">
+  <h3><span class="n">T5</span> Reflexión</h3>
+  <p>Cortas y honestas. Esto lo lee el profesor, no una máquina.</p>
+  <div class="banco">
+    <div class="cabecera"><span>Reflexión del equipo</span></div>
+    <div class="interior">
+      <div class="campo">
+        <label for="t5_uno">¿En qué tramo del bucle estuvo el trabajo de verdad, y en cuál casi no hubo?</label>
+        <textarea id="t5_uno" data-guardar rows="3"></textarea>
+      </div>
+      <div class="campo">
+        <label for="t5_dos">¿Qué propuso la IA que ustedes no supieron juzgar todavía? (esto es la agenda de la clase 9)</label>
+        <textarea id="t5_dos" data-guardar rows="3"></textarea>
+      </div>
+      <div class="campo">
+        <label for="t5_tres">Si tuvieran que volver a empezar, ¿qué cambiarían de la especificación?</label>
+        <textarea id="t5_tres" data-guardar rows="3"></textarea>
+      </div>
+      <div class="campo">
+        <label for="t5_cuatro">¿Qué de lo de hoy sirve tal cual para el dataset de su proyecto?</label>
+        <textarea id="t5_cuatro" data-guardar rows="3"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="tramo" id="antes">
+  <div class="num">Antes de cerrar</div>
+  <h2>Correrlo, comprobarlo y saber qué pasa con esto</h2>
+  <p>La parte operativa. Léala antes de pedirle el primer paso a la IA: hay una decisión aquí que
+  cambia lo que le va a pedir.</p>
+</div>
+
+<section class="paso" id="correr">
+  <h3><span class="n">05</span> Cómo se corre lo que la IA escriba</h3>
+  <p>El código que sale de la Tarea 3 hay que ejecutarlo, y eso sí depende de su computador. Las dos
+  vías funcionan con lo que ya instaló en la clase 1: no hay nada nuevo que instalar.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Vía</th><th>Qué produce</th><th>Cuándo elegirla</th></tr></thead>
+      <tbody>
+        <tr><td><b>A · Streamlit</b></td><td>Una aplicación que se abre en el navegador, con filtros de verdad</td><td>Por defecto. Es lo que el Momento 2 va a pedir</td></tr>
+        <tr><td><b>B · Un HTML con Plotly</b></td><td>Un archivo <code>.html</code> con los gráficos y menús desplegables adentro</td><td>Si Streamlit no arranca y no quiere perder el bloque peleando con el entorno</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Dígaselo a la IA en la especificación.</strong> No es un detalle de implementación: cambia
+  el código entero. Vía A: "una aplicación de Streamlit en un solo archivo <code>tablero.py</code>, con
+  los filtros en la barra lateral". Vía B: "un script que escriba un archivo HTML con Plotly, con los
+  filtros como menús desplegables dentro de la figura".</p>
+  <div class="codigo">
+    <div class="cabecera"><span class="ruta">Vía A · con el entorno del curso activo, en la carpeta donde está tablero.py</span><button type="button" data-copiar="correrA">Copiar</button></div>
+<pre id="correrA">streamlit run tablero.py</pre>
+  </div>
+  <p>Se abre solo en el navegador, en <code>http://localhost:8501</code>. Se apaga con
+  <code>Ctrl</code>+<code>C</code> en la terminal. Cada vez que la IA le dé una versión nueva del
+  archivo, guárdelo y refresque la página.</p>
+  <div class="codigo">
+    <div class="cabecera"><span class="ruta">Vía B · genera un archivo, y el archivo se abre con doble clic</span><button type="button" data-copiar="correrB">Copiar</button></div>
+<pre id="correrB">python tablero.py</pre>
+  </div>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Si sale esto</th><th>Es esto</th><th>Se arregla así</th></tr></thead>
+      <tbody>
+        <tr><td><code>command not found: streamlit</code></td><td>El entorno del curso no está activo</td><td>Actívelo y vuelva a intentar. Está en <code>INSTALACION.md</code></td></tr>
+        <tr><td><code>ModuleNotFoundError: No module named 'plotly'</code></td><td>Lo mismo, casi siempre</td><td>Entorno activo. Si persiste: <code>pip install -r requirements.txt</code></td></tr>
+        <tr><td><code>FileNotFoundError: saber_pro.csv</code></td><td>La ruta del CSV en el código no coincide con dónde está el archivo</td><td>Es el error más común y no lo arregla la IA: dígale dónde está el archivo respecto a <code>tablero.py</code></td></tr>
+        <tr><td><code>Port 8501 is already in use</code></td><td>Dejó otra corriendo</td><td><code>streamlit run tablero.py --server.port 8502</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="caja">
+    <p class="rotulo">Que no arranque no es fracasar el reto</p>
+    <p>Si a los quince minutos de la Tarea 3 el entorno sigue peleando, <strong>pásese a la vía B</strong>
+    y siga. Lo que se practica hoy es el bucle, y el bucle se recorre igual. Un equipo que llegó a la
+    validación con un HTML hizo el reto; uno que se quedó en la ejecución peleando con un puerto, no.</p>
+  </div>
+</section>
+
+<section class="paso" id="checklist">
+  <h3><span class="n">06</span> Checklist del dashboard</h3>
+  <p>Antes de darlo por terminado, con el dashboard abierto y el mouse en la mano:</p>
+  <ul>
+    <li>Tiene <strong>3 filtros</strong>, y cada uno cambia lo que se ve</li>
+    <li>Tiene <strong>3 indicadores</strong>, y cada uno responde una pregunta escrita</li>
+    <li>Tiene <strong>3 gráficos</strong>, y cada uno reacciona a los tres filtros</li>
+    <li>Cada gráfico tiene título que dice qué se ve, y ejes rotulados</li>
+    <li>Los filtros funcionan combinados, no solo de a uno</li>
+    <li>Con los filtros apretados hasta dejar el conjunto vacío, avisa en vez de romperse</li>
+    <li>Ningún número está fuera del rango que puede tener esa columna</li>
+    <li>El dashboard responde <strong>la pregunta de la Tarea 0</strong>, no otra parecida</li>
+    <li>Existen los cuatro artefactos: especificación, plan, bitácora de ejecución y veredicto</li>
+  </ul>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Sí se comprueba hoy</th><th>No se comprueba hoy</th></tr></thead>
+      <tbody>
+        <tr><td>Que el bucle se haya recorrido en orden, y que los cuatro artefactos existan</td><td>Que la especificación fuera la mejor posible</td></tr>
+        <tr><td>Que el dashboard corra y los filtros muevan todo</td><td>Que el gráfico elegido sea el adecuado. Eso es la clase 9</td></tr>
+        <tr><td>Que el equipo sepa decir qué falló en la validación y por qué</td><td>Que el dashboard sea bonito</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="paso" id="errores">
+  <h3><span class="n">07</span> Errores que ya sabemos que van a pasar</h3>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Error</th><th>Cómo se ve</th><th>Cómo se arregla</th></tr></thead>
+      <tbody>
+        <tr><td>Pedir el dashboard completo de entrada</td><td>A los cinco minutos ya hay código y no hay especificación</td><td>Bórrelo y empiece por la T1. En serio: el código de esa primera pedida casi nunca sobrevive a la validación</td></tr>
+        <tr><td>Criterio de aceptación decorativo</td><td>"Que el dashboard sea claro y útil"</td><td>Escriba condiciones que se puedan mirar en pantalla y contestar sí o no</td></tr>
+        <tr><td>Ejecutar los seis pasos de un tirón</td><td>Vuelve un archivo completo que se ve terminado</td><td>Pida el paso 1 y su comprobación. La skill lo dice; hágalo cumplir</td></tr>
+        <tr><td>Validar mirando, sin tocar</td><td>"Se ve bien" en dos minutos</td><td>Las cuatro preguntas, una por una, moviendo filtros</td></tr>
+        <tr><td>Aceptar un número raro porque salió del computador</td><td>Un promedio imposible para esa columna, y nadie se detiene</td><td>Ésa es la pregunta 1, y es la que más rinde en este dataset</td></tr>
+        <tr><td>Parchar en vez de volver a especificar</td><td>"Arréglame esto" cinco veces seguidas</td><td>Vuelva a la T1. Si el encargo estaba mal, el parche número seis también va a estarlo</td></tr>
+        <tr><td>Un solo integrante en el teclado</td><td>El otro mira</td><td>Uno conduce el chat, el otro lee lo que vuelve contra el criterio de aceptación. Se turnan en la T3</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="paso" id="valoracion">
+  <h3><span class="n">08</span> Qué se entrega y qué se valora</h3>
+  <div class="caja bien">
+    <p class="rotulo">No hay entregable</p>
+    <p><strong>Este reto no se entrega, no produce nota y no produce cumplido / no cumplido.</strong>
+    Es un ejercicio de método. Lo que queda es en el computador de su equipo: el dashboard, y los
+    cuatro artefactos del bucle.</p>
+  </div>
+  <p>Lo que sí pasa hoy: el profesor circula por las mesas mientras trabajan. Lo que mira, en orden,
+  es lo mismo que va a mirar en los momentos evaluativos, y por eso conviene reconocerlo:</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Dimensión</th><th>Qué se mira hoy, sobre la mesa</th></tr></thead>
+      <tbody>
+        <tr><td><b>Saber</b></td><td>Que la especificación se entienda: para quién es el dashboard, qué decide, y qué condiciones tiene que cumplir</td></tr>
+        <tr><td><b>Ser</b></td><td>Que el veredicto de la validación sea una decisión con razón, y no una casilla. Reconocer que algo salió mal es parte de lo que se valora, no algo que se esconde</td></tr>
+        <tr><td><b>Hacer</b></td><td>Que el dashboard corra, que los filtros muevan todo, y que los cuatro artefactos existan en el orden en que se produjeron</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Al final del bloque se resuelve el reto en voz alta: qué pidió el profesor, qué devolvió la
+  máquina, y qué encontró la validación. Compare lo suyo con eso, que es más útil que cualquier nota.</p>
+</section>
+
+<section class="paso" id="opcional">
+  <h3><span class="n">09</span> Opcional, para cerrar en casa</h3>
+  <p>No se valora, pero se nota en las clases que siguen.</p>
+  <ul>
+    <li><strong>Repetir el bucle con el dataset de su equipo.</strong> Es literalmente el ensayo del
+    Momento 2, hecho tres clases antes y sin nada en juego. La especificación de hoy le sirve de molde.</li>
+    <li><strong>Guardar los cuatro artefactos</strong> en el repositorio de su equipo, junto al
+    <code>tablero.py</code>. Cuando llegue a la clase 9 con el criterio en la mano, la distancia entre
+    lo que la IA propuso hoy y lo que usted habría pedido entonces se lee de un vistazo.</li>
+    <li><strong>Escribir un <code>PROYECTO.md</code></strong> con el dataset de su equipo, sus columnas
+    y sus preguntas. Es la memoria en archivos: a partir de que exista, no vuelve a explicarle su
+    proyecto a nadie desde cero, ni a una persona ni a una herramienta.</li>
+  </ul>
+</section>
+
+<div class="cierre" id="cierre">
+  <div class="cota">Para llevárselo</div>
+  <h2>Exportar sus respuestas</h2>
+  <p>Nada de esto se entrega, pero el equipo se lo lleva. El botón junta lo que escribió en este
+  documento en un texto de Markdown y lo copia al portapapeles. Péguelo donde guarde el trabajo de su
+  equipo, junto al <code>tablero.py</code>.</p>
+  <div class="fila" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+    <button type="button" class="accion" id="exportar" style="font:inherit;font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;background:var(--tinta);color:var(--papel);border:1px solid var(--tinta);border-radius:3px;padding:11px 18px;cursor:pointer;font-weight:600">Exportar mis respuestas a Markdown</button>
+    <button type="button" class="accion suave" id="borrar" style="font:inherit;font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;background:transparent;color:var(--tinta);border:1px solid var(--tinta);border-radius:3px;padding:11px 18px;cursor:pointer;font-weight:600">Borrar lo guardado</button>
+  </div>
+  <div class="salida-prompt" id="exportado"></div>
+</div>
+
+<div class="pie">
+  <span>Analítica de Datos · 709749</span>
+  <span>Clase 3 de 15 · Momento 1</span>
+  <span>Bloque 3 · Reto</span>
+  <span>Ingeniería de Sistemas · Universidad Cooperativa de Colombia</span>
+</div>
+
+</main>
+</div>
+
+<button class="arriba" id="arriba" type="button">Arriba</button>
+
+<script>
+/* =====================================================================
+   Interaccion del documento. Sin dependencias.
+   ===================================================================== */
+(function () {
+  "use strict";
+  var LLAVE = "clase03-reto";
+
+  /* --- Guardado local, tolerante a que no exista ----------------------- */
+  function leerGuardado() {
+    try { return JSON.parse(localStorage.getItem(LLAVE) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function guardar(estado) {
+    try { localStorage.setItem(LLAVE, JSON.stringify(estado)); } catch (e) { /* sin sitio */ }
+  }
+  var estado = leerGuardado();
+  var campos = [].slice.call(document.querySelectorAll("[data-guardar]"));
+  campos.forEach(function (campo) {
+    if (estado[campo.id]) { campo.value = estado[campo.id]; }
+    campo.addEventListener("input", function () {
+      estado[campo.id] = campo.value;
+      guardar(estado);
+      recalcularAvance();
+    });
+  });
+
+  /* --- Avance: cuantas secciones tienen algo escrito ------------------- */
+  var secciones = [].slice.call(document.querySelectorAll("section.paso"));
+  var rielTexto = document.getElementById("avanceTexto");
+  var riel = document.getElementById("avanceRiel");
+  function recalcularAvance() {
+    var hechas = 0;
+    secciones.forEach(function (s) {
+      var propios = [].slice.call(s.querySelectorAll("[data-guardar]"));
+      if (!propios.length) { return; }
+      if (propios.some(function (c) { return c.value.trim().length > 12; })) { hechas++; }
+    });
+    var total = secciones.filter(function (s) {
+      return s.querySelectorAll("[data-guardar]").length > 0;
+    }).length;
+    rielTexto.textContent = hechas + " de " + total;
+    riel.style.width = (total ? Math.round(hechas / total * 100) : 0) + "%";
+  }
+
+  /* --- Indice: marcar donde va -----------------------------------------*/
+  var enlaces = [].slice.call(document.querySelectorAll(".indice a"));
+  var porId = {};
+  enlaces.forEach(function (a) { porId[a.getAttribute("href").slice(1)] = a; });
+  if ("IntersectionObserver" in window) {
+    var observador = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) {
+        if (!e.isIntersecting) { return; }
+        enlaces.forEach(function (a) { a.classList.remove("aqui"); });
+        var a = porId[e.target.id];
+        if (a) { a.classList.add("aqui"); }
+      });
+    }, { rootMargin: "-80px 0px -70% 0px" });
+    [].slice.call(document.querySelectorAll("section.paso, #cierre")).forEach(function (s) {
+      observador.observe(s);
+    });
+  }
+
+  /* --- Indice plegable en pantallas angostas -------------------------- */
+  var btnIndice = document.getElementById("btnIndice");
+  var indice = document.getElementById("indice");
+  if (btnIndice) {
+    btnIndice.addEventListener("click", function () {
+      var abierto = indice.classList.toggle("abierto");
+      btnIndice.setAttribute("aria-expanded", abierto ? "true" : "false");
+    });
+    indice.addEventListener("click", function (e) {
+      if (e.target.tagName === "A") {
+        indice.classList.remove("abierto");
+        btnIndice.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  /* --- Boton de subir -------------------------------------------------- */
+  var arriba = document.getElementById("arriba");
+  window.addEventListener("scroll", function () {
+    arriba.classList.toggle("visible", window.scrollY > 700);
+  }, { passive: true });
+  arriba.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  /* --- Copiar ---------------------------------------------------------- */
+  function copiar(texto, boton) {
+    var previo = boton.textContent;
+    function listo(ok) {
+      boton.textContent = ok ? "Copiado" : "Selecciónelo";
+      setTimeout(function () { boton.textContent = previo; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function () { listo(true); }, function () { listo(false); });
+    } else {
+      listo(false);
+    }
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-copiar]") : null;
+    if (b) {
+      var fuente = document.getElementById(b.getAttribute("data-copiar"));
+      if (fuente) { copiar(fuente.textContent, b); }
+      return;
+    }
+    var c = e.target.closest ? e.target.closest("[data-copiar-destino]") : null;
+    if (c) {
+      var caja = document.getElementById(c.getAttribute("data-copiar-destino"));
+      var pre = caja ? caja.querySelector("pre") : null;
+      if (pre) { copiar(pre.textContent, c); }
+    }
+  });
+
+  /* --- Cargar / clonar texto entre cajas ------------------------------- */
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-cargar]") : null;
+    if (b) {
+      var fuente = document.getElementById(b.getAttribute("data-cargar"));
+      var destino = document.getElementById(b.getAttribute("data-destino"));
+      if (fuente && destino) {
+        destino.value = fuente.textContent.trim();
+        destino.dispatchEvent(new Event("input"));
+      }
+      return;
+    }
+    var c = e.target.closest ? e.target.closest("[data-clonar]") : null;
+    if (c) {
+      var origen = document.getElementById(c.getAttribute("data-clonar"));
+      var dest = document.getElementById(c.getAttribute("data-destino"));
+      if (origen && dest) {
+        dest.value = origen.value;
+        dest.dispatchEvent(new Event("input"));
+      }
+    }
+  });
+
+  function escapar(t) {
+    return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* --- Armar el texto que se pega en el chatbot -------------------------- */
+  var CATALOGO = {
+    "especifica-encargo": "especifica-encargo",
+    "planea-trabajo": "planea-trabajo",
+    "ejecuta-plan": "ejecuta-plan",
+    "valida-resultado": "valida-resultado"
+  };
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-prompt]") : null;
+    if (!b) { return; }
+    var skill = b.getAttribute("data-prompt");
+    var origen = document.getElementById(b.getAttribute("data-origen"));
+    var caja = document.getElementById(b.getAttribute("data-destino"));
+    var encargo = (origen && origen.value.trim()) || "";
+    if (!encargo) {
+      caja.innerHTML = '<pre>Escriba primero su encargo en la caja de arriba.</pre>';
+      return;
+    }
+    var texto =
+      "Sigue al pie de la letra las instrucciones del siguiente skill. Responde usando\n" +
+      "exactamente las secciones que declara su bloque de Formato, sin agregar ni quitar\n" +
+      "ninguna.\n\n" +
+      "===== INICIO DEL SKILL: " + CATALOGO[skill] + "/SKILL.md =====\n" +
+      "[ Pegue aqui el contenido completo del archivo\n" +
+      "  skills/" + CATALOGO[skill] + "/SKILL.md ]\n" +
+      "===== FIN DEL SKILL =====\n\n" +
+      "MI ENCARGO:\n" + encargo + "\n";
+    caja.innerHTML = "<pre>" + escapar(texto) + "</pre>";
+  });
+
+  /* --- Exportar a Markdown ---------------------------------------------- */
+  var ETIQUETAS = {};
+  campos.forEach(function (c) {
+    var lab = c.parentElement ? c.parentElement.querySelector("label") : null;
+    var sec = c.closest("section.paso");
+    ETIQUETAS[c.id] = {
+      titulo: lab ? lab.textContent.trim() : c.id,
+      seccion: sec ? sec.querySelector("h3").textContent.trim() : "Cierre"
+    };
+  });
+  var btnExportar = document.getElementById("exportar");
+  if (btnExportar) {
+    btnExportar.addEventListener("click", function () {
+      var lineas = ["# Clase 3 · Bloque 3 · Reto", "", "Respuestas de: ______", ""];
+      var seccionActual = null;
+      campos.forEach(function (c) {
+        if (!c.value.trim()) { return; }
+        var meta = ETIQUETAS[c.id];
+        if (meta.seccion !== seccionActual) {
+          seccionActual = meta.seccion;
+          lineas.push("## " + seccionActual, "");
+        }
+        lineas.push("**" + meta.titulo + "**", "", "```", c.value.trim(), "```", "");
+      });
+      if (lineas.length <= 4) { lineas.push("_Todavía no hay nada escrito._"); }
+      var texto = lineas.join("\n");
+      var caja = document.getElementById("exportado");
+      caja.innerHTML = "<pre>" + escapar(texto) + "</pre>";
+      copiar(texto, btnExportar);
+    });
+  }
+  var btnBorrar = document.getElementById("borrar");
+  if (btnBorrar) {
+    btnBorrar.addEventListener("click", function () {
+      if (!window.confirm("Se borra todo lo que escribió en este documento. ¿Seguro?")) { return; }
+      campos.forEach(function (c) { c.value = ""; });
+      estado = {};
+      try { localStorage.removeItem(LLAVE); } catch (e) { /* nada */ }
+      document.getElementById("exportado").innerHTML = "";
+      recalcularAvance();
+    });
+  }
+
+  recalcularAvance();
+})();
+</script>
+
+</body>
+</html>

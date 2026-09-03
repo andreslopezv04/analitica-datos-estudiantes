@@ -1,7 +1,7 @@
 """
-Clase 10 - Reto: adapta este dashboard al dataset de tu equipo.
+Clase 9 - Reto: adapta este dashboard al dataset de tu equipo.
 
-Como se ejecuta (desde la carpeta clase10/reto/):
+Como se ejecuta (desde la carpeta clase09/reto/):
 
     streamlit run streamlit_app_starter.py
 
@@ -11,7 +11,7 @@ Tu trabajo es cambiarlo por el tuyo. Hay tres cosas que hacer, en este orden:
   1. Ajustar el bloque CONFIGURACION de abajo para que apunte a tu CSV y a tus columnas.
   2. Completar las tres celdas marcadas con "TU CODIGO AQUI".
   3. Reescribir los titulos de los graficos para que sean mensajes, no etiquetas
-     (clase 9: el titulo de la slide es el mensaje; aqui aplica igual).
+     (clase 8: el titulo de la slide es el mensaje; aqui aplica igual).
 
 Minimo exigido: 3 filtros, 3 KPIs, 3 graficos. Maximo razonable: 5 y 5.
 
@@ -33,8 +33,8 @@ import streamlit as st
 # ---------------------------------------------------------------------------
 
 # TODO: apunta a tu propio CSV.
-# Si tu dataset esta en clase10/data/, deja el patron de parents[1].
-# Si esta en otra carpeta, escribe la ruta relativa desde clase10/reto/.
+# Si tu dataset esta en clase09/data/, deja el patron de parents[1].
+# Si esta en otra carpeta, escribe la ruta relativa desde clase09/reto/.
 RUTA_DATOS = Path(__file__).resolve().parents[1] / "data" / "calidad_aire_risaralda.csv"
 
 # TODO: nombres cortos, en minuscula y sin tildes ni espacios, para TUS columnas.
@@ -250,7 +250,7 @@ with col_der:
 # TU CODIGO AQUI
 # Una frase, con cifra, calculada a partir de df_filtrado, que siga siendo cierta
 # sin importar como el usuario mueva los filtros. Usa st.info(...).
-# Este es el puente con la clase 9: el dashboard no termina en el grafico,
+# Este es el puente con la clase 8: el dashboard no termina en el grafico,
 # termina en una conclusion.
 
 

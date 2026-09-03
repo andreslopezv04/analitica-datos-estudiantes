@@ -69,7 +69,7 @@ accidentes de tránsito registrados en Colombia entre diciembre de 2022 y diciem
 3. **`marca_vehiculo` tiene 4 valores vacíos** y `edad_vehiculo` tiene 1. No hay que arreglarlos
    hoy; solo hay que saber que están ahí, porque pueden hacer que algo se comporte raro.
 
-Este dataset **no** se limpia hoy. La limpieza es la clase 3.
+Este dataset **no** se limpia hoy. La limpieza es la clase 4.
 
 ---
 
@@ -139,7 +139,7 @@ Responda en el notebook, en español, dos o tres frases por pregunta:
 
 - `.str.contains()`: ¿cuántos accidentes ocurrieron en 2024? La columna `fecha_accidente` es texto
   con formato `12/2024`. Investigue `.str.contains('2024')`. Advertencia: si la columna tiene
-  nulos, va a necesitar el parámetro `na=False`. Esto se ve formalmente en la clase 3.
+  nulos, va a necesitar el parámetro `na=False`. Esto se ve formalmente en la clase 4.
 - ¿Cuáles son las 5 marcas con más accidentes? Investigue `.value_counts()`.
 
 ---

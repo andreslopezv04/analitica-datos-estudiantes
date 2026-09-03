@@ -1,8 +1,8 @@
 """
-Clase 10 - Demo del profesor
+Clase 9 - Demo del profesor
 Dashboard de calidad del aire en Risaralda.
 
-Como se ejecuta (desde la carpeta clase10/demo/):
+Como se ejecuta (desde la carpeta clase09/demo/):
 
     streamlit run streamlit_demo.py
 
@@ -23,7 +23,7 @@ import plotly.express as px
 import streamlit as st
 
 # La ruta se arma desde la ubicacion de este archivo, no desde donde se ejecuta la
-# terminal. parents[1] es clase10/, y de ahi entramos a data/.
+# terminal. parents[1] es clase09/, y de ahi entramos a data/.
 RUTA_DATOS = Path(__file__).resolve().parents[1] / "data" / "calidad_aire_risaralda.csv"
 
 # Limite superior razonable para una medicion de material particulado en ug/m3.
@@ -227,7 +227,7 @@ fig_caja.update_layout(xaxis_title="", yaxis_title="Medicion (ug/m3)", legend_ti
 st.plotly_chart(fig_caja, use_container_width=True)
 
 
-# El insight escrito. Es el puente con la clase 9: el dashboard no termina en el
+# El insight escrito. Es el puente con la clase 8: el dashboard no termina en el
 # grafico, termina en una frase.
 peor = (
     df_filtrado.groupby("municipio", as_index=False)["medicion"]

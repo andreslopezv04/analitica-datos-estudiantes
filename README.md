@@ -65,7 +65,7 @@ Eso trae el material nuevo. Si no lo hace, va a llegar a clase con la carpeta de
 ## 2. Qué hay en cada carpeta
 
 ```
-clase01/ ... clase16/     Material de cada clase
+clase01/ ... clase15/     Material de cada clase
   slides.html             Diapositivas. Se abren con doble clic, en cualquier navegador
   demo.ipynb              Notebook del bloque 2 (demo guiado), con el andamiaje ya escrito
   reto.md                 Consigna del bloque 3: qué hay que entregar y con qué criterios

@@ -3,57 +3,74 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clase 10 · Visualización interactiva: Plotly + Streamlit | Analítica de Datos</title>
-<meta name="description" content="Clase 10 de Analítica de Datos: qué cambia cuando un gráfico se puede explorar, qué hace útil a un tablero, por qué cada filtro es una pregunta anticipada y cuándo la interactividad estorba; demo guiado con plotly.express y una app de Streamlit sobre calidad del aire en Risaralda, y reto con el dataset propio de cada equipo.">
+<title>Clase 10 · Laboratorio integrador: ensayo del Momento 2 | Analítica de Datos</title>
+<meta name="description" content="Clase 10 de Analítica de Datos: laboratorio de ensayo del Momento 2. Lectura de la rúbrica real, los cuatro modos de falla, sustentación de ejemplo valorada en voz alta, y ensayo cronometrado con feedback entre pares y clínica del profesor.">
 <style>
 /* ============================================================================
-   CLASE 10 — "CONSOLA NEÓN" (familia Neon Cyber)
+   CLASE 10 — "GEOMETRÍA PASTEL"
    Estética documentada en clase10/slides/ESTETICA.md
    Contrato invariante: design/CONTRATO.md (9 invariantes)
 
    Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
-   Todo el CSS, el JS y las dos figuras (SVG inline, generadas a partir de
-   clase10/data/calidad_aire_risaralda.csv) viven en este archivo.
-   El deck NO carga Plotly: la clase es de Plotly, el deck no lo necesita.
+   Todo el CSS y el JS viven en este archivo.
 
-   Motivo rector: el control que se enciende. Filas de widgets apagadas y
-   encendidas, que es literalmente lo que hace un filtro en un tablero.
-   La regla del bloque 1 se respeta por construcción: `pre` y `code` solo
-   aparecen en slides con data-block="2" o "3". En el bloque 1, los nombres de
-   funciones se escriben con `.term`, que es texto corrido, no código.
+   Motivo rector: el ensayo es un boceto. Formas planas, grandes y mates que
+   todavía se pueden mover de sitio: círculo, arco y cuña. Cero degradados,
+   cero sombras, cero brillo. La paleta es deliberadamente amable porque hoy
+   se espera que los equipos fallen delante de un compañero y lo corrijan; el
+   salto visual hacia el Sobrio Institucional de la clase 11 comunica el cambio
+   de registro sin que nadie lo anuncie.
+
+   Restricción del contrato respetada por construcción: esta clase no lleva
+   ningún bloque de código en ninguna slide. No hay `pre` ni `code` en el
+   documento, ni antes ni después de la divisoria del bloque 2.
+   Y no hay ninguna duración en pantalla: los tiempos viven solo en
+   clase10/notes/professor_notes.md.
    ========================================================================= */
 
 /* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
 :root{
-  --bg:#06070E;          /* consola apagada */
-  --surface:#10131F;     /* panel */
-  --surface-2:#171B2B;   /* panel atenuado */
-  --line:#262C42;        /* borde */
-  --fg:#EAF0FF;          /* texto */
-  --muted:#9AA6CE;       /* texto secundario (AA sobre --bg) */
-  --accent:#2BF5D0;      /* cian de señal */
-  --accent-2:#FF6FB0;    /* magenta de alerta */
-  --accent-ink:#04121C;  /* texto sobre el cian */
-  --yes:#2BF5D0;
-  --no:#FF6FB0;
-  --code-bg:#0A0D18;
-  --code-fg:#DCE6FF;
+  --bg:#F7F3EC;          /* papel cálido mate */
+  --surface:#FFFFFF;
+  --surface-2:#EFE8DD;
+  --line:#DCD2C3;
+  --fg:#231F1C;          /* tinta */
+  --muted:#57503F;       /* secundario, AA sobre el papel */
+  --accent:#2F8F7E;      /* menta profunda: el acento por defecto */
+  --peach:#C4552F;       /* durazno quemado: lo que cuesta */
+  --lilac:#5F4F9C;       /* lila: lo que se decide */
+  --sand:#B98A22;        /* arena: lo que se advierte */
+  --accent-ink:#FFFFFF;
+  /* ---- Variantes de tinta: SOLO para texto ----------------------------------
+     Los tres acentos pastel (menta, durazno, arena) estan calibrados para
+     rellenos, bandas y bordes, donde el area es grande y el contraste no manda.
+     Como TEXTO pequeno se caen: sobre el papel rinden 3,55 / 4,05 / 2,82, que en
+     un salon con luz ambiente y un proyector lavado deja de leerse.
+     Cada uno tiene aqui una variante mas profunda de la MISMA familia, que se usa
+     unicamente donde el acento es texto (strong, em, kicker, tag, celdas mono).
+     Rellenos, bandas, bordes, puntos y chips siguen con el color original: la
+     identidad del deck no cambia, solo el texto sube de contraste.
+     Sobre el papel #F7F3EC: menta 6,67 - durazno 6,73 - arena 6,85.
+     En impresion el fondo es blanco y estas tres suben todavia mas
+     (7,38 / 7,44 / 7,58), por eso NO se redefinen dentro de @media print. */
+  --accent-deep:#1C6053;   /* menta de tinta  */
+  --peach-deep:#93381A;    /* durazno de tinta */
+  --sand-deep:#6F4E0E;     /* arena de tinta   */
 
-  --font-display:"Helvetica Neue",Helvetica,"Segoe UI",Arial,sans-serif;
+  --font-display:"Avenir Next","Futura","Century Gothic","Segoe UI",system-ui,sans-serif;
   --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 
   /* Escala tipográfica. El piso del invariante 6 no se negocia. */
-  --fs-title:clamp(1.9rem,5.4vw,4.3rem);
-  --fs-h2:clamp(1.5rem,3.3vw,2.7rem);
-  --fs-h3:clamp(1.05rem,1.9vw,1.5rem);
+  --fs-title:clamp(1.9rem,5.2vw,4.2rem);
+  --fs-h2:clamp(1.5rem,3.2vw,2.7rem);
+  --fs-h3:clamp(1.05rem,1.85vw,1.45rem);
   --fs-body:clamp(0.95rem,1.55vw,1.4rem);
   --fs-small:clamp(0.78rem,1.02vw,0.95rem);
   --fs-micro:clamp(0.66rem,0.85vw,0.8rem);
-  --fs-code:clamp(0.78rem,1.15vw,1.05rem);
 
   --pad:clamp(1.4rem,3.6vw,4rem);
-  --gap:clamp(0.55rem,1.4vw,1.4rem);
+  --gap:clamp(0.55rem,1.35vw,1.35rem);
   --ease:cubic-bezier(.16,1,.3,1);
 }
 
@@ -75,11 +92,6 @@ body{
   scroll-snap-align:start;
   display:flex;flex-direction:column;justify-content:center;gap:var(--gap);
   position:relative;
-  /* La retícula de consola. Dos degradados, cero imágenes, cero peticiones. */
-  background-image:
-    linear-gradient(rgba(43,245,208,.042) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(43,245,208,.042) 1px,transparent 1px);
-  background-size:58px 58px;
 }
 .slide > *{max-width:100%}
 
@@ -89,175 +101,119 @@ body{
   display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
   font-family:var(--font-mono);
   font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  z-index:2;
 }
-.slide-footer .fb{color:var(--accent)}
+.slide-footer .fb{color:var(--accent-deep)}
 
 /* ---- Tipografía ---- */
-h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:800;
-   line-height:.98;letter-spacing:-.035em;text-transform:uppercase;max-width:16ch}
-h1 em{font-style:normal;color:var(--accent);text-shadow:0 0 28px rgba(43,245,208,.45)}
-h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:800;
-   line-height:1.05;letter-spacing:-.03em;text-transform:uppercase}
+h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:700;
+   line-height:1.02;letter-spacing:-.03em;max-width:17ch}
+h1 em{font-style:normal;color:var(--peach)}   /* display: area grande, color original */
+h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:700;
+   line-height:1.08;letter-spacing:-.022em;max-width:25ch}
+h2 em{font-style:normal;color:var(--accent-deep)}
 h3{font-family:var(--font-display);font-size:var(--fs-h3);font-weight:700;letter-spacing:-.01em}
 p{max-width:62ch}
-strong{color:var(--accent);font-weight:700}
+strong{color:var(--accent-deep);font-weight:700}
 .kicker{font-family:var(--font-mono);font-size:var(--fs-small);letter-spacing:.2em;
-  text-transform:uppercase;color:var(--accent)}
+  text-transform:uppercase;color:var(--accent-deep)}
+.kicker.pk{color:var(--peach-deep)}
 .lead{color:var(--muted);max-width:58ch}
-.rule{height:5px;width:clamp(80px,14vw,190px);background:var(--accent);flex:none;
-  box-shadow:0 0 24px rgba(43,245,208,.5)}
-.claim{font-family:var(--font-display);font-weight:800;letter-spacing:-.032em;
-  font-size:clamp(1.6rem,4.3vw,3.5rem);line-height:1.05;max-width:20ch}
-.claim span{color:var(--accent-2)}
-/* Nombres de funciones dentro de texto corrido. NO es un bloque de código:
-   se usa también en el bloque 1, donde el contrato lo permite explícitamente. */
-.term{font-family:var(--font-mono);font-size:.88em;background:var(--surface-2);
-  border:1px solid var(--line);padding:.02em .32em;border-radius:3px;color:var(--accent);
-  white-space:nowrap}
-.numeral{position:absolute;right:calc(var(--pad)/1.2);top:50%;transform:translateY(-50%);
-  font-family:var(--font-display);font-weight:800;font-size:clamp(7rem,24vw,20rem);line-height:1;
-  color:transparent;-webkit-text-stroke:2px var(--line);pointer-events:none;user-select:none;z-index:0}
-.slide > :not(.numeral):not(.slide-footer){position:relative;z-index:1}
+.claim{font-family:var(--font-display);font-weight:700;letter-spacing:-.03em;
+  font-size:clamp(1.5rem,4vw,3.3rem);line-height:1.06;max-width:24ch}
+.claim span{color:var(--peach)}
+.note{font-size:var(--fs-small);color:var(--muted);max-width:60ch}
+ul{list-style:none;display:flex;flex-direction:column;gap:.4em}
+ul li{padding-left:1.15em;position:relative;max-width:60ch}
+ul li::before{content:"";position:absolute;left:0;top:.62em;width:.5em;height:.5em;
+  border-radius:50%;background:var(--accent)}
+ul.peach li::before{background:var(--peach)}
+
+/* ---- Formas planas: el único ornamento del deck ---- */
+/* Capa de ornamento. Es contenedor de scroll propio: las formas sangran fuera del
+   lienzo a propósito y aquí se recortan, sin inflar el scrollHeight de la slide. */
+.deco{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.shape{position:absolute;pointer-events:none;z-index:0;user-select:none}
+.shape.circ{border-radius:50%}
+.shape.arch{border-radius:50% 50% 0 0}
+.shape.qtr{border-radius:100% 0 0 0}
+/* El pie va excluido a propósito: es `position:absolute` y esta regla lo
+   devolvía al flujo, dejándolo pegado bajo el contenido en vez de abajo. */
+.slide > :not(.deco):not(.slide-footer){position:relative;z-index:1}
 
 /* ---- Portada ---- */
-.cover{background-image:
-  radial-gradient(ellipse at 8% 12%,rgba(43,245,208,.20),transparent 52%),
-  radial-gradient(ellipse at 92% 88%,rgba(255,111,176,.14),transparent 50%),
-  linear-gradient(rgba(43,245,208,.042) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(43,245,208,.042) 1px,transparent 1px);
-  background-size:auto,auto,58px 58px,58px 58px}
-.cover .who{color:var(--muted);font-size:var(--fs-small);letter-spacing:.12em;text-transform:uppercase}
-.cover .who b{color:var(--fg);font-weight:600}
-
-/* ---- Listas ---- */
-ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.4rem,1.1vh,.95rem)}
-/* El item es un bloque, no un flex container: con display:flex cada nodo de texto
-   y cada <strong> del item se vuelve un flex item independiente y el contenido se
-   compone en columnas en vez de fluir inline. El marcador es un inline-block, que
-   conserva la alineacion por baseline, y la sangria francesa (padding-left mas
-   text-indent negativo del mismo valor) reproduce el ancho del marcador mas su
-   separacion, de modo que la composicion no cambia.
-   1.25em = .55em de marcador mas .7em de separacion. */
-ul.bullets li{display:block;max-width:60ch;padding-left:1.25em;text-indent:-1.25em}
-ul.bullets li::before{content:"";display:inline-block;width:.55em;height:.55em;margin-right:.7em;
-  background:var(--accent);transform:translateY(-.1em);box-shadow:0 0 12px rgba(43,245,208,.6)}
-ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.85rem)}
-/* El contador en un ::before inline-block reporta ancho 0 en Chrome: hay que darselo
-   explicito. 1.205em y 1em van en la escala del marcador (.85em); 1.874em va en la
-   del item y es donde arranca el texto. */
-ol.steps li{counter-increment:s;display:block;max-width:64ch;padding-left:1.874em;
-  text-indent:-1.874em}
-ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-mono);
-  color:var(--accent);font-size:.85em;display:inline-block;width:1.205em;margin-right:1em}
-
-/* ---- Tarjetas ---- */
-.cards{display:grid;gap:clamp(.4rem,.9vw,.95rem);
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
-.cards.c4{grid-template-columns:repeat(4,1fr)}
-.cards.c3{grid-template-columns:repeat(3,1fr)}
-.cards.c2{grid-template-columns:repeat(2,1fr)}
-.card{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line);
-  border-radius:4px;padding:clamp(.55rem,1.1vw,1.15rem);display:flex;flex-direction:column;
-  gap:.45em;min-width:0}
-.card.on{border-color:var(--accent);border-top-color:var(--accent);
-  box-shadow:0 0 0 1px rgba(43,245,208,.28),0 0 34px rgba(43,245,208,.12)}
-.card.warn{border-top-color:var(--no)}
-.card.good{border-top-color:var(--yes)}
-.card .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;
-  text-transform:uppercase;color:var(--accent)}
-.card.warn .k{color:var(--no)}
-.card p{font-size:clamp(.76rem,1.12vw,1.02rem);color:var(--muted);line-height:1.35;max-width:none}
-.card p b{color:var(--fg)}
-
-/* ---- Tablas ---- */
-.table-wrap{flex:1;min-height:0;display:flex;align-items:center}
-table{width:100%;border-collapse:collapse;font-size:clamp(.72rem,1.08vw,1rem);line-height:1.32}
-caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:var(--fs-micro);
-  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:.6em}
-th,td{border-bottom:1px solid var(--line);padding:clamp(.3rem,.72vw,.7rem) clamp(.35rem,.7vw,.8rem);
-  text-align:left;vertical-align:top}
-thead th{font-family:var(--font-mono);font-weight:500;font-size:.86em;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--accent);border-bottom:2px solid var(--accent)}
-tbody th{font-weight:700;color:var(--fg)}
-tbody th .mono,td .mono{font-family:var(--font-mono);font-size:.92em;color:var(--accent)}
-tbody tr.on td,tbody tr.on th{background:rgba(43,245,208,.08)}
-td em{font-style:normal;color:var(--muted)}
-td b{color:var(--fg)}
-td,tbody th{color:var(--muted)}
-tbody th{color:var(--fg)}
-
-/* ---- Cita / advertencia ---- */
-.callout{border-left:4px solid var(--accent);background:var(--surface);border-radius:0 4px 4px 0;
-  padding:clamp(.7rem,1.5vw,1.3rem) clamp(.9rem,1.8vw,1.6rem);max-width:66ch;color:var(--muted)}
-.callout.warn{border-left-color:var(--no)}
-.callout p{max-width:none;color:inherit}
-.callout p b{color:var(--fg)}
-
-/* ---- El motivo rector: controles apagados y encendidos ---- */
-.widgets{display:flex;flex-direction:column;gap:6px;max-width:46ch}
-.widgets .w{display:flex;justify-content:space-between;align-items:center;gap:1em;
-  background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:.42em .8em;
-  font-family:var(--font-mono);font-size:clamp(.74rem,1.1vw,1rem);color:var(--muted);opacity:.5}
-.widgets .w .tag{letter-spacing:.16em;font-size:.84em;color:var(--no);flex:none}
-.widgets .w.on{opacity:1;border-color:var(--accent);color:var(--fg);
-  box-shadow:0 0 28px rgba(43,245,208,.16)}
-.widgets .w.on .tag{color:var(--accent)}
-
-/* ---- Código (solo bloques 2 y 3) ---- */
-pre{background:var(--code-bg);color:var(--code-fg);border-left:4px solid var(--accent);
-  border-radius:0 4px 4px 0;
-  padding:clamp(.65rem,1.4vw,1.25rem) clamp(.85rem,1.7vw,1.5rem);overflow:hidden;
-  font-family:var(--font-mono);font-size:var(--fs-code);line-height:1.5;max-width:min(100%,80ch)}
-pre code{font:inherit;color:inherit;background:none}
-pre .c{color:#6C78A0}      /* comentario */
-pre .k{color:#7FB4FF}      /* palabra clave o función incorporada */
-pre .s{color:#2BF5D0}      /* cadena */
-pre .n{color:#FFC46B}      /* número */
-pre .e{color:#FF6FB0}      /* lo que revienta */
-.err{font-family:var(--font-mono);font-size:clamp(.72rem,1.02vw,.92rem);color:var(--no);
-  background:var(--surface);border:1px dashed var(--no);border-radius:3px;
-  padding:.4em .7em;max-width:72ch}
+.cover h1{max-width:20ch}
+.cover .meta{font-family:var(--font-mono);font-size:var(--fs-small);color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase}
 
 /* ---- Divisorias de bloque (invariante 3) ---- */
-/* El pie lo inyecta el JS como <p>, asi que .divider p{max-width:NNch} tambien lo
-   alcanzaba y lo estrangulaba a ~275px: en las divisorias el pie se partia en dos
-   lineas mientras en el resto del deck iba en una. Dos clases ganan en especificidad
-   a clase+tipo, de modo que el pie recupera el ancho completo sin tocar el parrafo. */
-.divider .slide-footer{max-width:none}
-.divider{justify-content:center;gap:clamp(.4rem,1vw,1rem);background-image:
-  radial-gradient(circle at 16% 28%,rgba(43,245,208,.22),transparent 55%),
-  radial-gradient(circle at 84% 80%,rgba(255,111,176,.16),transparent 55%),
-  linear-gradient(rgba(43,245,208,.042) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(43,245,208,.042) 1px,transparent 1px);
-  background-size:auto,auto,58px 58px,58px 58px}
-.divider .n{font-family:var(--font-display);font-weight:800;line-height:.78;letter-spacing:-.05em;
-  font-size:clamp(4.5rem,17vw,14rem);color:transparent;-webkit-text-stroke:2px var(--accent);
-  opacity:.55}
-.divider h2{font-size:clamp(1.7rem,5vw,3.8rem);color:var(--accent)}
-.divider p{color:var(--muted);max-width:46ch}
+.divider{justify-content:center}
+.divider .n{font-family:var(--font-display);font-weight:700;
+  font-size:clamp(4.5rem,15vw,12rem);line-height:.85;color:var(--surface-2);
+  letter-spacing:-.05em}
+.divider h2{font-size:clamp(1.8rem,4.4vw,3.2rem);max-width:20ch}
+.divider .band{width:clamp(80px,12vw,180px);height:8px;background:var(--accent)}
 
-/* ---- Figuras SVG ---- */
-.fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
-svg.fig{width:100%;height:auto;max-height:56vh;display:block}
-svg.fig .panel{fill:var(--surface);stroke:var(--line);stroke-width:2}
-svg.fig .panel.sel{stroke:var(--accent)}
-svg.fig .axis{stroke:var(--line);stroke-width:2}
-svg.fig .serie{fill:none;stroke:var(--accent);stroke-width:3}
-svg.fig .serie.b{stroke:var(--accent-2);stroke-dasharray:9 6}
-svg.fig .t{font-family:var(--font-mono);font-size:19px;fill:var(--muted)}
-svg.fig .lbl{font-family:var(--font-display);font-weight:800;font-size:24px;fill:var(--fg);
-  letter-spacing:.02em;text-transform:uppercase}
-svg.fig .lbl.acc{fill:var(--accent)}
-svg.fig .lbl.no{fill:var(--accent-2)}
-svg.fig .note{font-family:var(--font-body);font-size:20px;fill:var(--muted)}
-svg.fig .arrow{stroke:var(--accent);stroke-width:3;fill:none}
-svg.fig .arrowhead{fill:var(--accent)}
-svg.fig .chip{fill:var(--surface-2);stroke:var(--line);stroke-width:2}
-svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
+/* ---- Tarjetas ---- */
+.cols{display:grid;gap:var(--gap)}
+.cols.c2{grid-template-columns:repeat(2,1fr)}
+.cols.c3{grid-template-columns:repeat(3,1fr)}
+.cols.c4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);
+  padding:clamp(.7rem,1.5vw,1.25rem);border-top:6px solid var(--accent);
+  display:flex;flex-direction:column;gap:.3em}
+.card.p{border-top-color:var(--peach)}
+.card.l{border-top-color:var(--lilac)}
+.card.s{border-top-color:var(--sand)}
+.card h3{color:var(--fg)}
+.card p{color:var(--muted);font-size:var(--fs-small);max-width:none}
+.card .tag{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent-deep)}
+.card.p .tag{color:var(--peach-deep)} .card.l .tag{color:var(--lilac)} .card.s .tag{color:var(--sand-deep)}
+
+/* ---- Tabla ---- */
+table{border-collapse:collapse;width:100%;font-size:var(--fs-small)}
+th,td{text-align:left;padding:.45em .7em;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);font-weight:400}
+td.dim{font-family:var(--font-display);font-weight:700;color:var(--fg);white-space:nowrap}
+td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
+
+/* ---- Escala de bandas ---- */
+.bands{display:flex;flex-direction:column;gap:.35rem}
+.band-row{display:grid;grid-template-columns:minmax(9ch,14ch) minmax(7ch,10ch) 1fr;
+  gap:.8rem;align-items:center;background:var(--surface);border:1px solid var(--line);
+  border-left:8px solid var(--accent);padding:.45em .8em}
+.band-row.b4{border-left-color:#4FA48F}
+.band-row.b3{border-left-color:var(--sand)}
+.band-row.b2{border-left-color:var(--peach)}
+.band-row.b1{border-left-color:#8E2F1B}
+.band-row .nm{font-family:var(--font-display);font-weight:700}
+.band-row .rg{font-family:var(--font-mono);color:var(--muted);font-size:var(--fs-small)}
+.band-row .ds{color:var(--muted);font-size:var(--fs-small)}
+
+/* ---- Caja de énfasis ---- */
+.box{background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--peach);
+  padding:clamp(.7rem,1.5vw,1.2rem);display:flex;flex-direction:column;gap:.35em}
+.box.acc{border-left-color:var(--accent)}
+.box.lil{border-left-color:var(--lilac)}
+.box .q{font-family:var(--font-display);font-weight:700;font-size:clamp(1.05rem,2vw,1.6rem);
+  line-height:1.2;max-width:40ch}
+.box p{font-size:var(--fs-small);color:var(--muted)}
+
+/* ---- Fórmula (texto, no bloque de código) ---- */
+.formula{font-family:var(--font-mono);font-size:clamp(1rem,2.4vw,2rem);
+  color:var(--lilac);letter-spacing:.01em;background:var(--surface);
+  border:1px dashed var(--lilac);padding:.6em .9em;display:inline-block}
+
+/* ---- Casillas del acta ---- */
+.cpn{display:inline-flex;gap:.3em;margin-left:.5em}
+.cpn span{font-family:var(--font-mono);font-size:var(--fs-small);border:1.5px solid var(--muted);
+  padding:.05em .45em;color:var(--muted)}
 
 /* ---- Navegación (invariante 1) ---- */
 .progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
-  z-index:120;transition:width .3s var(--ease);box-shadow:0 0 16px rgba(43,245,208,.7)}
+  z-index:120;transition:width .3s var(--ease)}
 .nav-dots{position:fixed;right:clamp(.45rem,1.1vw,1rem);top:50%;transform:translateY(-50%);
   display:flex;flex-direction:column;gap:clamp(3px,.45vh,6px);z-index:120}
 .nav-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--muted);
@@ -266,11 +222,11 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
 .nav-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .block-chip{position:fixed;top:clamp(.6rem,1.6vh,1.2rem);right:clamp(1.4rem,3vw,2.6rem);z-index:120;
   font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;text-transform:uppercase;
-  color:var(--accent-ink);background:var(--accent);padding:.35em .8em;border-radius:2px}
+  color:var(--accent-ink);background:var(--accent);padding:.35em .8em}
 .block-chip[hidden]{display:none}
 
 /* Índice de slides (Esc) */
-.slide-index{position:fixed;inset:0;z-index:200;background:rgba(6,7,14,.98);
+.slide-index{position:fixed;inset:0;z-index:200;background:rgba(247,243,236,.98);
   padding:clamp(1.2rem,4vw,3rem);overflow:auto;display:none}
 .slide-index.open{display:block}
 .slide-index h2{margin-bottom:1rem;color:var(--accent)}
@@ -278,47 +234,42 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
 .slide-index li{break-inside:avoid;margin-bottom:.35em}
 .slide-index button{background:none;border:0;color:var(--fg);font:inherit;text-align:left;
   cursor:pointer;padding:.15em 0;width:100%}
-.slide-index button:hover,.slide-index button:focus-visible{color:var(--accent)}
+.slide-index button:hover,.slide-index button:focus-visible{color:var(--peach-deep)}
 .slide-index .ix{font-family:var(--font-mono);color:var(--muted);margin-right:.6em}
-.slide-index .bk{color:var(--accent);font-family:var(--font-mono);font-size:.8em;
+.slide-index .bk{color:var(--accent-deep);font-family:var(--font-mono);font-size:.8em;
   letter-spacing:.16em;text-transform:uppercase;margin:1.2em 0 .4em;break-after:avoid}
 
-/* ---- Animaciones de entrada ---- */
-.reveal{opacity:0;transform:translateY(22px);
-  transition:opacity .55s var(--ease),transform .55s var(--ease)}
+/* ---- Animación de entrada: una sola, sobria ---- */
+.reveal{opacity:0;transform:translateY(16px);
+  transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .slide.in-view .reveal{opacity:1;transform:none}
-.slide.in-view .reveal:nth-child(1){transition-delay:.05s}
-.slide.in-view .reveal:nth-child(2){transition-delay:.12s}
-.slide.in-view .reveal:nth-child(3){transition-delay:.19s}
-.slide.in-view .reveal:nth-child(4){transition-delay:.26s}
-.slide.in-view .reveal:nth-child(5){transition-delay:.33s}
-.slide.in-view .reveal:nth-child(6){transition-delay:.40s}
-/* Los controles se encienden uno por uno, en orden de lectura. */
-.widgets .w{transition:opacity .4s var(--ease),box-shadow .4s var(--ease)}
-.slide.in-view .widgets .w:nth-child(1){transition-delay:.30s}
-.slide.in-view .widgets .w:nth-child(2){transition-delay:.42s}
-.slide.in-view .widgets .w:nth-child(3){transition-delay:.54s}
-.slide.in-view .widgets .w:nth-child(4){transition-delay:.66s}
-.slide.in-view .widgets .w:nth-child(5){transition-delay:.78s}
+.slide.in-view .reveal:nth-child(1){transition-delay:.04s}
+.slide.in-view .reveal:nth-child(2){transition-delay:.10s}
+.slide.in-view .reveal:nth-child(3){transition-delay:.16s}
+.slide.in-view .reveal:nth-child(4){transition-delay:.22s}
+.slide.in-view .reveal:nth-child(5){transition-delay:.28s}
+.slide.in-view .reveal:nth-child(6){transition-delay:.34s}
 
 /* ---- Breakpoints obligatorios de alto (invariante 9) ---- */
 @media (max-height:700px){
   :root{--pad:clamp(1rem,2.4vw,2rem);--gap:clamp(.4rem,1vw,.9rem)}
 }
 @media (max-height:600px){
-  :root{--fs-title:clamp(1.6rem,4.2vw,2.8rem);--fs-h2:clamp(1.2rem,2.9vw,2rem);
+  :root{--fs-title:clamp(1.6rem,4.1vw,2.7rem);--fs-h2:clamp(1.2rem,2.8vw,2rem);
         --fs-h3:clamp(.95rem,1.6vw,1.2rem)}
-  .numeral{display:none}
+  .divider .n{font-size:clamp(3rem,10vw,6rem)}
+  .deco{display:none}
 }
 @media (max-height:500px){
-  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-code:clamp(.72rem,1vw,.9rem)}
+  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-small:clamp(.74rem,.95vw,.86rem)}
   .nav-dots{display:none}
 }
 @media (max-width:900px){
-  .cards.c4{grid-template-columns:repeat(2,1fr)}
+  .cols.c4{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:600px){
-  .cards.c4,.cards.c3,.cards.c2{grid-template-columns:1fr}
+  .cols.c4,.cols.c3,.cols.c2{grid-template-columns:1fr}
+  .band-row{grid-template-columns:1fr;gap:.15rem}
   .slide-index ol{columns:1}
 }
 
@@ -332,37 +283,21 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
 /* ============================================================================
    IMPRESIÓN A PDF (invariante 5) — idéntica en los 16 decks.
    Una slide por página, horizontal, fondo claro, sin dots ni barra.
-   Este deck nace oscuro: la hoja de impresión invierte la paleta completa para
-   que el PDF sea legible y comparable con el de las otras clases.
    ========================================================================= */
 @media print{
   @page{size:landscape;margin:0}
-  :root{--bg:#fff;--surface:#fff;--surface-2:#f0f0f4;--line:#c9c9d2;
-        --fg:#111;--muted:#444;--accent:#0A6E7A;--accent-2:#A8265F;--accent-ink:#fff;
-        --no:#A8265F;--yes:#0A6E7A;--code-bg:#f4f4f6;--code-fg:#111}
+  :root{--bg:#fff;--surface:#fff;--surface-2:#ececec;--line:#c9c9c9;
+        --fg:#111;--muted:#444;--accent:#1F6B5D;--peach:#93381A;--lilac:#43357A;
+        --sand:#7E5C10;--accent-ink:#fff}
+  /* Las tres variantes de tinta NO se redefinen: sobre el blanco de la hoja
+     rinden 7,38 (menta), 7,44 (durazno) y 7,58 (arena), mejor que en pantalla. */
   html,body{height:auto;background:#fff!important;color:#111!important}
   .slide{height:100vh;page-break-after:always;break-after:page;
-    background:#fff!important;background-image:none!important;color:#111!important;
+    background:#fff!important;color:#111!important;
     -webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .cover{background:#fff!important;background-image:none!important}
-  h1 em{text-shadow:none!important}
-  .rule{box-shadow:none!important}
-  ul.bullets li::before{box-shadow:none!important}
-  .divider{background:#fff!important;background-image:none!important;border-top:8px solid #0A6E7A}
-  .divider h2{color:#111!important}
-  .divider .n{color:#111!important;-webkit-text-stroke:0;opacity:.14}
-  .divider p,.divider .kicker,.divider .slide-footer{color:#444!important}
-  .card.on{background:#E2F5F3!important;box-shadow:none!important}
-  .card.on p{color:#333!important}
-  pre{background:#f4f4f6!important;color:#111!important;border:1px solid #c9c9d2;
-    border-left:5px solid #0A6E7A}
-  pre .c{color:#666!important} pre .k{color:#0A3E9A!important} pre .s{color:#0A6E7A!important}
-  pre .n{color:#8A5A00!important} pre .e{color:#A8265F!important}
-  .term{color:#0A6E7A!important}
-  .widgets .w{opacity:1!important;border:1px solid #c9c9d2;box-shadow:none!important}
-  .widgets .w.on{background:#E2F5F3!important;border-color:#0A6E7A;color:#111!important}
-  .progress-bar{box-shadow:none!important}
-  .numeral{display:none}
+  .deco{display:none!important}
+  .divider{border-top:8px solid #1F6B5D}
+  .divider .n{color:#d8d8d8}
   .progress-bar,.nav-dots,.slide-index,.block-chip{display:none!important}
   .reveal{opacity:1!important;transform:none!important}
   *{animation:none!important;transition:none!important}
@@ -384,437 +319,302 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
 
 <!-- ======================= PORTADA ======================= -->
 <section class="slide cover" data-title="Portada">
-  <p class="kicker reveal">Analítica de Datos &middot; Clase 10 &middot; Momento 2</p>
-  <div class="rule reveal"></div>
-  <h1 class="reveal">Visualización interactiva: <em>Plotly + Streamlit</em></h1>
-  <p class="who reveal"><b>Julián Garzón</b> &middot; Ingeniería de Sistemas &middot; Universidad Cooperativa de Colombia</p>
+  <div class="deco" aria-hidden="true">
+  <span class="shape circ" style="width:34vw;height:34vw;background:#D5E6E0;right:-7vw;top:-9vw"></span>
+  <span class="shape arch" style="width:15vw;height:22vw;background:#EFD3C4;left:-3vw;bottom:8vh"></span>
+  </div>
+  <p class="kicker reveal">Analítica de Datos · Clase 10 · Momento 2</p>
+  <h1 class="reveal">Laboratorio integrador:<br><em>ensayo del Momento 2</em></h1>
+  <p class="lead reveal">Hoy no hay nota. Hoy hay consecuencias. Cada equipo arma y ensaya su entrega en vivo, con la rúbrica real en la mano, delante de un compañero que la va a leer con usted.</p>
+  <p class="meta reveal">Julián Garzón · Ingeniería de Sistemas · Universidad Cooperativa de Colombia</p>
 </section>
 
 <!-- ======================= OBJETIVOS ======================= -->
 <section class="slide" data-title="Objetivos de la clase">
-  <p class="kicker reveal">Al terminar hoy, usted debe poder hacer esto solo</p>
-  <h2 class="reveal">Objetivos de la clase</h2>
-  <ol class="steps reveal">
-    <li><b>Decir qué hace útil a un tablero</b> y qué lo vuelve decorativo, nombrando la pregunta que responde el suyo.</li>
-    <li><b>Distinguir el rol de Plotly del rol de Streamlit</b>, sin confundir quién hace qué.</li>
-    <li><b>Construir tres gráficos con plotly.express:</b> una línea, unas barras y una caja.</li>
-    <li><b>Levantar una app</b> desde la terminal y entender por qué el archivo se ejecuta completo en cada clic.</li>
-    <li><b>Filtrar un DataFrame con controles</b> y proteger la app de filtros vacíos.</li>
-    <li><b>Cumplir el mínimo de tres filtros, tres KPIs y tres gráficos</b> sobre el dataset de su equipo.</li>
-  </ol>
-  <p class="lead reveal">Hoy hay entregable, y no es un entregable cualquiera: lo que empiece en el bloque 3 es exactamente lo que sustenta en la clase 12.</p>
+  <p class="kicker reveal">Al terminar la clase, su equipo debe poder</p>
+  <h2 class="reveal">Cinco cosas, y todas se verifican hoy</h2>
+  <ul class="reveal">
+    <li><strong>Enunciar el mensaje central</strong> de su análisis en una frase, sin abrir el dashboard.</li>
+    <li><strong>Sostener la sustentación completa</strong> dentro del corte, con demo en vivo incluida.</li>
+    <li><strong>Anticipar tres preguntas</strong> del Q&amp;A y responderlas de pie.</li>
+    <li><strong>Autoevaluarse contra la rúbrica real</strong> e identificar en cuál de las tres dimensiones está más débil.</li>
+    <li><strong>Nombrar el modo de falla</strong> que más los amenaza y comprometerse a una acción antes de la clase 11.</li>
+  </ul>
+  <p class="note reveal">La salida obligatoria de hoy es un acta de feedback firmada por el equipo revisor. Un equipo sin acta es un equipo que no ensayó.</p>
 </section>
 
 <!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
 <section class="slide divider" data-block="1" data-title="Divisoria · Bloque 1">
-  <span class="n">01</span>
-  <p class="kicker">Bloque uno</p>
-  <h2>Teoría &middot; Las decisiones antes de la sintaxis</h2>
-  <p>Cero código en pantalla. Hoy no llega teoría nueva de diseño: llega un criterio de utilidad y una división de roles entre dos herramientas.</p>
+  <div class="deco" aria-hidden="true">
+  <span class="shape circ" style="width:38vw;height:38vw;background:#D5E6E0;right:-9vw;bottom:-12vw"></span>
+  </div>
+  <p class="n reveal">01</p>
+  <p class="kicker reveal">Bloque 1</p>
+  <h2 class="reveal">Qué se evalúa realmente</h2>
+  <div class="band reveal"></div>
+  <p class="lead reveal">La rúbrica que se proyecta hoy es exactamente la que se usa la próxima clase. No una versión resumida, no una paráfrasis.</p>
 </section>
 
-<section class="slide" data-block="1" data-title="Hook: el tablero que no sirve">
-  <span class="numeral">?</span>
-  <p class="kicker reveal">La pregunta con la que abrimos</p>
-  <p class="claim reveal">¿Cuántos tableros han visto que se ven muy bien <span>y no sirven para nada</span>?</p>
-  <p class="lead reveal">Doce filtros, veinte gráficos, ni una frase escrita. Nadie sabe quién lo usa ni para qué. Un tablero que no cambia ninguna decisión es un protector de pantalla caro.</p>
+<section class="slide" data-block="1" data-title="Encuadre: hoy no hay nota, hoy hay consecuencias">
+  <div class="deco" aria-hidden="true">
+  <span class="shape qtr" style="width:20vw;height:20vw;background:#EFD3C4;right:0;top:0"></span>
+  </div>
+  <p class="kicker pk reveal">Encuadre</p>
+  <div class="box reveal">
+    <p class="q">Hoy no hay nota. Hoy hay consecuencias.</p>
+    <p>Lo que salga en el acta de su equipo lo voy a tener en la mano cuando los valore la próxima clase. Si aquí les dicen que su mensaje central no se entiende y llegan a la clase 11 con el mismo mensaje, eso ya no es un descubrimiento: es una decisión que ustedes tomaron.</p>
+  </div>
+  <p class="lead reveal">Ensayar hoy es barato: el único costo es descubrir delante de un compañero lo que no funciona. No ensayar es caro: lo mismo se descubre la próxima clase, cuando ya no hay tiempo de arreglarlo.</p>
 </section>
 
-<section class="slide" data-block="1" data-title="Analogía: el tablero del carro">
-  <p class="kicker reveal">La analogía que sostiene todo el bloque</p>
-  <p class="claim reveal">El tablero del carro no tiene el histórico de consumo <span>por trimestre</span>.</p>
-  <p class="lead reveal">Tiene velocidad, gasolina, temperatura y revoluciones. Nada más. Exactamente lo que hace falta para las cuatro decisiones que se toman conduciendo: acelerar, frenar, parar a tanquear, apagar el motor.</p>
-  <div class="callout reveal"><p><strong>El criterio no es cuánto muestra, es qué decide.</strong> Todo lo que no alimenta una decisión ocupa espacio y roba atención. <b>Un tablero se juzga por lo que dejó afuera.</b></p></div>
+<section class="slide" data-block="1" data-title="Qué produce la clase 11">
+  <p class="kicker reveal">Antes de que lo pregunten</p>
+  <h2 class="reveal">La clase 11 <em>tampoco</em> tiene nota. Y aun así decide el semestre</h2>
+  <div class="cols c3 reveal">
+    <div class="card"><span class="tag">Momento 2</span><h3>Qué sale de la clase 11</h3><p>Tres bandas —Saber, Ser y Hacer— con su evidencia, qué falta para la banda siguiente, una acción por dimensión, y un reporte de cumplido / no cumplido. Ningún número.</p></div>
+    <div class="card p"><span class="tag">Habilitación</span><h3>Qué se juegan</h3><p>Sin cumplir el Momento 1 y el Momento 2 no hay Momento 3. Quedar en no cumplido inhabilita para la única evaluación calificada del curso.</p></div>
+    <div class="card l"><span class="tag">Momento 3</span><h3>Dónde está la nota</h3><p>La única nota del semestre es la del Momento 3, y esa nota es la nota del curso. No hay ponderación de momentos ni ninguna otra aritmética.</p></div>
+  </div>
+  <p class="note reveal">Cumplido significa: el equipo entregó y sustentó, y ninguna de las tres dimensiones quedó en la banda No aceptable. Presentarse siempre es mejor que no presentarse.</p>
 </section>
 
-<section class="slide" data-block="1" data-title="Los cuatro criterios de utilidad">
-  <p class="kicker reveal">Los cuatro criterios &middot; se aplican al suyo, hoy mismo</p>
-  <h2 class="reveal">Cuándo un tablero sirve</h2>
-  <div class="cards c2 reveal">
-    <article class="card on"><span class="k">Uno</span><h3>Responde una pregunta real</h3>
-      <p>Una que alguien se hace de verdad. <b>Si no puede nombrar a la persona, el tablero no tiene dueño</b> y nadie lo va a abrir dos veces.</p></article>
-    <article class="card"><span class="k">Dos</span><h3>Se entiende sin que se lo expliquen</h3>
-      <p>Quien lo abre debe captar el mensaje solo, de un vistazo. <b>Si necesita manual, falló.</b></p></article>
-    <article class="card"><span class="k">Tres</span><h3>Los filtros son los que esa persona usa</h3>
-      <p>No los que el dataset permite construir. Son dos listas distintas, y casi nunca coinciden.</p></article>
-    <article class="card"><span class="k">Cuatro</span><h3>Termina en una decisión</h3>
-      <p>"¿Y ahora qué hago?" tiene que tener respuesta. Si no la tiene, es un informe con botones.</p></article>
+<section class="slide" data-block="1" data-title="Las tres dimensiones y qué mide cada una">
+  <p class="kicker reveal">El instrumento, y es el único del curso</p>
+  <h2 class="reveal">Saber, Ser y Hacer. <em>Las tres pesan lo mismo</em></h2>
+  <div class="cols c3 reveal">
+    <div class="card"><span class="tag">Saber</span><h3>Qué mide</h3><p>Si distinguen y justifican la técnica antes de aplicarla, no después.</p></div>
+    <div class="card p"><span class="tag">Ser</span><h3>Qué mide</h3><p>Cómo se comunica, qué se asume y qué se reconoce como límite. Aquí vive la narrativa.</p></div>
+    <div class="card l"><span class="tag">Hacer</span><h3>Qué mide</h3><p>Si ejecutan bien sobre datos reales: preparación, análisis, visualización y producto.</p></div>
+  </div>
+  <p class="lead reveal">Lo que más cambia el resultado y menos se cree: <strong>un dashboard impecable no compensa una presentación que solo enumera lo que se construyó.</strong> Esa presentación deja Ser en Aceptable como techo, y Ser vale un tercio.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Qué elementos mira cada dimensión en el Momento 2">
+  <p class="kicker reveal">Elementos, no criterios</p>
+  <h2 class="reveal">Dónde miro para ubicar cada banda</h2>
+  <table class="reveal">
+    <tr><th>Dimensión</th><th>Qué miro dentro de ella en el Momento 2</th></tr>
+    <tr><td class="dim">Saber</td><td>Aplicación de la estadística descriptiva</td></tr>
+    <tr><td class="dim">Ser</td><td>Narrativa y storytelling · Insights y recomendaciones · Sustentación y manejo del tiempo</td></tr>
+    <tr><td class="dim">Hacer</td><td>Preparación de datos · Análisis bivariado y multivariado · Visualización · Dashboard interactivo</td></tr>
+  </table>
+  <p class="note reveal">Son elementos, no criterios con porcentaje: no se puntúan por separado, no se promedian y no se suman. Alimentan un solo juicio, el de la banda de su dimensión.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Las cinco bandas">
+  <p class="kicker reveal">La escala, y son cinco nombres, solo esos</p>
+  <h2 class="reveal">Una banda por dimensión</h2>
+  <div class="bands reveal">
+    <div class="band-row"><span class="nm">Excelente</span><span class="rg">4.3 – 5.0</span><span class="ds">Supera lo esperado. Hay decisiones justificadas, no solo ejecutadas</span></div>
+    <div class="band-row b4"><span class="nm">Bueno</span><span class="rg">3.8 – 4.2</span><span class="ds">Cumple todo con solvencia. Faltan matices, no faltan piezas</span></div>
+    <div class="band-row b3"><span class="nm">Aceptable</span><span class="rg">3.0 – 3.7</span><span class="ds">Cumple el mínimo. Hay vacíos visibles pero la base está</span></div>
+    <div class="band-row b2"><span class="nm">Insuficiente</span><span class="rg">1.8 – 2.9</span><span class="ds">Faltan elementos importantes. Enumera y describe, no relaciona</span></div>
+    <div class="band-row b1"><span class="nm">No aceptable</span><span class="rg">1.0 – 1.7</span><span class="ds">Ausente o fundamentalmente equivocado</span></div>
+  </div>
+  <p class="note reveal">Estos números valen como nota únicamente en el Momento 3. En la clase 11 el equipo recibe el nombre de la banda, y nada más.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Topes por omisión y banderas rojas">
+  <p class="kicker pk reveal">Lo que pone techo y lo que hunde</p>
+  <h2 class="reveal">Ningún tope resta. <em>Todos ponen techo</em></h2>
+  <div class="cols c2 reveal">
+    <div class="card p"><span class="tag">Topes por omisión</span><h3>Le ponen un techo a una dimensión</h3><p>Sin análisis de correlación, Hacer no pasa de Insuficiente. Sin heatmap, Hacer no pasa de Aceptable. Estadísticos calculados pero no interpretados, Saber no pasa de Aceptable. No se acumulan: manda el más bajo.</p></div>
+    <div class="card l"><span class="tag">Banderas rojas</span><h3>Hunden la dimensión afectada</h3><p>Dataset sin procedencia verificable o sintético presentado como real, menos de tres preguntas de investigación, contenido copiado, integrante ausente sin aviso. Dejan esa dimensión en Insuficiente o inferior. Plagio: cero automático en el momento completo.</p></div>
+  </div>
+  <p class="note reveal">Los topes actúan sobre la banda de una dimensión, nunca sobre las tres, y nunca restan bandas.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Los mínimos del entregable">
+  <p class="kicker reveal">Reglas del curso, no de la rúbrica</p>
+  <h2 class="reveal">Lo que no se negocia en el Momento 2</h2>
+  <div class="cols c3 reveal">
+    <div class="card"><span class="tag">Dashboard</span><h3>3 filtros · 3 KPIs · 3 gráficos</h3><p>Menos de eso no es un dashboard incompleto: es un dashboard ausente.</p></div>
+    <div class="card p"><span class="tag">Demo</span><h3>En vivo, obligatoria</h3><p>Con capturas de respaldo entregadas de antemano. Una falla técnica con respaldo declarado no cuesta banda; no tener respaldo, sí.</p></div>
+    <div class="card l"><span class="tag">Formato</span><h3>El mismo de los tres momentos</h3><p>Exposición, preguntas y transición, con corte duro. Idéntico en las clases 6, 11 y 14.</p></div>
+  </div>
+  <p class="note reveal">Ambos integrantes hablan. La participación de los dos se valora en Ser, y el Q&amp;A puede ir a cualquiera de los dos.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Modos de falla 1 y 2">
+  <p class="kicker pk reveal">Los cuatro modos de falla · observados el semestre pasado</p>
+  <h2 class="reveal">Análisis superficial y dependencia de la herramienta</h2>
+  <div class="cols c2 reveal">
+    <div class="card p"><span class="tag">Modo 1</span><h3>Análisis superficial</h3>
+      <p><strong>Se ve así:</strong> se describen los gráficos en vez de interpretarlos. "Aquí vemos que el estrato 3 es el más alto." Ningún porqué, ninguna comparación, ninguna recomendación.</p>
+      <p><strong>Antídoto:</strong> por cada gráfico, obligarse a decir en voz alta "y esto significa que…". Si no sale la frase, el gráfico sobra.</p></div>
+    <div class="card p"><span class="tag">Modo 2</span><h3>Dependencia de la herramienta</h3>
+      <p><strong>Se ve así:</strong> la presentación se cae cuando Streamlit se cae. El equipo se queda mudo esperando que cargue.</p>
+      <p><strong>Antídoto:</strong> capturas de respaldo preparadas de antemano y declaradas. El mensaje se sostiene sin la app.</p></div>
   </div>
 </section>
 
-<section class="slide" data-block="1" data-title="Qué cambia cuando el gráfico es interactivo">
-  <p class="kicker reveal">El cambio de fondo, y no es técnico</p>
-  <p class="claim reveal">El lector deja de mirar <span>y empieza a explorar</span>.</p>
-  <div class="cards c3 reveal">
-    <article class="card"><span class="k">Antes</span><h3>Usted elegía la vista</h3>
-      <p>Un gráfico impreso muestra un recorte: uno, el que usted escogió. El lector ve lo que usted decidió mostrarle.</p></article>
-    <article class="card on"><span class="k">Ahora</span><h3>El lector elige la vista</h3>
-      <p>Hace zoom, apaga series, cambia el rango. <b>Ve combinaciones que usted nunca miró</b>, y algunas van a verse raras.</p></article>
-    <article class="card warn"><span class="k">Consecuencia</span><h3>Hay que decidir antes</h3>
-      <p>Qué se puede tocar y qué no. El mensaje tiene que sobrevivir <b>a cualquier combinación</b> que el usuario elija.</p></article>
+<section class="slide" data-block="1" data-title="Modos de falla 3 y 4">
+  <p class="kicker pk reveal">Los cuatro modos de falla · observados el semestre pasado</p>
+  <h2 class="reveal">Mala gestión del tiempo y ausencia de mensaje central</h2>
+  <div class="cols c2 reveal">
+    <div class="card p"><span class="tag">Modo 3</span><h3>Mala gestión del tiempo</h3>
+      <p><strong>Se ve así:</strong> todo el turno en contexto y en "cómo limpiamos los datos", y los hallazgos comprimidos al final, hablando rápido.</p>
+      <p><strong>Causa:</strong> se presenta en el orden en que se trabajó, no en el orden en que se debe escuchar.</p>
+      <p><strong>Antídoto:</strong> presupuesto escrito y ensayado en voz alta de principio a fin. El contexto es lo primero que se recorta.</p></div>
+    <div class="card p"><span class="tag">Modo 4</span><h3>Ausencia de mensaje central</h3>
+      <p><strong>Se ve así:</strong> al terminar, nadie del público sabría resumir en una frase qué encontró el equipo. Hubo datos, hubo gráficos, no hubo tesis.</p>
+      <p><strong>Antídoto:</strong> escribir la frase antes de armar las diapositivas, y repetirla al abrir y al cerrar.</p></div>
   </div>
-  <p class="lead reveal">Es la clase 9 en modo difícil: un tablero es storytelling donde la audiencia decide el orden de las slides. La narrativa no desaparece, se vuelve más exigente.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Tablero o informe">
-  <p class="kicker reveal">No son lo mismo y no compiten</p>
-  <div class="table-wrap reveal">
-    <table>
-      <caption>Cuándo un informe &middot; cuándo un tablero</caption>
-      <thead><tr><th scope="col"></th><th scope="col">Informe</th><th scope="col">Tablero</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">Quién decide qué se ve</th><td>El autor</td><td><b>Quien lo abre</b></td></tr>
-        <tr><th scope="row">Cuántas preguntas responde</th><td>Las que el autor previó, en un orden fijo</td><td>Una familia de preguntas, en cualquier orden</td></tr>
-        <tr class="on"><th scope="row">Cuándo gana</th><td>La conclusión ya está cerrada y hay que defenderla</td><td><b>La conclusión depende del recorte</b> que le interese a cada quien</td></tr>
-        <tr><th scope="row">Quién lo usa</th><td>Quien lo lee una vez</td><td>Quien vuelve cada semana con una pregunta distinta</td></tr>
-        <tr><th scope="row">Cómo se rompe</th><td>Queda viejo</td><td>Queda huérfano: nadie lo abre</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="lead reveal">Y matplotlib no se jubila: para un informe impreso sigue siendo mejor. Plotly gana cuando el que mira quiere tocar.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Un filtro es una pregunta anticipada">
-  <p class="kicker reveal">El corazón del bloque &middot; y todavía sin una línea de código</p>
-  <p class="claim reveal">Un filtro no es un adorno: <span>es una pregunta que usted anticipó.</span></p>
-  <div class="widgets reveal">
-    <div class="w on"><span>Municipio</span><span class="tag">SÍ</span></div>
-    <div class="w on"><span>Tipo de partícula</span><span class="tag">SÍ</span></div>
-    <div class="w"><span>Estación de monitoreo</span><span class="tag">DICE LO MISMO</span></div>
-    <div class="w"><span>Código interno del sensor</span><span class="tag">NADIE PREGUNTA</span></div>
-  </div>
-  <p class="lead reveal">Los dos primeros son cortes que alguien se hace de verdad. El tercero repite al primero: en este dataset cada municipio tiene una sola estación, así que <strong>dos filtros que dicen lo mismo cuentan como uno</strong>. El cuarto no lo pregunta nadie.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Cuándo la interactividad estorba">
-  <p class="kicker reveal">La otra cara, que casi nadie dice</p>
-  <h2 class="reveal">Cuándo la interactividad estorba</h2>
-  <div class="cards c2 reveal">
-    <article class="card warn"><span class="k">Uno</span><h3>Cuando el mensaje es uno</h3>
-      <p>Si la conclusión ya está cerrada, dar controles es invitar a perderse. <b>Una gráfica fija y una frase</b> convencen mejor.</p></article>
-    <article class="card warn"><span class="k">Dos</span><h3>Cuando el filtro deja mentir</h3>
-      <p>Con suficientes combinaciones, cualquiera encuentra la vista que confirma lo que ya creía. Usted la puso ahí.</p></article>
-    <article class="card warn"><span class="k">Tres</span><h3>Cuando hay demasiado de todo</h3>
-      <p>Doce controles no son doce respuestas: son parálisis. <b>La habilidad que se evalúa es elegir</b>, y con quince elementos no hay elección.</p></article>
-    <article class="card warn"><span class="k">Cuatro</span><h3>Cuando el vacío revienta la app</h3>
-      <p>Si el usuario puede deseleccionar todo y su tablero muere ahí, la interactividad no era una función: era una trampa.</p></article>
-  </div>
-</section>
-
-<section class="slide" data-block="1" data-title="Plotly y Streamlit: el cuadro y la galería">
-  <p class="kicker reveal">El malentendido número uno de la clase &middot; se cierra aquí</p>
-  <p class="claim reveal">Plotly pinta los cuadros. <span>Streamlit es la galería.</span></p>
-  <p class="lead reveal">Las paredes, la iluminación, los letreros y la puerta por la que entra el visitante. Un cuadro sin galería se queda en el taller; una galería sin cuadros es un salón vacío con buena luz.</p>
-  <div class="callout reveal"><p><strong>Son dos herramientas con dos roles, no dos versiones de lo mismo.</strong> Casi todos los tropiezos de hoy vienen de pedirle a una lo que hace la otra.</p></div>
-</section>
-
-<section class="slide" data-block="1" data-title="Quién hace qué">
-  <p class="kicker reveal">La tabla que vale la pena copiar en el cuaderno</p>
-  <div class="table-wrap reveal">
-    <table>
-      <caption>Dos herramientas, dos roles</caption>
-      <thead><tr><th scope="col"></th><th scope="col">Plotly</th><th scope="col">Streamlit</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">Qué es</th><td>Una librería de gráficos</td><td>Un framework de aplicaciones web</td></tr>
-        <tr class="on"><th scope="row">Qué produce</th><td><b>Un gráfico que se toca:</b> zoom, valores al pasar el mouse, series que se apagan desde la leyenda</td><td><b>Una página web con controles</b></td></tr>
-        <tr><th scope="row">Dónde vive</th><td>Dentro de un cuaderno o dentro de una app</td><td>En un servidor local que usted levanta</td></tr>
-        <tr><th scope="row">A quién reemplaza</th><td>A matplotlib y seaborn, cuando hace falta explorar</td><td>A nada de lo que hemos visto</td></tr>
-        <tr><th scope="row">Se puede usar solo</th><td>Sí, en el cuaderno</td><td>Sí, pero sin gráficos queda pobre</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section class="slide" data-block="1" data-title="El flujo: pregunta, filtros, métricas, gráficos">
-  <p class="kicker reveal">El orden importa &middot; y es el inverso al que usa todo el mundo</p>
-  <div class="table-wrap reveal">
-    <table>
-      <caption>Cuatro decisiones, en este orden</caption>
-      <thead><tr><th scope="col">Paso</th><th scope="col">Qué se decide</th><th scope="col">Error típico</th></tr></thead>
-      <tbody>
-        <tr class="on"><th scope="row">1 &middot; Pregunta</th><td>Qué quiere saber quien va a usar esto</td><td>Saltárselo y empezar por el gráfico bonito</td></tr>
-        <tr><th scope="row">2 &middot; Filtros</th><td>Qué cortes de esa pregunta importan</td><td>Poner un filtro por cada columna del dataset</td></tr>
-        <tr><th scope="row">3 &middot; Métricas</th><td>Qué tres números resumen la respuesta</td><td>Poner el número fácil de calcular en vez del que importa</td></tr>
-        <tr><th scope="row">4 &middot; Gráficos</th><td>Qué muestra lo que los números no alcanzan a decir</td><td>Meter el gráfico primero y buscarle la pregunta después</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="lead reveal">Es la conversación con el médico: primero la pregunta, después el recorte, después las cifras, y solo al final la radiografía. <strong>Nadie empieza por la radiografía.</strong></p>
-</section>
-
-<section class="slide" data-block="1" data-title="Anatomía de un tablero">
-  <p class="kicker reveal">Cómo se ve el resultado &middot; cuatro zonas, ninguna decorativa</p>
-  <div class="fig-wrap reveal">
-    <svg class="fig" viewBox="0 0 1000 430" role="img"
-         aria-label="Esquema de un tablero. A la izquierda, una barra lateral con tres controles: municipio, tipo de partícula y rango de fechas. Arriba a la derecha, tres tarjetas de indicador. Debajo, tres áreas de gráfico. Al pie, una franja con la frase del insight principal. Todo lo que está a la derecha se recalcula cuando cambia un control de la izquierda.">
-      <text class="lbl acc" x="30" y="30">Controles</text>
-      <text class="lbl" x="300" y="30">Indicadores</text>
-      <text class="lbl" x="620" y="30">Gráficos</text>
-
-      <!-- Barra lateral con tres controles -->
-      <rect class="panel sel" x="30" y="48" width="230" height="300" rx="6"></rect>
-      <rect class="chip on" x="52" y="76" width="186" height="46" rx="4"></rect>
-      <text class="t" x="66" y="105">Municipio</text>
-      <rect class="chip on" x="52" y="138" width="186" height="46" rx="4"></rect>
-      <text class="t" x="66" y="167">Tipo de partícula</text>
-      <rect class="chip on" x="52" y="200" width="186" height="46" rx="4"></rect>
-      <text class="t" x="66" y="229">Rango de fechas</text>
-      <text class="note" x="52" y="290">Tres cortes</text>
-      <text class="note" x="52" y="318">que alguien</text>
-      <text class="note" x="52" y="346">pregunta</text>
-
-      <!-- Flecha: los controles gobiernan todo lo de la derecha -->
-      <path class="arrow" d="M 268 198 L 316 198"></path>
-      <path class="arrowhead" d="M 316 188 L 340 198 L 316 208 Z"></path>
-
-      <!-- Tres indicadores -->
-      <rect class="panel" x="352" y="48" width="196" height="96" rx="6"></rect>
-      <text class="t" x="370" y="80">Promedio</text>
-      <text class="lbl acc" x="370" y="122">28,7 ug/m3</text>
-      <rect class="panel" x="558" y="48" width="196" height="96" rx="6"></rect>
-      <text class="t" x="576" y="80">Pico máximo</text>
-      <text class="lbl acc" x="576" y="122">149,6 ug/m3</text>
-      <rect class="panel" x="764" y="48" width="206" height="96" rx="6"></rect>
-      <text class="t" x="782" y="80">Mediciones</text>
-      <text class="lbl acc" x="782" y="122">5.034</text>
-
-      <!-- Tres gráficos -->
-      <rect class="panel" x="352" y="162" width="300" height="132" rx="6"></rect>
-      <path class="serie" d="M 372 268 L 412 240 L 452 250 L 492 214 L 532 226 L 572 196 L 632 208"></path>
-      <text class="t" x="372" y="188">¿Va mejorando?</text>
-      <rect class="panel" x="662" y="162" width="308" height="132" rx="6"></rect>
-      <rect class="chip on" x="686" y="238" width="42" height="46"></rect>
-      <rect class="chip on" x="740" y="222" width="42" height="62"></rect>
-      <rect class="chip on" x="794" y="252" width="42" height="32"></rect>
-      <rect class="chip on" x="848" y="262" width="42" height="22"></rect>
-      <text class="t" x="686" y="188">¿Dónde está peor?</text>
-      <rect class="panel" x="352" y="304" width="618" height="44" rx="6"></rect>
-      <text class="t" x="372" y="333">La frase: qué concluye este recorte, escrita en la página</text>
-
-      <text class="note" x="30" y="392">Todo lo de la derecha se vuelve a calcular cada vez que alguien mueve un control de la izquierda.</text>
-      <text class="note" x="30" y="418">Si un indicador no cambia al mover los filtros, es decoración.</text>
-    </svg>
-  </div>
-</section>
-
-<section class="slide" data-block="1" data-title="El mínimo: tres filtros, tres KPIs, tres gráficos">
-  <p class="kicker reveal">Especificación del entregable &middot; es regla, no sugerencia</p>
-  <h2 class="reveal">Tres, tres y tres</h2>
-  <div class="cards c3 reveal">
-    <article class="card on"><span class="k">3 filtros</span><h3>Al menos uno de cada clase</h3>
-      <p>Uno categórico y uno de rango, de fecha o numérico. <b>Distintos entre sí:</b> dos filtros sobre columnas que dicen lo mismo cuentan como uno.</p></article>
-    <article class="card on"><span class="k">3 KPIs</span><h3>Números con unidad</h3>
-      <p>Grandes, con su unidad, y que <b>cambien cuando cambian los filtros</b>. Y con un ancla: un número sin referencia no decide nada.</p></article>
-    <article class="card on"><span class="k">3 gráficos</span><h3>Tres preguntas distintas</h3>
-      <p>Tres versiones de lo mismo cuentan como uno solo. Cada gráfico responde algo que los otros dos no responden.</p></article>
-  </div>
-  <div class="callout warn reveal"><p><strong>Y el techo, que importa igual:</strong> más de cinco filtros o más de cinco gráficos se penaliza. <b>Lo que se evalúa es elegir.</b> Si necesita seis filtros, probablemente son dos tableros distintos.</p></div>
 </section>
 
 <section class="slide" data-block="1" data-title="Resumen del bloque 1">
-  <p class="kicker reveal">Lo que se lleva de este bloque</p>
-  <h2 class="reveal">Cuatro ideas, cero sintaxis</h2>
-  <ol class="steps reveal">
-    <li><b>Un tablero se juzga por las decisiones que cambia</b>, no por la cantidad de cosas que muestra.</li>
-    <li><b>Interactivo significa que el lector elige la vista.</b> El mensaje tiene que sobrevivir a cualquier combinación que él elija.</li>
-    <li><b>Cada filtro es una pregunta anticipada.</b> Los que no responden ninguna solo estorban.</li>
-    <li><b>Plotly pinta, Streamlit expone.</b> Y el orden de trabajo es pregunta, filtros, métricas, gráficos.</li>
-  </ol>
-  <p class="lead reveal">Todo lo que sigue es cómo se escribe esto. Si el bloque 1 quedó claro, lo demás es teclear y leer errores.</p>
+  <div class="deco" aria-hidden="true">
+  <span class="shape circ" style="width:30vw;height:30vw;background:#E4DCF2;right:-8vw;top:-8vw"></span>
+  </div>
+  <p class="kicker reveal">Cierre del bloque 1</p>
+  <p class="claim reveal">Los cuatro modos de falla son reparables antes de la clase 11.<br><span>Ninguno se repara la noche anterior.</span></p>
+  <p class="lead reveal">Por eso el ensayo va hoy y no el domingo: lo que se descubre hoy todavía tiene semana por delante para arreglarse.</p>
 </section>
 
 <!-- ======================= DIVISORIA BLOQUE 2 ======================= -->
 <section class="slide divider" data-block="2" data-title="Divisoria · Bloque 2">
-  <span class="n">02</span>
-  <p class="kicker">Bloque dos</p>
-  <h2>Demo &middot; Lo recorre usted</h2>
-  <p>Abra <span class="term">demo/demo.ipynb</span> y avance solo, a su ritmo. <b>El código ya está escrito:</b> se corre, se entiende y se responden las preguntas de interpretación. Nadie lo va a dictar desde aquí. Yo camino por el salón resolviendo dudas.</p>
-</section>
-
-<section class="slide" data-block="2" data-title="El dataset del demo">
-  <p class="kicker reveal">Regla de la casa: nunca se grafica nada sobre un dataset que no se sabe qué es</p>
-  <h2 class="reveal">Calidad del aire en Risaralda</h2>
-  <div class="table-wrap reveal">
-    <table>
-      <caption>clase10/data/calidad_aire_risaralda.csv &middot; 5.047 filas x 5 columnas &middot; una fila = una medición de una estación en un día &middot; origen: datos.gov.co</caption>
-      <thead><tr><th scope="col">Columna</th><th scope="col">Qué es</th></tr></thead>
-      <tbody>
-        <tr><th scope="row"><span class="mono">Municipio</span></th><td>Dosquebradas, Pereira, Santa Rosa de Cabal, La Virginia</td></tr>
-        <tr><th scope="row"><span class="mono">Estacion</span></th><td>La estación física que tomó la medida. <b>Una por municipio</b>: dos filtros que dicen lo mismo</td></tr>
-        <tr class="on"><th scope="row"><span class="mono">Fecha</span></th><td>Texto con formato <span class="mono">MM/DD/YYYY hh:mm:ss AM</span>. <b>Todavía no es una fecha</b></td></tr>
-        <tr><th scope="row"><span class="mono">Diametro aerodinamico</span></th><td><span class="mono">PM10</span> o <span class="mono">PM2.5</span>: el tamaño de la partícula, en micrómetros</td></tr>
-        <tr class="on"><th scope="row"><span class="mono">Medicion</span></th><td>Concentración, en microgramos por metro cúbico (<span class="mono">ug/m3</span>)</td></tr>
-      </tbody>
-    </table>
+  <div class="deco" aria-hidden="true">
+  <span class="shape arch" style="width:22vw;height:30vw;background:#EFD3C4;right:6vw;bottom:0"></span>
   </div>
-  <div class="callout warn reveal"><p><strong>Y llega sucio.</strong> Cuatro mediciones de PM2.5 imposibles, con la mediana del archivo en 26,2, y nueve mediciones en cero, que es sensor apagado. <b>Trece filas de 5.047</b> deciden si el tablero sirve. La siguiente diapositiva lo prueba.</p></div>
-  <p class="lead reveal">El ancla, sin la cual ningún número significa nada: las PM2.5 son tan pequeñas que entran al torrente sanguíneo, y la guía de la OMS es <strong>no pasar de 15 ug/m3 al día</strong>.</p>
+  <p class="n reveal">02</p>
+  <p class="kicker reveal">Bloque 2</p>
+  <h2 class="reveal">Sustentación de ejemplo, valorada en voz alta</h2>
+  <div class="band reveal"></div>
+  <p class="lead reveal">Primero se sustenta en serio. Después se valora en público, con la rúbrica proyectada y señalando dónde falló el que sustentó.</p>
 </section>
 
-<section class="slide" data-block="2" data-title="Por qué un outlier arruina un tablero">
-  <p class="kicker reveal">El mejor momento de la clase &middot; el mismo gráfico, dos veces</p>
-  <div class="fig-wrap reveal">
-    <svg class="fig" viewBox="0 0 1020 340" role="img"
-         aria-label="Dos paneles con el mismo promedio anual de material particulado entre 2007 y 2023. En el panel de la izquierda, con los datos crudos, el eje llega a 410 microgramos por metro cúbico por culpa del promedio de PM2.5 de 2023, y las dos series quedan aplastadas contra el borde inferior en una línea plana. En el panel de la derecha, con las trece filas imposibles descartadas, el eje llega a 60 y se ve que el PM10 baja de unos 42 a unos 26 microgramos entre 2007 y 2023, y que el PM2.5 aparece a partir de 2012 con huecos.">
-      <text class="lbl no" x="80" y="24">Con los datos crudos</text>
-      <text class="lbl acc" x="600" y="24">Con trece filas menos</text>
-
-      <!-- Panel izquierdo: eje 0 a 410 -->
-      <path class="axis" d="M 80 40 L 80 280 L 470 280"></path>
-      <text class="t" x="30" y="46">410</text>
-      <text class="t" x="52" y="286">0</text>
-      <text class="t" x="72" y="308">2007</text>
-      <text class="t" x="424" y="308">2023</text>
-      <path class="serie" d="M 80,256 L 104,255 L 128,258 L 151,259 L 175,260 L 199,257 L 222,258 L 246,260 L 270,261 L 294,259 L 318,264 L 341,267 L 365,269 L 389,266 L 412,267 L 436,266 L 460,265"></path>
-      <path class="serie b" d="M 199,273 L 222,272"></path>
-      <path class="serie b" d="M 341,263 L 365,265 L 389,264 L 412,273 L 436,271 L 460,43"></path>
-
-      <!-- Panel derecho: eje 0 a 60 -->
-      <path class="axis" d="M 600 40 L 600 280 L 990 280"></path>
-      <text class="t" x="562" y="46">60</text>
-      <text class="t" x="572" y="286">0</text>
-      <text class="t" x="592" y="308">2007</text>
-      <text class="t" x="944" y="308">2023</text>
-      <path class="serie" d="M 600,113 L 624,112 L 648,133 L 671,135 L 695,142 L 719,126 L 742,130 L 766,147 L 790,151 L 814,140 L 838,169 L 861,185 L 885,204 L 909,185 L 932,191 L 956,181 L 980,177"></path>
-      <path class="serie b" d="M 719,230 L 742,225"></path>
-      <path class="serie b" d="M 861,159 L 885,180 L 909,236 L 932,233 L 956,219 L 980,221"></path>
-
-      <text class="note" x="80" y="332">Línea continua: PM10. Línea punteada: PM2.5. Promedio anual, en ug/m3, del archivo de la clase.</text>
-    </svg>
+<section class="slide" data-block="2" data-title="Qué van a ver: el estándar, no una parodia">
+  <p class="kicker reveal">Antes de empezar</p>
+  <h2 class="reveal">Esto es lo que estoy pidiendo. <em>No es un ideal inalcanzable</em></h2>
+  <ul class="reveal">
+    <li>Sustentación completa de un dashboard de ejemplo, dentro del turno real y con demo en vivo.</li>
+    <li>Los cinco bloques dentro del turno: contexto, preparación de datos, visualizaciones clave, hallazgos, insights y plan de ML.</li>
+    <li>Preguntas hostiles después, hechas por el salón o por mí mismo.</li>
+  </ul>
+  <div class="box acc reveal">
+    <p class="q">No van a ver una parodia de mala sustentación.</p>
+    <p>Van a ver el estándar bien ejecutado, con uno o dos errores sutiles adentro. Lo que hace que el formato quepa no es hablar rápido: es el guion.</p>
   </div>
-  <p class="lead reveal">Un solo valor extremo <strong>aplasta la escala del eje</strong> y vuelve ilegible todo lo demás. El outlier no es un problema estadístico abstracto: es la razón por la que el tablero no sirve.</p>
 </section>
 
-
-<section class="slide" data-block="2" data-title="El recorrido, a nivel general">
-  <p class="kicker reveal">Lo que van a hacer, sin desarrollarlo aquí</p>
-  <h2 class="reveal">Tres partes, y la última cambia de ventana</h2>
-  <div class="cards c3 reveal">
-    <article class="card"><span class="k">Parte A</span><h3>Los datos</h3>
-      <p>Cargar, volver la fecha una fecha de verdad y decidir qué se descarta. <b>La limpieza cambia quién encabeza el ranking</b>, y por lo tanto cambia el título del gráfico.</p></article>
-    <article class="card on"><span class="k">Parte B</span><h3>Plotly, en el cuaderno</h3>
-      <p>Tres gráficos que responden tres preguntas distintas —cómo evoluciona, dónde está peor, qué tan estable es— y un KPI que trae su ancla adentro.</p></article>
-    <article class="card warn"><span class="k">Parte C</span><h3>La app, en la terminal</h3>
-      <p>Se cierra el cuaderno y se abre un archivo <span class="term">.py</span>. No tiene celdas y no se ejecuta con el botón de play: se levanta desde la terminal y queda corriendo.</p></article>
+<section class="slide" data-block="2" data-title="Evidencia primero, banda después">
+  <p class="kicker reveal">Cómo se valora, y el orden importa</p>
+  <h2 class="reveal">Primero se escribe la evidencia. <em>Solo después se marca la banda</em></h2>
+  <div class="cols c3 reveal">
+    <div class="card"><span class="tag">Paso 1</span><h3>La evidencia concreta</h3><p>Qué frase, qué gráfico, qué momento. Escrito, antes de decidir nada.</p></div>
+    <div class="card p"><span class="tag">Paso 2</span><h3>La banda</h3><p>Una por dimensión. Tres bandas por equipo, no ocho puntajes.</p></div>
+    <div class="card l"><span class="tag">Paso 3</span><h3>Qué faltó</h3><p>Qué habría tenido que pasar para subir a la banda siguiente.</p></div>
   </div>
-  <div class="callout reveal"><p><strong>La parte C es la única de todo el semestre que no ocurre dentro de Jupyter.</strong> Aparecen la terminal, un proceso vivo, un puerto y un navegador. Si algo se va a atascar hoy, se atasca ahí, y por eso se avisa antes de llegar.</p></div>
+  <p class="lead reveal">Es la contramedida contra el efecto halo, que con solo tres bandas por equipo es el sesgo que más daño hace. <strong>Una presentación pulida sube Ser y no toca Saber ni Hacer.</strong></p>
 </section>
 
-<section class="slide" data-block="2" data-title="Cómo se trabaja">
-  <p class="kicker reveal">Se lee antes de ejecutar &middot; nadie va adelantado ni atrasado</p>
-  <h2 class="reveal">Cómo se trabaja este bloque</h2>
-  <div class="cards c3 reveal">
-    <article class="card"><span class="k">El cuaderno</span><h3>Aquí no se teclea nada</h3>
-      <p>Todo el código está escrito: se ejecuta, se mira la salida y se lee la explicación que está justo encima. Los gráficos vienen ya titulados y con los ejes etiquetados, que es el modelo a copiar en el reto.</p></article>
-    <article class="card on"><span class="k">Lo que sí le toca</span><h3>Preguntas de interpretación</h3>
-      <p>Con la respuesta plegada debajo. Se escribe la propia <b>primero</b> y se abre después. Qué significa el resultado, no cuál fue. Escribir código es el bloque 3.</p></article>
-    <article class="card warn"><span class="k">La app</span><h3>Terminal, no editor</h3>
-      <p>Se entra a la carpeta <span class="term">clase10/demo</span> y se levanta con <span class="term">streamlit run</span>. Se detiene con <span class="term">Ctrl+C</span> en la terminal: cerrar la pestaña del navegador no la apaga.</p></article>
-  </div>
-  <div class="callout reveal"><p><strong>Yo estoy caminando.</strong> Levante la mano en el momento en que algo no cuadre, no al final. Y si la app no le levanta, dígalo ya: se resuelve al lado de un compañero que la tenga corriendo, y la instalación se arregla fuera de clase.</p></div>
+<section class="slide" data-block="2" data-title="La única cuenta del semestre">
+  <p class="kicker reveal">Se hace una vez, en voz alta, con mis propias bandas</p>
+  <h2 class="reveal">Toda la aritmética del curso cabe en una línea</h2>
+  <p class="formula reveal">Nota del Momento 3 = (Saber + Ser + Hacer) / 3</p>
+  <p class="lead reveal">Y no hay paso siguiente: <strong>la nota final del curso es la nota del Momento 3.</strong> Los momentos 1 y 2 no entran en ninguna cuenta porque no producen número; producen bandas, evidencia y habilitación.</p>
+  <p class="note reveal">Verla hecha una sola vez desactiva la pregunta de "¿y cuánto saco?", que si no aparece diez veces.</p>
 </section>
+
+<section class="slide" data-block="2" data-title="El grupo revalora: calibrar el ojo">
+  <p class="kicker reveal">Antes de que revisen a un compañero</p>
+  <h2 class="reveal">Ahora valoran ustedes. <em>Tres bandas, y la evidencia de cada una</em></h2>
+  <ul class="peach reveal">
+    <li>Una banda para Saber, una para Ser y una para Hacer, sobre la sustentación que acaban de ver.</li>
+    <li>Cuando dos personas den bandas distintas, la pregunta no es quién tiene razón: es <strong>qué viste que te llevó a esa banda</strong>.</li>
+    <li>El feedback entre pares solo sirve si el par sabe qué está mirando. Esto es lo que lo entrena.</li>
+  </ul>
+  <div class="box reveal"><p class="q">Una presentación pulida pero superficial no debe superar a una rigurosa pero áspera.</p></div>
+</section>
+
 <!-- ======================= DIVISORIA BLOQUE 3 ======================= -->
 <section class="slide divider" data-block="3" data-title="Divisoria · Bloque 3">
-  <span class="n">03</span>
-  <p class="kicker">Bloque tres</p>
-  <h2>Reto &middot; Ahora usted, con su dataset</h2>
-  <p>Abra <span class="term">reto/README.md</span> y <span class="term">reto/reto_starter.ipynb</span>. Usted decide la pregunta, los controles y los números; yo sigo circulando. Esto es lo que se entrega.</p>
+  <div class="deco" aria-hidden="true">
+  <span class="shape circ" style="width:40vw;height:40vw;background:#E4DCF2;left:-12vw;bottom:-14vw"></span>
+  </div>
+  <p class="n reveal">03</p>
+  <p class="kicker reveal">Bloque 3</p>
+  <h2 class="reveal">Ensayo, feedback entre pares y clínica</h2>
+  <div class="band reveal"></div>
+  <p class="lead reveal">Es el corazón de la clase y lo que más tiempo ocupa. Si algo se desborda antes, se recorta antes: esto no se toca.</p>
 </section>
 
-<section class="slide" data-block="3" data-title="El reto: su tablero, su dataset">
-  <p class="kicker reveal">El dataset del aire era el del demo &middot; hoy trabaja con el de su equipo</p>
-  <p class="claim reveal">Esto no se parece al entregable del Momento 2. <span>Es el entregable del Momento 2.</span></p>
-  <ul class="bullets reveal">
-    <li>Una app de Streamlit que <b>corre</b>, sobre el dataset de su equipo, el mismo que viene evolucionando desde el Momento 1.</li>
-    <li><b>Tres filtros</b> distintos entre sí, con al menos uno categórico y uno de rango.</li>
-    <li><b>Tres KPIs</b> que cambian al mover los filtros, cada uno con su unidad.</li>
-    <li><b>Tres gráficos</b> que responden preguntas distintas, con títulos que son mensajes.</li>
-  </ul>
-  <p class="lead reveal">Lo que empiece hoy es el archivo que sustenta en la clase 12. No es un ejercicio parecido: <strong>es el mismo archivo</strong>.</p>
-</section>
-
-<section class="slide" data-block="3" data-title="El orden importa">
-  <p class="kicker reveal">No abra el archivo .py primero &middot; es el error que más tiempo cuesta</p>
-  <h2 class="reveal">Tres pasos, en este orden</h2>
-  <ol class="steps reveal">
-    <li><b>Diseño en papel, en <span class="term">reto_starter.ipynb</span>.</b> Antes de tocar código: la pregunta y a quién le sirve, los tres filtros, los tres KPIs, los tres gráficos. Si no puede escribir la pregunta, todavía no tiene un tablero: tiene un dataset.</li>
-    <li><b>Preparar el dataset, en el mismo cuaderno.</b> Renombrar columnas a minúsculas sin tildes ni espacios, una sola vez, en la carga. Convertir fechas con su <span class="term">format</span>. Revisar valores imposibles. Prototipar los tres gráficos ahí, antes de meterlos en la app.</li>
-    <li><b>Adaptar <span class="term">streamlit_app_starter.py</span>.</b> Cambiar el bloque de configuración del principio, completar los tres <span class="term"># TU CODIGO AQUI</span> y reescribir los títulos como mensajes.</li>
-  </ol>
-  <p class="lead reveal">Se ejecuta desde <span class="term">clase10/reto/</span> con <span class="term">streamlit run streamlit_app_starter.py</span>.</p>
-</section>
-
-<section class="slide" data-block="3" data-title="Requisitos, uno por uno">
-  <p class="kicker reveal">Los criterios están escritos en el reto &middot; nada de esto es sorpresa</p>
-  <h2 class="reveal">Con qué se revisa</h2>
-  <ul class="bullets reveal">
-    <li>La app <b>levanta</b>. Una app que no corre no cuenta, por bonita que se vea en el código.</li>
-    <li>Los tres filtros son <b>distintos entre sí</b>. Dos filtros sobre columnas redundantes cuentan como uno.</li>
-    <li>Los tres KPIs <b>reaccionan</b> a los filtros. Un número que no cambia es decoración.</li>
-    <li>La app <b>no revienta</b> si el usuario deselecciona todo.</li>
-    <li>Hay <b>una frase escrita en la página</b> con el insight principal, calculada sobre el filtrado.</li>
-    <li>Los títulos son <b>mensajes</b>. Mal: "Consumo por municipio". Bien: "Tres municipios concentran la mitad del consumo".</li>
-  </ul>
-  <div class="callout warn reveal"><p><strong>Cumplir los mínimos justos tiene techo.</strong> Un filtro sin sentido analítico o un KPI trivial le pone tope a la banda. Y lo de arriba de cinco filtros o cinco gráficos se penaliza: <b>la habilidad es elegir</b>.</p></div>
-</section>
-
-<section class="slide" data-block="3" data-title="Si se atasca">
-  <p class="kicker reveal">Antes de levantar la mano, revise esto</p>
-  <div class="table-wrap reveal">
-    <table>
-      <caption>Los tropiezos de hoy, en orden de probabilidad</caption>
-      <thead><tr><th scope="col">Síntoma</th><th scope="col">Qué revisar</th></tr></thead>
-      <tbody>
-        <tr class="on"><th scope="row">No pasa nada al ejecutar el archivo</th>
-          <td>Streamlit solo corre con <span class="mono">streamlit run archivo.py</span> desde la terminal. <b>El botón de play del editor no sirve.</b></td></tr>
-        <tr><th scope="row"><span class="mono">ModuleNotFoundError</span></th>
-          <td><span class="mono">which python</span> y <span class="mono">which streamlit</span> tienen que apuntar al mismo entorno. Es el ochenta por ciento de los casos.</td></tr>
-        <tr><th scope="row"><span class="mono">Port 8501 is already in use</span></th>
-          <td>Hay otra app suya viva. <span class="mono">--server.port 8502</span>, y funciona siempre.</td></tr>
-        <tr><th scope="row">Edito el archivo y no veo cambios</th>
-          <td>Guardar. Streamlit detecta el cambio y ofrece <b>Rerun</b> arriba a la derecha.</td></tr>
-        <tr><th scope="row"><span class="mono">KeyError</span> en cascada</th>
-          <td>Renombró la columna y siguió usando el nombre viejo. Se decide el nombre en la carga y se usa ese en todo el archivo.</td></tr>
-        <tr><th scope="row">Las barras muestran valores gigantes</th>
-          <td>Falta el <span class="mono">groupby</span>. <span class="mono">px</span> no agrega por usted.</td></tr>
-      </tbody>
-    </table>
+<section class="slide" data-block="3" data-title="Cómo funciona la ronda">
+  <p class="kicker reveal">Organización</p>
+  <h2 class="reveal">Cada equipo sustenta ante otro equipo, y después se rota</h2>
+  <div class="cols c4 reveal">
+    <div class="card"><span class="tag">Parejas</span><h3>Dominios distintos</h3><p>Nunca se emparejan equipos con datasets del mismo dominio: el revisor debe escuchar con oído de público no experto.</p></div>
+    <div class="card p"><span class="tag">Turno</span><h3>Sustentación sin interrupciones</h3><p>Después vienen las preguntas, y al final se llena y se firma el acta.</p></div>
+    <div class="card l"><span class="tag">El corte</span><h3>Lo lleva el revisor</h3><p>No el revisado. Dos avisos y corte, exactamente como en la clase 11.</p></div>
+    <div class="card s"><span class="tag">Rotación</span><h3>Dos actas por equipo</h3><p>De revisores distintos. Si dos revisores independientes señalan lo mismo, ya no es opinión.</p></div>
   </div>
 </section>
 
-<section class="slide" data-block="3" data-title="Qué se termina en casa">
-  <p class="kicker reveal">Lo que alcanza aquí es la app corriendo con lo mínimo</p>
-  <h2 class="reveal">El cierre es en casa</h2>
-  <div class="cards c3 reveal">
-    <article class="card on"><span class="k">Revisar</span><h3>Que los KPIs sean los que importan</h3>
-      <p>No los que fueron fáciles de calcular. Y que cada uno traiga su ancla: un número sin referencia no decide nada.</p></article>
-    <article class="card on"><span class="k">Reescribir</span><h3>Los tres títulos como mensajes</h3>
-      <p>Un título que describe los ejes no dice nada que no se vea. El título es donde vive la conclusión.</p></article>
-    <article class="card on"><span class="k">Probar</span><h3>Con filtros extremos</h3>
-      <p>Todo seleccionado, nada seleccionado, un solo valor. Si algo revienta, ahí falta una guarda.</p></article>
+<section class="slide" data-block="3" data-title="Cómo se llena el acta">
+  <p class="kicker reveal">El acta está organizada como la rúbrica real</p>
+  <h2 class="reveal">Tres filas, una por dimensión. <em>Marca y evidencia</em></h2>
+  <table class="reveal">
+    <tr><th>Dimensión</th><th>Marca del revisor</th><th>Y escribe</th></tr>
+    <tr><td class="dim">Saber</td><td class="b">C · P · N</td><td>Qué escuchó que lo llevó ahí</td></tr>
+    <tr><td class="dim">Ser</td><td class="b">C · P · N</td><td>Qué escuchó que lo llevó ahí</td></tr>
+    <tr><td class="dim">Hacer</td><td class="b">C · P · N</td><td>Qué vio que lo llevó ahí</td></tr>
+  </table>
+  <p class="lead reveal">Cumple, Cumple parcialmente, No cumple. <strong>La evidencia es obligatoria:</strong> una marca sin evidencia escrita es un acta inservible y se devuelve.</p>
+  <p class="note reveal">El revisor no pone bandas ni notas. Marca, describe y señala. La banda la pongo yo en la clase 11, y allá tampoco hay nota.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="Reglas del feedback">
+  <p class="kicker pk reveal">Cuatro reglas, y se sostienen</p>
+  <h2 class="reveal">Cómo se da feedback que sirva</h2>
+  <ul class="peach reveal">
+    <li><strong>Se critica el trabajo, nunca a quien lo presenta.</strong> Un tono personal corta la ronda de inmediato.</li>
+    <li><strong>Nada de elogio mutuo.</strong> Un acta con todo en Cumple y sin evidencia escrita le cuesta bandas a un compañero la semana siguiente, y esas bandas son la nota de la clase 14.</li>
+    <li><strong>Mínimo un "ojalá" concreto por acta.</strong> Algo que el equipo revisado pueda cambiar antes de la próxima clase.</li>
+    <li><strong>Hoy no se programa.</strong> Portátil abierto para sustentar, no para arreglar el código. El desarrollo es tarea de la semana.</li>
+  </ul>
+</section>
+
+<section class="slide" data-block="3" data-title="La rotación y la corrección aplicada">
+  <p class="kicker reveal">Entre la primera ronda y la segunda</p>
+  <h2 class="reveal">Aplique al menos una corrección. <em>Y que quede escrito</em></h2>
+  <div class="box acc reveal">
+    <p class="q">El feedback que no se aplica no es feedback: es un comentario.</p>
+    <p>Al rotar, el equipo revisado elige una corrección del acta anterior y la aplica en la ronda siguiente. El nuevo revisor anota si lo hizo. Es la diferencia entre salir de aquí con dos hojas y salir con una versión mejor.</p>
   </div>
-  <div class="callout reveal"><p><strong>Opcional y no se evalúa hoy:</strong> pestañas, botón de descarga, temas y colores, mapas, y publicar la app en Streamlit Community Cloud. <b>Publicar no es requisito del curso:</b> el material asume la app corriendo en su máquina. Nada de eso suma si lo básico no corre.</p></div>
+  <p class="lead reveal">Si su dashboard todavía no está terminado, ensaye igual y con más razón. Lo que se prueba hoy no es el código: es si usted puede sostener el turno y dejar un mensaje. Eso se ensaya con un dashboard a medias; lo que no se puede es improvisarlo el día de la evaluación.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="La clínica: tres preguntas">
+  <p class="kicker reveal">Clínica equipo por equipo</p>
+  <h2 class="reveal">Les voy a hacer tres preguntas, siempre las mismas</h2>
+  <div class="cols c3 reveal">
+    <div class="card"><span class="tag">Uno</span><h3>El dataset</h3><p>¿Alcanza para lo que están prometiendo? ¿El snapshot está versionado y corre sin internet?</p></div>
+    <div class="card p"><span class="tag">Dos</span><h3>Los gráficos</h3><p>¿Cada gráfico responde una pregunta? ¿Hay alguno que sobre? ¿Falta el heatmap de correlación o el análisis de correlación?</p></div>
+    <div class="card l"><span class="tag">Tres</span><h3>El mensaje central</h3><p>Dígamelo sin el dashboard a la vista. Sujeto, verbo y consecuencia. Si no sale limpia, la escribimos ahí mismo, en el acta.</p></div>
+  </div>
+  <p class="note reveal">Si su dashboard necesita internet para arrancar, es frágil para la clase 11, y eso se descubre hoy.</p>
+</section>
+
+<section class="slide" data-block="3" data-title="Salida obligatoria de la clase">
+  <p class="kicker reveal">Con qué se sale de aquí</p>
+  <h2 class="reveal">Un acta firmada por equipo revisor. <em>Idealmente dos</em></h2>
+  <ul class="reveal">
+    <li>Las tres dimensiones marcadas <span class="cpn"><span>C</span><span>P</span><span>N</span></span> con su evidencia escrita.</li>
+    <li>El tiempo real medido en el ensayo, escrito en el acta.</li>
+    <li>Las tres preguntas que le hizo el revisor, y qué respondió.</li>
+    <li>Al menos un compromiso concreto, leído en voz alta al firmar. Compromiso que no se dice en voz alta, no se cumple.</li>
+  </ul>
+  <p class="note reveal">Me llevo copia de todas. Los hallazgos entran a la valoración de la clase 11.</p>
 </section>
 
 <!-- ======================= CIERRE ======================= -->
-<section class="slide" data-title="Cómo se valora">
-  <p class="kicker reveal">El entregable de hoy es práctica, y entrena tres dimensiones</p>
-  <h2 class="reveal">Cómo se valora</h2>
-  <div class="cards c3 reveal">
-    <article class="card good"><span class="k">Saber</span><h3>La pregunta y las anclas</h3>
-      <p>Qué pregunta responde su tablero y para quién. Que cada número tenga referencia. <b>Controles sin criterio le ponen techo a esta dimensión.</b></p></article>
-    <article class="card good"><span class="k">Ser</span><h3>La narrativa</h3>
-      <p>La frase del insight y el hilo que une los tres gráficos. En la clase 12 esto es lo que más pesa: el tablero es el medio, <b>la historia es el entregable</b>.</p></article>
-    <article class="card good"><span class="k">Hacer</span><h3>La app funcionando</h3>
-      <p>Tres filtros, tres KPIs, tres gráficos, corriendo y sin reventar con filtros vacíos.</p></article>
-  </div>
-  <div class="callout reveal"><p><strong>Este reto no produce nota ni cumplido.</strong> Es práctica, y su retroalimentación usa el mismo lenguaje de bandas para que llegue familiarizado a la clase 12. Lo que sí decide es el Momento 2, y <b>sin Momento 2 no hay Momento 3</b>.</p></div>
-</section>
-
 <section class="slide" data-title="Cierre">
+  <div class="deco" aria-hidden="true">
+  <span class="shape circ" style="width:36vw;height:36vw;background:#D5E6E0;right:-10vw;bottom:-12vw"></span>
+  </div>
   <p class="kicker reveal">Nos vemos en la clase 11</p>
-  <p class="claim reveal">Ya no entregan un gráfico.<br><span>Entregan una herramienta.</span></p>
-  <p class="lead reveal">La clase 11 es el laboratorio de ensayo del Momento 2: se trabaja sobre su propia app, con el profesor circulando, y se ensaya la sustentación completa. <strong>Llegue con la app funcionando</strong>, no con la intención de tenerla.</p>
+  <p class="claim reveal">Ensayar aquí es barato.<br><span>No ensayar es caro, y se paga la próxima clase.</span></p>
+  <p class="lead reveal">Traigan aplicado lo que dice el acta. Si dos revisores independientes les dijeron lo mismo y llega igual, eso ya no es un descubrimiento del evaluador: es una decisión del equipo, y pesa en Ser.</p>
 </section>
 
 </main>
@@ -822,7 +622,7 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
 <script>
 /* ============================================================================
    CONTROLADOR DE DIAPOSITIVAS (invariante 1)
-   Mismos atajos y misma navegación en las 16 clases del curso.
+   Mismos atajos y misma navegación en las 15 clases del curso.
    Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
    swipe táctil · rueda del ratón.
    ========================================================================= */
@@ -834,7 +634,13 @@ class SlidePresentation {
     this.dotsNav = document.querySelector('.nav-dots');
     this.chip = document.querySelector('.block-chip');
     this.index = document.querySelector('.slide-index');
-    this.blockNames = {'1':'Bloque 1 · Teoría','2':'Bloque 2 · Demo guiado','3':'Bloque 3 · Reto'};
+    /* La clase 10 conserva los tres bloques del contrato, con su reparto propio.
+       Los nombres son los de esta clase, no los genéricos. */
+    this.blockNames = {
+      '1':'Bloque 1 · Qué se evalúa realmente',
+      '2':'Bloque 2 · Sustentación de ejemplo',
+      '3':'Bloque 3 · Ensayo, feedback y clínica'
+    };
 
     this.buildFooters();
     this.buildDots();
@@ -948,8 +754,6 @@ class SlidePresentation {
     this.index.classList.toggle('open', open);
   }
 
-  /* Anima la entrada de cada slide y mantiene la barra y los dots sincronizados
-     cuando se navega con scroll o swipe en vez de con el teclado. */
   observe(){
     const io = new IntersectionObserver(entries => {
       entries.forEach(en => {

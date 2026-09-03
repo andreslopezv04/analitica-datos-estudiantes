@@ -47,7 +47,7 @@ conjunto a copiar, y **audita este repositorio entero** después de cada corrida
 ## Estructura
 
 ```
-clase01/ ... clase16/     Material de cada clase
+clase01/ ... clase15/     Material de cada clase
   README.md               Qué trae la clase (a mano)
   slides.html             Diapositivas                     (generado)
   demo.ipynb              Notebook del bloque 2            (generado)
@@ -115,5 +115,5 @@ aquí es donde viven. No tienen origen en el repo del profesor.
 - Sin emojis en ningún archivo.
 - Nada de trabajos de estudiantes aquí. El proyecto de cada equipo vive en el repositorio del equipo.
 
-El contexto completo del curso (malla de las 16 clases, evaluación, contrato de los decks) está en el
+El contexto completo del curso (malla de las 15 clases, evaluación, contrato de los decks) está en el
 `CLAUDE.md` del repo del profesor. Este archivo no lo duplica a propósito.

@@ -1,7 +1,7 @@
-# Clase 13 · Reto — Inferencia sobre la educación en Colombia
+# Clase 13 · Reto — Tu primer modelo de machine learning
 
 **Curso:** Analítica de Datos · Universidad Cooperativa de Colombia
-**Momento 3 · Clase 13 de 16**
+**Momento 3 · Clase 13 de 15**
 
 Este es el entregable de la clase.
 
@@ -9,134 +9,138 @@ Este es el entregable de la clase.
 
 ## La situación
 
-Eres analista de datos contratado por el Ministerio de Educación Nacional. Te entregan la serie
-histórica de indicadores educativos por departamento y te hacen tres preguntas:
+Un equipo médico tiene diez mediciones de rutina de 442 pacientes diabéticos (edad, sexo, índice de masa
+corporal, presión arterial y seis análisis de sangre) y, para cada uno, un indicador de cómo progresó la
+enfermedad un año después.
 
-1. ¿Qué podemos afirmar sobre los indicadores nacionales, y con cuánta seguridad?
-2. ¿Los departamentos urbanizados y los rurales dispersos tienen resultados académicos distintos?
-3. ¿La cobertura educativa cambió entre la década pasada y la actual?
+La pregunta es directa: **¿se puede anticipar la progresión de la enfermedad a partir de las mediciones
+de hoy?** Y la pregunta detrás: si se puede, ¿qué medición es la que más informa?
 
-Tu trabajo no es responder "sí" o "no". Es responder **con cuánta certeza**, con cuánto tamaño, y
-escribirlo de forma que un funcionario que no sabe estadística pueda tomar una decisión con eso.
+Tu trabajo no es conseguir el mejor número. Es construir el modelo, medirlo con honestidad y decir qué
+se puede y qué no se puede afirmar con él.
 
 ---
 
 ## Datos
 
-**Archivo:** `../datos/educacion_estadisticas.csv`
+**No hay archivo CSV. El dataset viene dentro de scikit-learn.**
 
-Es el mismo archivo del demo. **Las variables no son las mismas.**
+```python
+from sklearn.datasets import load_diabetes
+```
 
-| | Demo | Reto |
-|--|------|------|
-| Variables de los intervalos | `tasa_matriculacion_5_16` | `cobertura_neta`, `aprobacion`, `repitencia` |
-| Variables de las pruebas | `desercion` | `aprobacion`, `cobertura_bruta` |
-| Comparaciones | Urbanizado vs rural disperso | Urbanizado vs rural disperso **y** dos periodos |
+| Campo | Valor |
+|-------|-------|
+| Filas | 442 pacientes |
+| Variables de entrada | 10, todas numéricas y ya estandarizadas |
+| Variable objetivo | Progresión de la enfermedad a un año (número continuo) |
+| Nulos | Ninguno |
+| Limpieza necesaria | Ninguna |
 
-**No hay ningún otro archivo de datos para esta clase.** No busques una carpeta `data/` en `clase13/`:
-no existe.
+Es un dataset distinto al del demo: otro dominio, otro archivo, otra escala. La técnica es la misma.
 
-### Columnas que vas a usar
+### Las diez variables de entrada
 
-| Columna | Qué mide |
-|---------|----------|
-| `ano` | Año del registro (2011-2024) |
-| `c_digo_departamento` | Código DANE del departamento (entero, limpio) |
-| `cobertura_neta` | % de la población en edad escolar matriculada en el nivel que le corresponde |
-| `cobertura_bruta` | % de matriculados sobre la población en edad escolar, sin importar el nivel. Puede superar 100 |
-| `aprobacion` | % de estudiantes que aprueban el año |
-| `repitencia` | % de estudiantes que repiten el año |
+| Nombre | Qué es |
+|--------|--------|
+| `age` | Edad |
+| `sex` | Sexo |
+| `bmi` | Índice de masa corporal |
+| `bp` | Presión arterial promedio |
+| `s1` a `s6` | Seis mediciones de suero sanguíneo |
 
-### Lo que ya sabes que está sucio
+Todas vienen centradas y escaladas, así que sus valores no se leen en unidades originales. Para un árbol
+de decisión eso da igual: los árboles no necesitan variables escaladas.
 
-Lo viste en el demo. La limpieza mínima ya viene escrita en el starter:
+---
 
-- `ano` llega como decimal (`2018.0`).
-- `departamento` está inconsistente (`'Guainia'` y `'Guainía'` son el mismo). El paso 0 lo
-  estandariza con la receta de la clase 3, pero **la llave sigue siendo `c_digo_departamento`**:
-  un código no tiene ortografía.
-- Hay 20 pares (año, departamento) duplicados. Se eliminan.
-- Hay nulos dispersos. Se aplica `dropna()` por columna y **se reporta el `n` resultante**.
-- `tamano_promedio_grupo` tiene valores imposibles. No la uses.
+## Aviso importante antes de empezar
+
+**En este dataset todos los modelos sobreajustan.** Incluso el más simple.
+
+Es esperado: 442 filas y diez variables ruidosas es un problema difícil, y un árbol de decisión
+individual no es la herramienta adecuada. No hiciste nada mal.
+
+La conclusión correcta de este reto **no** es "encontré el mejor modelo". Es algo del estilo:
+
+> El mejor `max_depth` está entre 3 y 5, con un R2 de prueba alrededor de 0.33, y aun así el gap supera
+> 0.10. Un árbol de decisión individual no generaliza bien en este problema.
+
+**Que un modelo salga malo no es un error tuyo. No reportarlo sí lo es.**
 
 ---
 
 ## Qué hay que entregar
 
-Cuatro partes. Se trabajan en clase con acompañamiento; lo que quede se cierra
-en casa.
+Cuatro partes. Se trabajan en clase con acompañamiento; lo que quede se cierra en casa.
 
-### Parte 1 · Tres intervalos de confianza al 95%
+### Parte 1 · Cargar, explorar y partir
 
-Para `cobertura_neta`, `aprobacion` y `repitencia`:
+- Cargar el dataset y armarlo como DataFrame.
+- Confirmar la forma y la ausencia de nulos.
+- Definir `X` (las diez variables) e `y` (la progresión).
+- Partir 80/20 con `random_state=42`.
 
-- `n`, media y desviación estándar.
-- Intervalo de confianza al 95% con `stats.t.interval`.
-- **Una frase de interpretación correcta** por cada uno.
+Antes de seguir, responde por escrito: **¿esto es regresión o clasificación? ¿Por qué?**
 
-Recuerda: `dropna()` antes de calcular, siempre. Y en `scale` va el **error estándar**, no la
-desviación estándar.
+### Parte 2 · Curva de overfitting
 
-### Parte 2 · Dos pruebas de hipótesis
+Entrena un `DecisionTreeRegressor` para cada valor de `max_depth` en:
 
-Con los **cuatro pasos completos** cada una:
+```
+{2, 3, 5, 10, 20, None}
+```
 
-1. Plantear H0 y H1 en español, antes de mirar los datos.
-2. Elegir alfa.
-3. Calcular estadístico y p-valor.
-4. Decidir y redactar.
+Para cada uno registra: R2 de entrenamiento, R2 de prueba, gap y MAE de prueba.
 
-| Prueba | Pregunta | Grupos |
-|--------|----------|--------|
-| **A** | ¿La tasa de aprobación difiere entre territorios? | Urbanizado vs rural disperso |
-| **B** | ¿La cobertura bruta cambió entre periodos? | 2011-2018 vs 2019-2024 |
+Entrega:
 
-Usa `stats.ttest_ind(..., equal_var=False)` en las dos. Reporta descriptivos **antes** del test.
+1. Una **tabla** con los seis resultados y una columna de diagnóstico según la regla del gap.
+2. Un **gráfico** con las dos curvas (entrenamiento y prueba) contra la profundidad.
+3. Una **respuesta escrita**: qué profundidad elegirías y por qué. No vale "la que da mejor test": hay
+   que justificar con el gap.
 
-> **Advertencia.** Una de las dos pruebas va a dar significativa y la otra no. Eso es un resultado, no
-> un error. **No cambies los grupos, ni los años, ni la columna, buscando que dé menor a 0.05.**
-> Eso se llama p-hacking y aquí se penaliza. Un resultado no significativo bien reportado vale más que
-> uno significativo fabricado.
+Recuerda la regla:
 
-### Parte 3 · Resumen ejecutivo
+```
+gap < 0.05       bien
+gap 0.05 - 0.10  aceptable
+gap > 0.10       SOBREAJUSTE
+```
 
-De 5 a 7 frases, dirigido a **un funcionario del Ministerio de Educación** que no sabe estadística.
+### Parte 3 · Clasificador
 
-Tiene que:
+Convierte el mismo problema en clasificación:
 
-- Decir qué encontraste y **de cuánto** es cada diferencia, en puntos porcentuales.
-- Incluir la incertidumbre en lenguaje llano ("con los datos disponibles, la diferencia está entre X y
-  Y puntos").
-- Decir claramente cuando **no** hubo evidencia suficiente.
-- Terminar con una recomendación accionable.
+1. Corta la variable objetivo en **tres categorías** (`Baja`, `Media`, `Alta`) con `pd.qcut`, que parte
+   por terciles.
+2. Entrena un `DecisionTreeClassifier` con al menos tres profundidades distintas.
+3. Evalúa con `accuracy_score` sobre entrenamiento y prueba.
+4. Compara contra el punto de referencia: con tres clases balanceadas, adivinar al azar acierta el 33%.
 
-No puede:
+Pregunta a responder: **¿el clasificador funciona mejor que el regresor, o solo lo parece porque la
+métrica es distinta?**
 
-- Contener las palabras "p-valor", "hipótesis nula", "estadísticamente significativo" ni "t-test".
-- Decir que una cosa **causa** la otra. Estos son datos observacionales.
-- Afirmar nada sin número.
+### Parte 4 · Importancia de variables
 
-### Parte 4 · Dos visualizaciones de significancia
+1. Extrae `feature_importances_` del mejor modelo de la Parte 2.
+2. Grafícalas ordenadas.
+3. Escribe la interpretación: qué variables mandan, y qué **no** se puede concluir de eso.
 
-1. **Gráfico de barras de error** con los tres intervalos de confianza de la Parte 1.
-   Pista: `plt.errorbar` con `yerr` igual a la **mitad** del ancho del intervalo, no al intervalo
-   completo.
-2. **Boxplot comparativo** de la prueba A, con la anotación del resultado sobre el gráfico.
-
-Ejes rotulados, título que diga el hallazgo (no "Gráfico 1"), y unidades visibles. Las reglas de la
-clase 8 siguen vigentes.
+La interpretación tiene que mencionar explícitamente que la importancia **no es causalidad**.
 
 ---
 
-## Opcional (no se hace en clase, se cierra en casa si te sobra tiempo)
+## Opcional (no se hace en clase, se cierra en casa)
 
-Está marcado como `OPCIONAL` en el starter. No entra en la nota mínima.
+Marcado como `OPCIONAL` en el starter. No entra en la nota mínima.
 
-- Calcular a mano el intervalo de confianza **de la diferencia** en cada prueba, con la fórmula de
-  Welch.
-- Repetir la prueba A con `stats.mannwhitneyu` (prueba no paramétrica) y comentar si la conclusión
-  cambia.
-- Calcular el d de Cohen como medida estandarizada del tamaño del efecto.
+- **`min_samples_leaf`** como segunda palanca contra el sobreajuste. Prueba 1, 5, 10, 20 y 50 con
+  `max_depth=5` y mira qué le pasa al gap.
+- **El modelo tonto.** Compara tu mejor modelo contra `DummyRegressor(strategy="mean")`, que siempre
+  predice la media. Si tu modelo no le gana, no tienes modelo.
+- **Dibujar el árbol** con `sklearn.tree.plot_tree` para un `max_depth=3`. Es la ventaja de este
+  algoritmo: se puede leer.
 
 ---
 
@@ -145,45 +149,25 @@ Está marcado como `OPCIONAL` en el starter. No entra en la nota mínima.
 **Este reto no produce nota ni cumplido / no cumplido.** Es práctica. La retroalimentación usa el
 mismo instrumento de los momentos evaluativos —**Saber, Ser y Hacer, una banda por dimensión**:
 Excelente, Bueno, Aceptable, Insuficiente, No aceptable— para que llegues familiarizado a las clases
-6, 12 y 15. **Las tres dimensiones pesan lo mismo** y los elementos de cada fila **no tienen peso**:
+6, 11 y 14. **Las tres dimensiones pesan lo mismo** y los elementos de cada fila **no tienen peso**:
 no se suman ni se promedian, alimentan una sola banda por dimensión.
 
 | Dimensión | Qué se mira en este reto |
 |-----------|--------------------------|
-| **Saber** | Los 4 pasos con H0 y H1 escritas **antes** del cálculo, y la interpretación: ninguna de las tres malinterpretaciones del p-valor, ninguna aceptación de H0 |
-| **Ser** | Honestidad: el resultado no significativo se reporta como tal, sin maquillarlo. Y el resumen ejecutivo, sin jerga, con números y con recomendación |
-| **Hacer** | Corrección técnica (`dropna()` aplicado, error estándar en `scale`, `equal_var=False`, `n` reportado) y visualizaciones legibles solas, rotuladas, con la anotación de significancia |
+| **Saber** | La profundidad elegida se justifica con el gap, no con el máximo del test. Y la lectura correcta de las importancias: asociación, no causalidad |
+| **Ser** | Honestidad: el sobreajuste se reporta, y no hay métricas de entrenamiento presentadas como resultado |
+| **Hacer** | Partición 80/20 con `random_state` y evaluación **solo** sobre prueba, curva de overfitting con las seis profundidades (tabla, gráfico y columna de gap), clasificador con terciles bien construidos y accuracy comparada contra el 33%, y gráfico de importancias ordenado |
 
 **Topes por omisión** (techo a la banda, nunca resta, y no se acumulan):
 
-- Interpretar el IC como "95% de probabilidad de que el valor esté ahí": **Saber** no pasa de
-  Insuficiente.
-- Escribir "se acepta H0" o "se demostró que no hay diferencia": **Saber** no pasa de Insuficiente.
-- Reportar solo el p-valor, sin tamaño del efecto: **Saber** no pasa de Aceptable.
-- Evidencia de p-hacking en la prueba B: **Ser** no pasa de Insuficiente.
-- Notación científica en el resumen ejecutivo (`p = 5.4e-12` en vez de `p < 0.001`): **Ser** no pasa
-  de Bueno.
-
----
-
-## Formato de reporte que se te exige
-
-Los cuatro elementos, en este orden:
-
-1. **Tamaño del efecto** en unidades del negocio.
-2. **Intervalo de confianza** de ese efecto.
-3. **P-valor** y tamaños de muestra.
-4. **Frase en lenguaje llano.**
-
-Ejemplo del demo:
-
-> Los departamentos con área metropolitana grande registran una deserción escolar 1.55 puntos
-> porcentuales menor que los de Amazonía, Orinoquía y Chocó (3.57% frente a 5.12%). La diferencia es
-> estadísticamente significativa (IC 95% de la diferencia: [-1.97, -1.14]; t = -7.39; p < 0.001;
-> n = 139 y n = 116).
-
-Reglas de formato: `p < 0.001` cuando corresponda, tres decimales en el resto, siempre el `n`, y
-"se asocia con" en lugar de "causa".
+- Reportar la métrica de entrenamiento como el desempeño del modelo: **Ser** no pasa de Insuficiente.
+- Omitir el gap o esconder que todos los modelos sobreajustan: **Ser** no pasa de Insuficiente.
+- Concluir que `max_depth=None` es el mejor modelo porque su R2 de entrenamiento es 1.000: **Saber**
+  no pasa de Insuficiente.
+- Interpretar `feature_importances_` como causalidad ("el `bmi` causa la progresión"): **Saber** no
+  pasa de Insuficiente.
+- Usar `r2_score` para el clasificador o `accuracy_score` para el regresor: **Hacer** no pasa de
+  Aceptable.
 
 ---
 
@@ -203,17 +187,25 @@ Sube `reto_starter.ipynb` resuelto al aula virtual.
 Antes de subir:
 
 - [ ] Kernel > Restart & Run All corre sin errores de punta a punta.
-- [ ] Los tres intervalos están calculados **y** interpretados.
-- [ ] Las dos pruebas tienen H0 y H1 escritas.
-- [ ] El resumen ejecutivo no contiene la palabra "p-valor".
-- [ ] Las dos visualizaciones tienen título, ejes rotulados y unidades.
-- [ ] El `n` de cada cálculo está reportado.
+- [ ] La tabla de la Parte 2 tiene las seis profundidades y la columna de gap.
+- [ ] El gráfico de la curva tiene ejes rotulados y leyenda.
+- [ ] La profundidad elegida está justificada con el gap.
+- [ ] La Parte 3 compara la accuracy contra el 33% de referencia.
+- [ ] La interpretación de la Parte 4 dice explícitamente que no es causalidad.
+- [ ] Ninguna métrica de entrenamiento está presentada como resultado del modelo.
 
 ---
 
 ## Conexión con el Momento 3
 
-Para el proyecto final de la clase 15 necesitas, como mínimo, **dos intervalos de confianza y una
-prueba de hipótesis** sobre tu propio dataset, reportados con este mismo formato.
+La sección de machine learning de tu proyecto final tiene que responder cuatro preguntas:
 
-Lo que practicas hoy es literalmente una sección de tu entrega final.
+1. **¿Qué predijiste?** La variable objetivo, y por qué le importa a alguien.
+2. **¿Es regresión o clasificación?** Y por qué esa y no la otra.
+3. **¿Cómo evaluaste?** Métrica sobre el conjunto de **prueba**, más el gap contra entrenamiento.
+4. **¿Qué decisión soporta la predicción?** Si no soporta ninguna, el modelo sobra.
+
+Este reto es un ensayo completo de esa sección, con un dataset que no es el tuyo.
+
+Y no olvides el otro requisito del Momento 3, de la clase 12: mínimo **dos intervalos de confianza y
+una prueba de hipótesis**.

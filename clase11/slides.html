@@ -3,74 +3,59 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clase 11 · Laboratorio integrador: ensayo del Momento 2 | Analítica de Datos</title>
-<meta name="description" content="Clase 11 de Analítica de Datos: laboratorio de ensayo del Momento 2. Lectura de la rúbrica real, los cuatro modos de falla, sustentación de ejemplo valorada en voz alta, y ensayo cronometrado con feedback entre pares y clínica del profesor.">
+<title>Clase 11 · EVALUACIÓN Momento 2: Dashboard y storytelling | Analítica de Datos</title>
+<meta name="description" content="Clase 11 de Analítica de Datos: jornada de sustentaciones del Momento 2. Formato del turno, criterios Saber / Ser / Hacer con la narrativa como entregable, mínimos del dashboard, topes y banderas rojas, qué produce el momento (retroalimentación y cumplido / no cumplido, sin nota) y el cierre de la habilitación para el Momento 3.">
 <style>
+/* CLASE 11 · Momento 2 — Dashboard y storytelling. Estética compartida con las clases 6 y 14. */
+
 /* ============================================================================
-   CLASE 11 — "GEOMETRÍA PASTEL"
-   Estética documentada en clase11/slides/ESTETICA.md
-   Contrato invariante: design/CONTRATO.md (9 invariantes)
+   ESTÉTICA COMPARTIDA — "SOBRIO INSTITUCIONAL / ACTA DE PAPEL"
+   Clases 6, 11 y 14. Documentada en claseXX/slides/ESTETICA.md
+   Contrato invariante: design/CONTRATO.md
+
+   Las tres clases evaluativas comparten estética a propósito: con 13 estéticas
+   rotando en el semestre, la repetición se vuelve señal — el estudiante sabe,
+   sin leer nada, que hoy se evalúa. Es la única excepción declarada a la regla
+   de una estética por clase.
+
+   Sobrio no es pobre: es que nada compita con el equipo que está sustentando.
+   Papel cálido, tinta negra, un solo acento granate, un solo ornamento (el
+   filete). Sin degradados, sin sombras, sin fondos decorativos.
 
    Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
-   Todo el CSS y el JS viven en este archivo.
 
-   Motivo rector: el ensayo es un boceto. Formas planas, grandes y mates que
-   todavía se pueden mover de sitio: círculo, arco y cuña. Cero degradados,
-   cero sombras, cero brillo. La paleta es deliberadamente amable porque hoy
-   se espera que los equipos fallen delante de un compañero y lo corrijan; el
-   salto visual hacia el Sobrio Institucional de la clase 12 comunica el cambio
-   de registro sin que nadie lo anuncie.
-
-   Restricción del contrato respetada por construcción: esta clase no lleva
-   ningún bloque de código en ninguna slide. No hay `pre` ni `code` en el
-   documento, ni antes ni después de la divisoria del bloque 2.
-   Y no hay ninguna duración en pantalla: los tiempos viven solo en
-   clase11/notes/professor_notes.md.
+   Sin tiempos en pantalla, sin excepciones (invariante 4 del contrato). Ninguna
+   slide muestra la duración de un tramo ni la del turno de sustentación: eso
+   vive solo en claseXX/notes/professor_notes.md y el profesor lo dice en voz
+   alta. Las tarjetas de aviso comunican el corte sin nombrar minutos.
    ========================================================================= */
 
-/* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
+/* ---- Tokens. Los NOMBRES son parte del contrato; los valores, de esta estética ---- */
 :root{
-  --bg:#F7F3EC;          /* papel cálido mate */
-  --surface:#FFFFFF;
-  --surface-2:#EFE8DD;
-  --line:#DCD2C3;
-  --fg:#231F1C;          /* tinta */
-  --muted:#57503F;       /* secundario, AA sobre el papel */
-  --accent:#2F8F7E;      /* menta profunda: el acento por defecto */
-  --peach:#C4552F;       /* durazno quemado: lo que cuesta */
-  --lilac:#5F4F9C;       /* lila: lo que se decide */
-  --sand:#B98A22;        /* arena: lo que se advierte */
+  --bg:#F7F6F2;          /* papel cálido */
+  --surface:#EFEDE7;     /* bloque de fondo mínimo */
+  --surface-2:#E6E3DB;
+  --line:#D6D2C8;        /* filete de un pixel */
+  --fg:#16181A;          /* tinta */
+  --muted:#585C61;       /* secundario (AA sobre el papel) */
+  --accent:#6B2737;      /* granate institucional. El único acento */
   --accent-ink:#FFFFFF;
-  /* ---- Variantes de tinta: SOLO para texto ----------------------------------
-     Los tres acentos pastel (menta, durazno, arena) estan calibrados para
-     rellenos, bandas y bordes, donde el area es grande y el contraste no manda.
-     Como TEXTO pequeno se caen: sobre el papel rinden 3,55 / 4,05 / 2,82, que en
-     un salon con luz ambiente y un proyector lavado deja de leerse.
-     Cada uno tiene aqui una variante mas profunda de la MISMA familia, que se usa
-     unicamente donde el acento es texto (strong, em, kicker, tag, celdas mono).
-     Rellenos, bandas, bordes, puntos y chips siguen con el color original: la
-     identidad del deck no cambia, solo el texto sube de contraste.
-     Sobre el papel #F7F3EC: menta 6,67 - durazno 6,73 - arena 6,85.
-     En impresion el fondo es blanco y estas tres suben todavia mas
-     (7,38 / 7,44 / 7,58), por eso NO se redefinen dentro de @media print. */
-  --accent-deep:#1C6053;   /* menta de tinta  */
-  --peach-deep:#93381A;    /* durazno de tinta */
-  --sand-deep:#6F4E0E;     /* arena de tinta   */
+  --neutral:#B3AEA3;
 
-  --font-display:"Avenir Next","Futura","Century Gothic","Segoe UI",system-ui,sans-serif;
+  --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
   --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 
   /* Escala tipográfica. El piso del invariante 6 no se negocia. */
   --fs-title:clamp(1.9rem,5.2vw,4.2rem);
   --fs-h2:clamp(1.5rem,3.2vw,2.7rem);
-  --fs-h3:clamp(1.05rem,1.85vw,1.45rem);
+  --fs-h3:clamp(1.05rem,1.9vw,1.5rem);
   --fs-body:clamp(0.95rem,1.55vw,1.4rem);
   --fs-small:clamp(0.78rem,1.02vw,0.95rem);
   --fs-micro:clamp(0.66rem,0.85vw,0.8rem);
 
   --pad:clamp(1.4rem,3.6vw,4rem);
-  --gap:clamp(0.55rem,1.35vw,1.35rem);
+  --gap:clamp(0.55rem,1.4vw,1.4rem);
   --ease:cubic-bezier(.16,1,.3,1);
 }
 
@@ -101,115 +86,136 @@ body{
   display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
   font-family:var(--font-mono);
   font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
-  z-index:2;
 }
-.slide-footer .fb{color:var(--accent-deep)}
+.slide-footer .fb{color:var(--accent)}
 
 /* ---- Tipografía ---- */
 h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:700;
-   line-height:1.02;letter-spacing:-.03em;max-width:17ch}
-h1 em{font-style:normal;color:var(--peach)}   /* display: area grande, color original */
+   line-height:1.02;letter-spacing:-.02em;max-width:18ch}
 h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:700;
-   line-height:1.08;letter-spacing:-.022em;max-width:25ch}
-h2 em{font-style:normal;color:var(--accent-deep)}
-h3{font-family:var(--font-display);font-size:var(--fs-h3);font-weight:700;letter-spacing:-.01em}
+   line-height:1.08;letter-spacing:-.015em;max-width:26ch}
+h3{font-family:var(--font-display);font-size:var(--fs-h3);font-weight:700}
 p{max-width:62ch}
-strong{color:var(--accent-deep);font-weight:700}
+strong{color:var(--accent);font-weight:700}
 .kicker{font-family:var(--font-mono);font-size:var(--fs-small);letter-spacing:.2em;
-  text-transform:uppercase;color:var(--accent-deep)}
-.kicker.pk{color:var(--peach-deep)}
+  text-transform:uppercase;color:var(--accent)}
 .lead{color:var(--muted);max-width:58ch}
-.claim{font-family:var(--font-display);font-weight:700;letter-spacing:-.03em;
-  font-size:clamp(1.5rem,4vw,3.3rem);line-height:1.06;max-width:24ch}
-.claim span{color:var(--peach)}
-.note{font-size:var(--fs-small);color:var(--muted);max-width:60ch}
-ul{list-style:none;display:flex;flex-direction:column;gap:.4em}
-ul li{padding-left:1.15em;position:relative;max-width:60ch}
-ul li::before{content:"";position:absolute;left:0;top:.62em;width:.5em;height:.5em;
-  border-radius:50%;background:var(--accent)}
-ul.peach li::before{background:var(--peach)}
-
-/* ---- Formas planas: el único ornamento del deck ---- */
-/* Capa de ornamento. Es contenedor de scroll propio: las formas sangran fuera del
-   lienzo a propósito y aquí se recortan, sin inflar el scrollHeight de la slide. */
-.deco{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
-.shape{position:absolute;pointer-events:none;z-index:0;user-select:none}
-.shape.circ{border-radius:50%}
-.shape.arch{border-radius:50% 50% 0 0}
-.shape.qtr{border-radius:100% 0 0 0}
-/* El pie va excluido a propósito: es `position:absolute` y esta regla lo
-   devolvía al flujo, dejándolo pegado bajo el contenido en vez de abajo. */
-.slide > :not(.deco):not(.slide-footer){position:relative;z-index:1}
+.note{color:var(--muted);font-size:var(--fs-small);max-width:70ch}
+/* El único ornamento del deck: un filete. */
+.rule{height:1px;width:100%;background:var(--line);flex:none}
+.rule.acc{height:3px;width:clamp(80px,12vw,170px);background:var(--accent)}
+.claim{font-family:var(--font-display);font-weight:700;letter-spacing:-.018em;
+  font-size:clamp(1.4rem,3.9vw,3.2rem);line-height:1.1;max-width:25ch}
+.claim span{color:var(--accent)}
+.claim.sm{font-size:clamp(1.2rem,2.9vw,2.4rem);max-width:32ch}
+.tag{align-self:flex-start;background:var(--accent);color:var(--accent-ink);
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.2em;
+  text-transform:uppercase;padding:.35em .85em}
 
 /* ---- Portada ---- */
-.cover h1{max-width:20ch}
-.cover .meta{font-family:var(--font-mono);font-size:var(--fs-small);color:var(--muted);
-  letter-spacing:.1em;text-transform:uppercase}
+.cover .who{color:var(--muted);font-size:var(--fs-small);letter-spacing:.06em}
+.cover .who b{color:var(--fg);font-weight:600}
 
-/* ---- Divisorias de bloque (invariante 3) ---- */
-.divider{justify-content:center}
-.divider .n{font-family:var(--font-display);font-weight:700;
-  font-size:clamp(4.5rem,15vw,12rem);line-height:.85;color:var(--surface-2);
-  letter-spacing:-.05em}
-.divider h2{font-size:clamp(1.8rem,4.4vw,3.2rem);max-width:20ch}
-.divider .band{width:clamp(80px,12vw,180px);height:8px;background:var(--accent)}
+/* ---- Listas ----
+   El item de lista es un bloque con sangria francesa, no un contenedor flex.
+   Con display:flex, un <strong> o un <b> dentro del item se convierte en flex
+   item y el texto se parte en columnas independientes. Aqui el contenido fluye
+   inline y el marcador es un inline-block: conserva la misma alineacion por
+   baseline que daba align-items:baseline, y la sangria (padding-left mas
+   text-indent negativo del mismo valor) reproduce el ancho del marcador mas su
+   separacion, de modo que la composicion no cambia. */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.9rem)}
+ul.bullets li{display:block;max-width:64ch;padding-left:1.2em;text-indent:-1.2em}
+ul.bullets li::before{content:"";display:inline-block;width:.5em;height:.5em;margin-right:.7em;
+  background:var(--neutral);transform:translateY(-.1em)}
+ul.bullets li.on::before{background:var(--accent)}
+ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;
+  gap:clamp(.3rem,.95vh,.8rem)}
+/* 1.84em = ancho del contador (dos digitos mono a .82em) mas su separacion. */
+ol.steps li{counter-increment:s;display:block;max-width:66ch;padding-left:1.84em;
+  text-indent:-1.84em}
+ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-mono);
+  color:var(--muted);font-size:.82em;display:inline-block;width:1.2em;margin-right:1.04em}
+ul.check{list-style:none;display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(.25rem,.8vh,.6rem) clamp(1rem,3vw,3rem)}
+/* Los 2px son el borde de la casilla, que no entra en su width (content-box). */
+ul.check li{display:block;font-size:clamp(.85rem,1.25vw,1.32rem);line-height:1.3;
+  padding-left:calc(1.37em + 2px);text-indent:calc(-1.37em - 2px)}
+ul.check li::before{content:"";display:inline-block;width:.72em;height:.72em;margin-right:.65em;
+  border:1px solid var(--muted);transform:translateY(.02em)}
 
-/* ---- Tarjetas ---- */
-.cols{display:grid;gap:var(--gap)}
-.cols.c2{grid-template-columns:repeat(2,1fr)}
-.cols.c3{grid-template-columns:repeat(3,1fr)}
+/* ---- Columnas: sin relleno, separadas por un filete superior ---- */
+.cols{display:grid;gap:clamp(.7rem,1.8vw,2.2rem)}
 .cols.c4{grid-template-columns:repeat(4,1fr)}
-.card{background:var(--surface);border:1px solid var(--line);
-  padding:clamp(.7rem,1.5vw,1.25rem);border-top:6px solid var(--accent);
+.cols.c3{grid-template-columns:repeat(3,1fr)}
+.cols.c2{grid-template-columns:repeat(2,1fr)}
+.col{border-top:1px solid var(--line);padding-top:.6em;min-width:0;
   display:flex;flex-direction:column;gap:.3em}
-.card.p{border-top-color:var(--peach)}
-.card.l{border-top-color:var(--lilac)}
-.card.s{border-top-color:var(--sand)}
-.card h3{color:var(--fg)}
-.card p{color:var(--muted);font-size:var(--fs-small);max-width:none}
-.card .tag{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.16em;
-  text-transform:uppercase;color:var(--accent-deep)}
-.card.p .tag{color:var(--peach-deep)} .card.l .tag{color:var(--lilac)} .card.s .tag{color:var(--sand-deep)}
+.col.on{border-top:3px solid var(--accent)}
+.col .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted)}
+.col.on .k{color:var(--accent)}
+.col .big-n{font-family:var(--font-display);font-weight:700;line-height:1;
+  font-size:clamp(2rem,5vw,3.8rem);color:var(--accent)}
+.col p{font-size:clamp(.85rem,1.2vw,1.3rem);color:var(--muted);line-height:1.35;max-width:none}
+.col p b{color:var(--fg)}
 
-/* ---- Tabla ---- */
-table{border-collapse:collapse;width:100%;font-size:var(--fs-small)}
-th,td{text-align:left;padding:.45em .7em;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.14em;
-  text-transform:uppercase;color:var(--muted);font-weight:400}
-td.dim{font-family:var(--font-display);font-weight:700;color:var(--fg);white-space:nowrap}
-td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
+/* ---- Tablas: solo filetes horizontales ---- */
+.table-wrap{flex:1;min-height:0;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:clamp(.8rem,1.12vw,1.24rem);line-height:1.32}
+caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:var(--fs-micro);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:.6em}
+th,td{border-bottom:1px solid var(--line);padding:clamp(.28rem,.7vw,.62rem) clamp(.35rem,.7vw,.8rem);
+  text-align:left;vertical-align:top}
+thead th{font-family:var(--font-mono);font-weight:500;font-size:.86em;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--fg)}
+tbody th{font-weight:700;color:var(--fg)}
+tbody tr.on th{color:var(--accent)}
+td em{font-style:normal;color:var(--muted)}
+td b{color:var(--fg)}
 
-/* ---- Escala de bandas ---- */
-.bands{display:flex;flex-direction:column;gap:.35rem}
-.band-row{display:grid;grid-template-columns:minmax(9ch,14ch) minmax(7ch,10ch) 1fr;
-  gap:.8rem;align-items:center;background:var(--surface);border:1px solid var(--line);
-  border-left:8px solid var(--accent);padding:.45em .8em}
-.band-row.b4{border-left-color:#4FA48F}
-.band-row.b3{border-left-color:var(--sand)}
-.band-row.b2{border-left-color:var(--peach)}
-.band-row.b1{border-left-color:#8E2F1B}
-.band-row .nm{font-family:var(--font-display);font-weight:700}
-.band-row .rg{font-family:var(--font-mono);color:var(--muted);font-size:var(--fs-small)}
-.band-row .ds{color:var(--muted);font-size:var(--fs-small)}
+/* ---- Cita / advertencia: un filete a la izquierda, sin relleno ---- */
+.callout{border-left:3px solid var(--accent);padding-left:clamp(.7rem,1.6vw,1.3rem);max-width:70ch}
+.callout p{max-width:none;color:var(--muted)}
+.callout p b{color:var(--fg)}
+.quote{font-family:var(--font-display);font-size:clamp(.9rem,1.35vw,1.3rem);line-height:1.4;
+  color:var(--fg);max-width:none}
 
-/* ---- Caja de énfasis ---- */
-.box{background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--peach);
-  padding:clamp(.7rem,1.5vw,1.2rem);display:flex;flex-direction:column;gap:.35em}
-.box.acc{border-left-color:var(--accent)}
-.box.lil{border-left-color:var(--lilac)}
-.box .q{font-family:var(--font-display);font-weight:700;font-size:clamp(1.05rem,2vw,1.6rem);
-  line-height:1.2;max-width:40ch}
-.box p{font-size:var(--fs-small);color:var(--muted)}
+/* ---- Tablero de turnos: el único elemento que se llena a mano en el salón ---- */
+.board{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,3vw,3rem);
+  flex:1;min-height:0;align-content:center}
+.board section{display:flex;flex-direction:column;gap:clamp(.3rem,1vh,.7rem);min-width:0}
+.board h3{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent);font-weight:500}
+.board ol{list-style:none;counter-reset:t;display:flex;flex-direction:column;
+  gap:clamp(.22rem,.85vh,.6rem)}
+.board li{counter-increment:t;display:flex;gap:.8em;align-items:baseline}
+.board li::before{content:counter(t,decimal-leading-zero);font-family:var(--font-mono);
+  font-size:.8em;color:var(--muted);flex:none}
+.board li i{display:block;flex:1;border-bottom:1px solid var(--line);height:1.35em}
 
-/* ---- Fórmula (texto, no bloque de código) ---- */
-.formula{font-family:var(--font-mono);font-size:clamp(1rem,2.4vw,2rem);
-  color:var(--lilac);letter-spacing:.01em;background:var(--surface);
-  border:1px dashed var(--lilac);padding:.6em .9em;display:inline-block}
+/* ---- Tarjetas de aviso de tiempo (regla de la sustentación) ---- */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(.6rem,1.6vw,1.6rem)}
+.cardx{border:1px solid var(--line);padding:clamp(.5rem,1.2vw,1rem);
+  display:flex;flex-direction:column;gap:.25em;background:var(--surface)}
+.cardx .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted)}
+.cardx .v{font-family:var(--font-display);font-weight:700;
+  font-size:clamp(1.1rem,2.2vw,1.8rem);color:var(--accent)}
+.cardx.last{border-color:var(--accent);border-width:2px}
 
-/* ---- Casillas del acta ---- */
-.cpn{display:inline-flex;gap:.3em;margin-left:.5em}
-.cpn span{font-family:var(--font-mono);font-size:var(--fs-small);border:1.5px solid var(--muted);
-  padding:.05em .45em;color:var(--muted)}
+/* ---- Divisorias de tramo de la jornada (secuencia propia de las clases 6, 11 y 14) ---- */
+/* El pie lo inyecta el JS como <p>, asi que .divider p{max-width:NNch} tambien lo
+   alcanzaba y lo estrangulaba a ~275px: en las divisorias el pie se partia en dos
+   lineas mientras en el resto del deck iba en una. Dos clases ganan en especificidad
+   a clase+tipo, de modo que el pie recupera el ancho completo sin tocar el parrafo. */
+.divider .slide-footer{max-width:none}
+.divider{justify-content:center;gap:clamp(.35rem,.9vw,.9rem)}
+.divider .n{font-family:var(--font-display);font-weight:700;line-height:.8;letter-spacing:-.05em;
+  font-size:clamp(4rem,15vw,12rem);color:var(--surface-2)}
+.divider .rule.acc{width:100%;height:6px}
+.divider h2{font-size:clamp(1.7rem,4.4vw,3.4rem);max-width:22ch}
+.divider p{max-width:52ch}
 
 /* ---- Navegación (invariante 1) ---- */
 .progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
@@ -218,7 +224,8 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
   display:flex;flex-direction:column;gap:clamp(3px,.45vh,6px);z-index:120}
 .nav-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--muted);
   background:transparent;cursor:pointer}
-.nav-dots button[aria-current="true"]{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
+.nav-dots button[aria-current="true"]{background:var(--accent);border-color:var(--accent);
+  transform:scale(1.35)}
 .nav-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .block-chip{position:fixed;top:clamp(.6rem,1.6vh,1.2rem);right:clamp(1.4rem,3vw,2.6rem);z-index:120;
   font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;text-transform:uppercase;
@@ -226,7 +233,7 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
 .block-chip[hidden]{display:none}
 
 /* Índice de slides (Esc) */
-.slide-index{position:fixed;inset:0;z-index:200;background:rgba(247,243,236,.98);
+.slide-index{position:fixed;inset:0;z-index:200;background:rgba(247,246,242,.98);
   padding:clamp(1.2rem,4vw,3rem);overflow:auto;display:none}
 .slide-index.open{display:block}
 .slide-index h2{margin-bottom:1rem;color:var(--accent)}
@@ -234,14 +241,14 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
 .slide-index li{break-inside:avoid;margin-bottom:.35em}
 .slide-index button{background:none;border:0;color:var(--fg);font:inherit;text-align:left;
   cursor:pointer;padding:.15em 0;width:100%}
-.slide-index button:hover,.slide-index button:focus-visible{color:var(--peach-deep)}
+.slide-index button:hover,.slide-index button:focus-visible{color:var(--accent)}
 .slide-index .ix{font-family:var(--font-mono);color:var(--muted);margin-right:.6em}
-.slide-index .bk{color:var(--accent-deep);font-family:var(--font-mono);font-size:.8em;
+.slide-index .bk{color:var(--accent);font-family:var(--font-mono);font-size:.8em;
   letter-spacing:.16em;text-transform:uppercase;margin:1.2em 0 .4em;break-after:avoid}
 
 /* ---- Animación de entrada: una sola, sobria ---- */
-.reveal{opacity:0;transform:translateY(16px);
-  transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.reveal{opacity:0;transform:translateY(14px);
+  transition:opacity .45s var(--ease),transform .45s var(--ease)}
 .slide.in-view .reveal{opacity:1;transform:none}
 .slide.in-view .reveal:nth-child(1){transition-delay:.04s}
 .slide.in-view .reveal:nth-child(2){transition-delay:.10s}
@@ -255,13 +262,12 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
   :root{--pad:clamp(1rem,2.4vw,2rem);--gap:clamp(.4rem,1vw,.9rem)}
 }
 @media (max-height:600px){
-  :root{--fs-title:clamp(1.6rem,4.1vw,2.7rem);--fs-h2:clamp(1.2rem,2.8vw,2rem);
+  :root{--fs-title:clamp(1.6rem,4.2vw,2.8rem);--fs-h2:clamp(1.2rem,2.9vw,2rem);
         --fs-h3:clamp(.95rem,1.6vw,1.2rem)}
-  .divider .n{font-size:clamp(3rem,10vw,6rem)}
-  .deco{display:none}
+  .divider .n{font-size:clamp(3rem,10vw,7rem)}
 }
 @media (max-height:500px){
-  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-small:clamp(.74rem,.95vw,.86rem)}
+  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem)}
   .nav-dots{display:none}
 }
 @media (max-width:900px){
@@ -269,7 +275,7 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
 }
 @media (max-width:600px){
   .cols.c4,.cols.c3,.cols.c2{grid-template-columns:1fr}
-  .band-row{grid-template-columns:1fr;gap:.15rem}
+  ul.check,.board,.cards{grid-template-columns:1fr}
   .slide-index ol{columns:1}
 }
 
@@ -286,17 +292,13 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
    ========================================================================= */
 @media print{
   @page{size:landscape;margin:0}
-  :root{--bg:#fff;--surface:#fff;--surface-2:#ececec;--line:#c9c9c9;
-        --fg:#111;--muted:#444;--accent:#1F6B5D;--peach:#93381A;--lilac:#43357A;
-        --sand:#7E5C10;--accent-ink:#fff}
-  /* Las tres variantes de tinta NO se redefinen: sobre el blanco de la hoja
-     rinden 7,38 (menta), 7,44 (durazno) y 7,58 (arena), mejor que en pantalla. */
+  :root{--bg:#fff;--surface:#f3f2ee;--surface-2:#e8e6df;--line:#c9c9c9;
+        --fg:#111;--muted:#444;--accent:#5A1F2C;--accent-ink:#fff;--neutral:#AAA59B}
   html,body{height:auto;background:#fff!important;color:#111!important}
   .slide{height:100vh;page-break-after:always;break-after:page;
     background:#fff!important;color:#111!important;
     -webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .deco{display:none!important}
-  .divider{border-top:8px solid #1F6B5D}
+  .divider{border-top:8px solid #5A1F2C}
   .divider .n{color:#d8d8d8}
   .progress-bar,.nav-dots,.slide-index,.block-chip{display:none!important}
   .reveal{opacity:1!important;transform:none!important}
@@ -304,7 +306,7 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
 }
 </style>
 </head>
-<body>
+<body data-marca="Analítica de Datos · Clase 11 · M2">
 
 <div class="progress-bar" role="presentation"></div>
 <nav class="nav-dots" aria-label="Navegación de diapositivas"></nav>
@@ -319,312 +321,347 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
 
 <!-- ======================= PORTADA ======================= -->
 <section class="slide cover" data-title="Portada">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:34vw;height:34vw;background:#D5E6E0;right:-7vw;top:-9vw"></span>
-  <span class="shape arch" style="width:15vw;height:22vw;background:#EFD3C4;left:-3vw;bottom:8vh"></span>
-  </div>
-  <p class="kicker reveal">Analítica de Datos · Clase 11 · Momento 2</p>
-  <h1 class="reveal">Laboratorio integrador:<br><em>ensayo del Momento 2</em></h1>
-  <p class="lead reveal">Hoy no hay nota. Hoy hay consecuencias. Cada equipo arma y ensaya su entrega en vivo, con la rúbrica real en la mano, delante de un compañero que la va a leer con usted.</p>
-  <p class="meta reveal">Julián Garzón · Ingeniería de Sistemas · Universidad Cooperativa de Colombia</p>
+  <span class="tag reveal">Evaluación</span>
+  <p class="kicker reveal">Momento 2 · Clase 11</p>
+  <h1 class="reveal">Dashboard y storytelling</h1>
+  <div class="rule acc reveal"></div>
+  <p class="lead reveal">Segunda sustentación del mismo proyecto. El dashboard es el medio; la historia es el entregable.</p>
+  <p class="who reveal">Analítica de Datos · 709749 · Momento 2 · <b>Julian Eduardo Garzon Giraldo, MsC</b></p>
 </section>
 
-<!-- ======================= OBJETIVOS ======================= -->
-<section class="slide" data-title="Objetivos de la clase">
-  <p class="kicker reveal">Al terminar la clase, su equipo debe poder</p>
-  <h2 class="reveal">Cinco cosas, y todas se verifican hoy</h2>
-  <ul class="reveal">
-    <li><strong>Enunciar el mensaje central</strong> de su análisis en una frase, sin abrir el dashboard.</li>
-    <li><strong>Sostener la sustentación completa</strong> dentro del corte, con demo en vivo incluida.</li>
-    <li><strong>Anticipar tres preguntas</strong> del Q&amp;A y responderlas de pie.</li>
-    <li><strong>Autoevaluarse contra la rúbrica real</strong> e identificar en cuál de las tres dimensiones está más débil.</li>
-    <li><strong>Nombrar el modo de falla</strong> que más los amenaza y comprometerse a una acción antes de la clase 12.</li>
-  </ul>
-  <p class="note reveal">La salida obligatoria de hoy es un acta de feedback firmada por el equipo revisor. Un equipo sin acta es un equipo que no ensayó.</p>
-</section>
-
-<!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
-<section class="slide divider" data-block="1" data-title="Divisoria · Bloque 1">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:38vw;height:38vw;background:#D5E6E0;right:-9vw;bottom:-12vw"></span>
-  </div>
+<section class="slide divider" data-seg="Apertura" data-title="Tramo · Apertura">
   <p class="n reveal">01</p>
-  <p class="kicker reveal">Bloque 1</p>
-  <h2 class="reveal">Qué se evalúa realmente</h2>
-  <div class="band reveal"></div>
-  <p class="lead reveal">La rúbrica que se proyecta hoy es exactamente la que se usa la próxima clase. No una versión resumida, no una paráfrasis.</p>
+  <div class="rule acc reveal"></div>
+  <p class="kicker reveal">Apertura</p>
+  <h2 class="reveal">Qué se evalúa hoy, y cómo funciona la jornada</h2>
+  <p class="lead reveal">Misma jornada que la clase 6. Lo que cambia es el entregable, no el procedimiento.</p>
 </section>
 
-<section class="slide" data-block="1" data-title="Encuadre: hoy no hay nota, hoy hay consecuencias">
-  <div class="deco" aria-hidden="true">
-  <span class="shape qtr" style="width:20vw;height:20vw;background:#EFD3C4;right:0;top:0"></span>
-  </div>
-  <p class="kicker pk reveal">Encuadre</p>
-  <div class="box reveal">
-    <p class="q">Hoy no hay nota. Hoy hay consecuencias.</p>
-    <p>Lo que salga en el acta de su equipo lo voy a tener en la mano cuando los valore la próxima clase. Si aquí les dicen que su mensaje central no se entiende y llegan a la clase 12 con el mismo mensaje, eso ya no es un descubrimiento: es una decisión que ustedes tomaron.</p>
-  </div>
-  <p class="lead reveal">Ensayar hoy es barato: el único costo es descubrir delante de un compañero lo que no funciona. No ensayar es caro: lo mismo se descubre la próxima clase, cuando ya no hay tiempo de arreglarlo.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Qué produce la clase 12">
-  <p class="kicker reveal">Antes de que lo pregunten</p>
-  <h2 class="reveal">La clase 12 <em>tampoco</em> tiene nota. Y aun así decide el semestre</h2>
-  <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Momento 2</span><h3>Qué sale de la clase 12</h3><p>Tres bandas —Saber, Ser y Hacer— con su evidencia, qué falta para la banda siguiente, una acción por dimensión, y un reporte de cumplido / no cumplido. Ningún número.</p></div>
-    <div class="card p"><span class="tag">Habilitación</span><h3>Qué se juegan</h3><p>Sin cumplir el Momento 1 y el Momento 2 no hay Momento 3. Quedar en no cumplido inhabilita para la única evaluación calificada del curso.</p></div>
-    <div class="card l"><span class="tag">Momento 3</span><h3>Dónde está la nota</h3><p>La única nota del semestre es la del Momento 3, y esa nota es la nota del curso. No hay ponderación de momentos ni ninguna otra aritmética.</p></div>
-  </div>
-  <p class="note reveal">Cumplido significa: el equipo entregó y sustentó, y ninguna de las tres dimensiones quedó en la banda No aceptable. Presentarse siempre es mejor que no presentarse.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Las tres dimensiones y qué mide cada una">
-  <p class="kicker reveal">El instrumento, y es el único del curso</p>
-  <h2 class="reveal">Saber, Ser y Hacer. <em>Las tres pesan lo mismo</em></h2>
-  <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Saber</span><h3>Qué mide</h3><p>Si distinguen y justifican la técnica antes de aplicarla, no después.</p></div>
-    <div class="card p"><span class="tag">Ser</span><h3>Qué mide</h3><p>Cómo se comunica, qué se asume y qué se reconoce como límite. Aquí vive la narrativa.</p></div>
-    <div class="card l"><span class="tag">Hacer</span><h3>Qué mide</h3><p>Si ejecutan bien sobre datos reales: preparación, análisis, visualización y producto.</p></div>
-  </div>
-  <p class="lead reveal">Lo que más cambia el resultado y menos se cree: <strong>un dashboard impecable no compensa una presentación que solo enumera lo que se construyó.</strong> Esa presentación deja Ser en Aceptable como techo, y Ser vale un tercio.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Qué elementos mira cada dimensión en el Momento 2">
-  <p class="kicker reveal">Elementos, no criterios</p>
-  <h2 class="reveal">Dónde miro para ubicar cada banda</h2>
-  <table class="reveal">
-    <tr><th>Dimensión</th><th>Qué miro dentro de ella en el Momento 2</th></tr>
-    <tr><td class="dim">Saber</td><td>Aplicación de la estadística descriptiva</td></tr>
-    <tr><td class="dim">Ser</td><td>Narrativa y storytelling · Insights y recomendaciones · Sustentación y manejo del tiempo</td></tr>
-    <tr><td class="dim">Hacer</td><td>Preparación de datos · Análisis bivariado y multivariado · Visualización · Dashboard interactivo</td></tr>
-  </table>
-  <p class="note reveal">Son elementos, no criterios con porcentaje: no se puntúan por separado, no se promedian y no se suman. Alimentan un solo juicio, el de la banda de su dimensión.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Las cinco bandas">
-  <p class="kicker reveal">La escala, y son cinco nombres, solo esos</p>
-  <h2 class="reveal">Una banda por dimensión</h2>
-  <div class="bands reveal">
-    <div class="band-row"><span class="nm">Excelente</span><span class="rg">4.3 – 5.0</span><span class="ds">Supera lo esperado. Hay decisiones justificadas, no solo ejecutadas</span></div>
-    <div class="band-row b4"><span class="nm">Bueno</span><span class="rg">3.8 – 4.2</span><span class="ds">Cumple todo con solvencia. Faltan matices, no faltan piezas</span></div>
-    <div class="band-row b3"><span class="nm">Aceptable</span><span class="rg">3.0 – 3.7</span><span class="ds">Cumple el mínimo. Hay vacíos visibles pero la base está</span></div>
-    <div class="band-row b2"><span class="nm">Insuficiente</span><span class="rg">1.8 – 2.9</span><span class="ds">Faltan elementos importantes. Enumera y describe, no relaciona</span></div>
-    <div class="band-row b1"><span class="nm">No aceptable</span><span class="rg">1.0 – 1.7</span><span class="ds">Ausente o fundamentalmente equivocado</span></div>
-  </div>
-  <p class="note reveal">Estos números valen como nota únicamente en el Momento 3. En la clase 12 el equipo recibe el nombre de la banda, y nada más.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Topes por omisión y banderas rojas">
-  <p class="kicker pk reveal">Lo que pone techo y lo que hunde</p>
-  <h2 class="reveal">Ningún tope resta. <em>Todos ponen techo</em></h2>
+<section class="slide" data-seg="Apertura" data-title="Cómo transcurre la jornada">
+  <p class="kicker reveal">La jornada</p>
+  <h2 class="reveal">Ocho tramos, los mismos de la clase 6</h2>
   <div class="cols c2 reveal">
-    <div class="card p"><span class="tag">Topes por omisión</span><h3>Le ponen un techo a una dimensión</h3><p>Sin análisis de correlación, Hacer no pasa de Insuficiente. Sin heatmap, Hacer no pasa de Aceptable. Estadísticos calculados pero no interpretados, Saber no pasa de Aceptable. No se acumulan: manda el más bajo.</p></div>
-    <div class="card l"><span class="tag">Banderas rojas</span><h3>Hunden la dimensión afectada</h3><p>Dataset sin procedencia verificable o sintético presentado como real, menos de tres preguntas de investigación, contenido copiado, integrante ausente sin aviso. Dejan esa dimensión en Insuficiente o inferior. Plagio: cero automático en el momento completo.</p></div>
+    <div class="col on">
+      <p class="k">Primera mitad</p>
+      <ol class="steps">
+        <li>Apertura: formato, criterios y sorteo de turnos</li>
+        <li>Tanda A: seis equipos, consecutivos</li>
+        <li>Retroalimentación en vivo de la tanda A</li>
+        <li>Descanso</li>
+      </ol>
+    </div>
+    <div class="col on">
+      <p class="k">Segunda mitad</p>
+      <ol class="steps">
+        <li>Tanda B: seis equipos, mismo protocolo</li>
+        <li>Retroalimentación en vivo de la tanda B</li>
+        <li>Clínica: el profesor pasa por cada mesa</li>
+        <li>Cierre del momento y puente al Momento 3</li>
+      </ol>
+    </div>
   </div>
-  <p class="note reveal">Los topes actúan sobre la banda de una dimensión, nunca sobre las tres, y nunca restan bandas.</p>
+  <p class="note reveal">La clínica de hoy compara banda contra banda con el Momento 1. Esa comparación es lo propio de esta jornada.</p>
 </section>
 
-<section class="slide" data-block="1" data-title="Los mínimos del entregable">
-  <p class="kicker reveal">Reglas del curso, no de la rúbrica</p>
-  <h2 class="reveal">Lo que no se negocia en el Momento 2</h2>
-  <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Dashboard</span><h3>3 filtros · 3 KPIs · 3 gráficos</h3><p>Menos de eso no es un dashboard incompleto: es un dashboard ausente.</p></div>
-    <div class="card p"><span class="tag">Demo</span><h3>En vivo, obligatoria</h3><p>Con capturas de respaldo entregadas de antemano. Una falla técnica con respaldo declarado no cuesta banda; no tener respaldo, sí.</p></div>
-    <div class="card l"><span class="tag">Formato</span><h3>El mismo de los tres momentos</h3><p>Exposición, preguntas y transición, con corte duro. Idéntico en las clases 6, 12 y 15.</p></div>
-  </div>
-  <p class="note reveal">Ambos integrantes hablan. La participación de los dos se valora en Ser, y el Q&amp;A puede ir a cualquiera de los dos.</p>
+<section class="slide" data-seg="Apertura" data-title="Qué se evalúa hoy">
+  <p class="kicker reveal">El entregable</p>
+  <h2 class="reveal">Un dashboard que funciona y una historia que se sostiene</h2>
+  <ul class="bullets reveal">
+    <li class="on">Un <b>dashboard interactivo en Streamlit</b>, sobre el mismo dataset del Momento 1.</li>
+    <li class="on">Mínimos duros: <b>3 filtros, 3 KPIs y 3 gráficos</b>. Arranca con streamlit run, sin pasos manuales ocultos.</li>
+    <li class="on">Una <b>presentación narrativa</b> que responda las preguntas de investigación del equipo.</li>
+    <li>Demo en vivo <b>obligatoria</b>, con capturas como respaldo declarado de antemano.</li>
+    <li>El EDA ya se valoró en el Momento 1. Aquí se revisa como insumo, y por su <b>evolución</b>.</li>
+  </ul>
+  <div class="callout reveal"><p>Se evalúa el <b>último commit anterior al inicio de esta clase</b>. Una falla técnica no penaliza si el respaldo estaba entregado; no tener dashboard funcional sí.</p></div>
 </section>
 
-<section class="slide" data-block="1" data-title="Modos de falla 1 y 2">
-  <p class="kicker pk reveal">Los cuatro modos de falla · observados el semestre pasado</p>
-  <h2 class="reveal">Análisis superficial y dependencia de la herramienta</h2>
-  <div class="cols c2 reveal">
-    <div class="card p"><span class="tag">Modo 1</span><h3>Análisis superficial</h3>
-      <p><strong>Se ve así:</strong> se describen los gráficos en vez de interpretarlos. "Aquí vemos que el estrato 3 es el más alto." Ningún porqué, ninguna comparación, ninguna recomendación.</p>
-      <p><strong>Antídoto:</strong> por cada gráfico, obligarse a decir en voz alta "y esto significa que…". Si no sale la frase, el gráfico sobra.</p></div>
-    <div class="card p"><span class="tag">Modo 2</span><h3>Dependencia de la herramienta</h3>
-      <p><strong>Se ve así:</strong> la presentación se cae cuando Streamlit se cae. El equipo se queda mudo esperando que cargue.</p>
-      <p><strong>Antídoto:</strong> capturas de respaldo preparadas de antemano y declaradas. El mensaje se sostiene sin la app.</p></div>
-  </div>
-</section>
-
-<section class="slide" data-block="1" data-title="Modos de falla 3 y 4">
-  <p class="kicker pk reveal">Los cuatro modos de falla · observados el semestre pasado</p>
-  <h2 class="reveal">Mala gestión del tiempo y ausencia de mensaje central</h2>
-  <div class="cols c2 reveal">
-    <div class="card p"><span class="tag">Modo 3</span><h3>Mala gestión del tiempo</h3>
-      <p><strong>Se ve así:</strong> todo el turno en contexto y en "cómo limpiamos los datos", y los hallazgos comprimidos al final, hablando rápido.</p>
-      <p><strong>Causa:</strong> se presenta en el orden en que se trabajó, no en el orden en que se debe escuchar.</p>
-      <p><strong>Antídoto:</strong> presupuesto escrito y ensayado en voz alta de principio a fin. El contexto es lo primero que se recorta.</p></div>
-    <div class="card p"><span class="tag">Modo 4</span><h3>Ausencia de mensaje central</h3>
-      <p><strong>Se ve así:</strong> al terminar, nadie del público sabría resumir en una frase qué encontró el equipo. Hubo datos, hubo gráficos, no hubo tesis.</p>
-      <p><strong>Antídoto:</strong> escribir la frase antes de armar las diapositivas, y repetirla al abrir y al cerrar.</p></div>
-  </div>
-</section>
-
-<section class="slide" data-block="1" data-title="Resumen del bloque 1">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:30vw;height:30vw;background:#E4DCF2;right:-8vw;top:-8vw"></span>
-  </div>
-  <p class="kicker reveal">Cierre del bloque 1</p>
-  <p class="claim reveal">Los cuatro modos de falla son reparables antes de la clase 12.<br><span>Ninguno se repara la noche anterior.</span></p>
-  <p class="lead reveal">Por eso el ensayo va hoy y no el domingo: lo que se descubre hoy todavía tiene semana por delante para arreglarse.</p>
-</section>
-
-<!-- ======================= DIVISORIA BLOQUE 2 ======================= -->
-<section class="slide divider" data-block="2" data-title="Divisoria · Bloque 2">
-  <div class="deco" aria-hidden="true">
-  <span class="shape arch" style="width:22vw;height:30vw;background:#EFD3C4;right:6vw;bottom:0"></span>
-  </div>
+<section class="slide divider" data-seg="El turno" data-title="Tramo · El turno">
   <p class="n reveal">02</p>
-  <p class="kicker reveal">Bloque 2</p>
-  <h2 class="reveal">Sustentación de ejemplo, valorada en voz alta</h2>
-  <div class="band reveal"></div>
-  <p class="lead reveal">Primero se sustenta en serio. Después se valora en público, con la rúbrica proyectada y señalando dónde falló el que sustentó.</p>
+  <div class="rule acc reveal"></div>
+  <p class="kicker reveal">El turno</p>
+  <h2 class="reveal">El mismo turno para todos los equipos</h2>
+  <p class="lead reveal">El mismo formato de la clase 6. La demo del dashboard es parte de la exposición, no una pausa técnica.</p>
 </section>
 
-<section class="slide" data-block="2" data-title="Qué van a ver: el estándar, no una parodia">
-  <p class="kicker reveal">Antes de empezar</p>
-  <h2 class="reveal">Esto es lo que estoy pidiendo. <em>No es un ideal inalcanzable</em></h2>
-  <ul class="reveal">
-    <li>Sustentación completa de un dashboard de ejemplo, dentro del turno real y con demo en vivo.</li>
-    <li>Los cinco bloques dentro del turno: contexto, preparación de datos, visualizaciones clave, hallazgos, insights y plan de ML.</li>
-    <li>Preguntas hostiles después, hechas por el salón o por mí mismo.</li>
-  </ul>
-  <div class="box acc reveal">
-    <p class="q">No van a ver una parodia de mala sustentación.</p>
-    <p>Van a ver el estándar bien ejecutado, con uno o dos errores sutiles adentro. Lo que hace que el formato quepa no es hablar rápido: es el guion.</p>
-  </div>
-</section>
 
-<section class="slide" data-block="2" data-title="Evidencia primero, banda después">
-  <p class="kicker reveal">Cómo se valora, y el orden importa</p>
-  <h2 class="reveal">Primero se escribe la evidencia. <em>Solo después se marca la banda</em></h2>
+<section class="slide" data-seg="El turno" data-title="El turno tiene tres tramos">
+  <p class="kicker reveal">El formato del turno</p>
+  <h2 class="reveal">El turno de cada equipo tiene tres tramos</h2>
   <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Paso 1</span><h3>La evidencia concreta</h3><p>Qué frase, qué gráfico, qué momento. Escrito, antes de decidir nada.</p></div>
-    <div class="card p"><span class="tag">Paso 2</span><h3>La banda</h3><p>Una por dimensión. Tres bandas por equipo, no ocho puntajes.</p></div>
-    <div class="card l"><span class="tag">Paso 3</span><h3>Qué faltó</h3><p>Qué habría tenido que pasar para subir a la banda siguiente.</p></div>
+    <div class="col on">
+      <p class="k">Exposición</p>
+      <p class="big-n">01</p>
+      <p>El equipo presenta lo que trae. <b>El corte es duro.</b></p>
+    </div>
+    <div class="col">
+      <p class="k">Preguntas</p>
+      <p class="big-n">02</p>
+      <p>Dos preguntas del profesor, tres si son cortas.</p>
+    </div>
+    <div class="col">
+      <p class="k">Transición</p>
+      <p class="big-n">03</p>
+      <p>El siguiente equipo se conecta mientras se cierra la hoja del anterior.</p>
+    </div>
   </div>
-  <p class="lead reveal">Es la contramedida contra el efecto halo, que con solo tres bandas por equipo es el sesgo que más daño hace. <strong>Una presentación pulida sube Ser y no toca Saber ni Hacer.</strong></p>
+  <div class="callout reveal">
+    <p><b>Formato idéntico en los tres momentos</b>, clases 6, 11 y 14. El mismo turno para todos los equipos, sin excepciones ni negociación en vivo. <b>El reparto de cada tramo lo anuncio en voz alta al abrir la jornada</b>, y lo llevo yo con las tarjetas.</p>
+  </div>
 </section>
 
-<section class="slide" data-block="2" data-title="La única cuenta del semestre">
-  <p class="kicker reveal">Se hace una vez, en voz alta, con mis propias bandas</p>
-  <h2 class="reveal">Toda la aritmética del curso cabe en una línea</h2>
-  <p class="formula reveal">Nota del Momento 3 = (Saber + Ser + Hacer) / 3</p>
-  <p class="lead reveal">Y no hay paso siguiente: <strong>la nota final del curso es la nota del Momento 3.</strong> Los momentos 1 y 2 no entran en ninguna cuenta porque no producen número; producen bandas, evidencia y habilitación.</p>
-  <p class="note reveal">Verla hecha una sola vez desactiva la pregunta de "¿y cuánto saco?", que si no aparece diez veces.</p>
-</section>
 
-<section class="slide" data-block="2" data-title="El grupo revalora: calibrar el ojo">
-  <p class="kicker reveal">Antes de que revisen a un compañero</p>
-  <h2 class="reveal">Ahora valoran ustedes. <em>Tres bandas, y la evidencia de cada una</em></h2>
-  <ul class="peach reveal">
-    <li>Una banda para Saber, una para Ser y una para Hacer, sobre la sustentación que acaban de ver.</li>
-    <li>Cuando dos personas den bandas distintas, la pregunta no es quién tiene razón: es <strong>qué viste que te llevó a esa banda</strong>.</li>
-    <li>El feedback entre pares solo sirve si el par sabe qué está mirando. Esto es lo que lo entrena.</li>
+<section class="slide" data-seg="El turno" data-title="El corte no se negocia">
+  <p class="kicker reveal">El corte</p>
+  <h2 class="reveal">El corte no se negocia</h2>
+  <div class="cards reveal">
+    <div class="cardx"><p class="k">Tarjeta amarilla</p><p class="v">VA CERRANDO</p></div>
+    <div class="cardx"><p class="k">Tarjeta naranja</p><p class="v">CIERRE YA</p></div>
+    <div class="cardx last"><p class="k">Tarjeta roja</p><p class="v">ALTO</p></div>
+  </div>
+  <ul class="bullets reveal">
+    <li>Al levantar la tarjeta roja: <strong>&laquo;Gracias, pasamos a preguntas&raquo;</strong>. Se permite terminar la frase en curso.</li>
+    <li>El Q&amp;A <b>no se extiende</b> para compensar. El primer equipo al que se le permita pasarse fija el estándar para los once siguientes.</li>
+    <li>El turno arranca con la primera palabra, no con la conexión del portátil.</li>
+    <li>El corte toca <strong>solo a la dimensión Ser</strong>. Un equipo cortado conserva su derecho a banda Excelente en Saber y en Hacer si el trabajo entregado lo respalda.</li>
+    <li>La aplicación se levanta durante el Q&amp;A del equipo anterior. Si no arranca, hay un intento breve y se pasa a las capturas <b>sin perder el hilo</b>.</li>
   </ul>
-  <div class="box reveal"><p class="q">Una presentación pulida pero superficial no debe superar a una rigurosa pero áspera.</p></div>
 </section>
 
-<!-- ======================= DIVISORIA BLOQUE 3 ======================= -->
-<section class="slide divider" data-block="3" data-title="Divisoria · Bloque 3">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:40vw;height:40vw;background:#E4DCF2;left:-12vw;bottom:-14vw"></span>
+<section class="slide" data-seg="El turno" data-title="Qué tiene que aparecer en la exposición">
+  <p class="kicker reveal">La exposición</p>
+  <h2 class="reveal">Cinco bloques, y los cinco tienen que aparecer</h2>
+  <ol class="steps reveal">
+    <li><b>Contexto.</b> El problema, el dataset y las preguntas de investigación.</li>
+    <li><b>Preparación de datos.</b> Qué cambió desde el Momento 1 y por qué.</li>
+    <li><b>Demo del dashboard y visualizaciones clave.</b> Guionizada: qué filtros se mueven y qué muestra cada uno.</li>
+    <li><b>Hallazgos estadísticos.</b> Qué se relaciona con qué, con la magnitud y no solo la dirección.</li>
+    <li><b>Insights y plan de ML.</b> Qué se responde, a quién le sirve y hacia dónde va el Momento 3.</li>
+  </ol>
+  <div class="callout reveal"><p>El reparto entre los cinco lo decide cada equipo. Lo que no se negocia es que los cinco aparezcan. <b>El bloque de visualizaciones no es para navegar el dashboard en silencio.</b></p></div>
+</section>
+
+<section class="slide" data-seg="El turno" data-title="El orden de turnos se sortea aquí">
+  <p class="kicker reveal">El orden</p>
+  <h2 class="reveal">El orden se sortea ahora, delante de todos</h2>
+  <ul class="bullets reveal">
+    <li>Papeles idénticos en una bolsa. No se publica antes: el orden anticipado premia a quien va último con más tiempo de ensayo.</li>
+    <li>Primero se pregunta por <b>voluntarios para el primer turno</b>. Máximo uno: el primer puesto es el más incómodo y quien se ofrece se lo gana.</li>
+    <li>Un equipo puede pedir no ir de primero con razón justificada. Se ubica a mitad de tanda.</li>
+    <li>El resultado se escribe en el tablero y ahí se queda toda la sesión.</li>
+    <li>Si un equipo no está cuando le toca, pasa al final de su tanda, no al final de la clase.</li>
+    <li>Los equipos con demo en vivo levantan su aplicación durante el Q&amp;A del equipo anterior. Eso es lo que hace que la transición alcance.</li>
+  </ul>
+</section>
+
+
+<section class="slide" data-seg="El turno" data-title="El orden de hoy: tanda A y tanda B">
+  <p class="kicker reveal">El orden de hoy</p>
+  <h2 class="reveal">Quién va, y en qué orden</h2>
+  <div class="board reveal">
+    <section>
+      <h3>Tanda A</h3>
+      <ol>
+        <li><i></i></li><li><i></i></li><li><i></i></li>
+        <li><i></i></li><li><i></i></li><li><i></i></li>
+      </ol>
+    </section>
+    <section>
+      <h3>Tanda B</h3>
+      <ol>
+        <li><i></i></li><li><i></i></li><li><i></i></li>
+        <li><i></i></li><li><i></i></li><li><i></i></li>
+      </ol>
+    </section>
   </div>
+  <p class="note reveal">Doce equipos, seis por tanda. Esta lámina se llena con el resultado del sorteo y queda proyectada durante toda la jornada.</p>
+</section>
+
+
+<section class="slide divider" data-seg="Los criterios" data-title="Tramo · Los criterios">
   <p class="n reveal">03</p>
-  <p class="kicker reveal">Bloque 3</p>
-  <h2 class="reveal">Ensayo, feedback entre pares y clínica</h2>
-  <div class="band reveal"></div>
-  <p class="lead reveal">Es el corazón de la clase y lo que más tiempo ocupa. Si algo se desborda antes, se recorta antes: esto no se toca.</p>
+  <div class="rule acc reveal"></div>
+  <p class="kicker reveal">Los criterios</p>
+  <h2 class="reveal">Saber, Ser y Hacer, con la narrativa en el centro</h2>
+  <p class="lead reveal">El mismo instrumento de la clase 6. Lo que cambia es qué mira cada dimensión en esta etapa.</p>
 </section>
 
-<section class="slide" data-block="3" data-title="Cómo funciona la ronda">
-  <p class="kicker reveal">Organización</p>
-  <h2 class="reveal">Cada equipo sustenta ante otro equipo, y después se rota</h2>
-  <div class="cols c4 reveal">
-    <div class="card"><span class="tag">Parejas</span><h3>Dominios distintos</h3><p>Nunca se emparejan equipos con datasets del mismo dominio: el revisor debe escuchar con oído de público no experto.</p></div>
-    <div class="card p"><span class="tag">Turno</span><h3>Sustentación sin interrupciones</h3><p>Después vienen las preguntas, y al final se llena y se firma el acta.</p></div>
-    <div class="card l"><span class="tag">El corte</span><h3>Lo lleva el revisor</h3><p>No el revisado. Dos avisos y corte, exactamente como en la clase 12.</p></div>
-    <div class="card s"><span class="tag">Rotación</span><h3>Dos actas por equipo</h3><p>De revisores distintos. Si dos revisores independientes señalan lo mismo, ya no es opinión.</p></div>
-  </div>
-</section>
 
-<section class="slide" data-block="3" data-title="Cómo se llena el acta">
-  <p class="kicker reveal">El acta está organizada como la rúbrica real</p>
-  <h2 class="reveal">Tres filas, una por dimensión. <em>Marca y evidencia</em></h2>
-  <table class="reveal">
-    <tr><th>Dimensión</th><th>Marca del revisor</th><th>Y escribe</th></tr>
-    <tr><td class="dim">Saber</td><td class="b">C · P · N</td><td>Qué escuchó que lo llevó ahí</td></tr>
-    <tr><td class="dim">Ser</td><td class="b">C · P · N</td><td>Qué escuchó que lo llevó ahí</td></tr>
-    <tr><td class="dim">Hacer</td><td class="b">C · P · N</td><td>Qué vio que lo llevó ahí</td></tr>
-  </table>
-  <p class="lead reveal">Cumple, Cumple parcialmente, No cumple. <strong>La evidencia es obligatoria:</strong> una marca sin evidencia escrita es un acta inservible y se devuelve.</p>
-  <p class="note reveal">El revisor no pone bandas ni notas. Marca, describe y señala. La banda la pongo yo en la clase 12, y allá tampoco hay nota.</p>
-</section>
-
-<section class="slide" data-block="3" data-title="Reglas del feedback">
-  <p class="kicker pk reveal">Cuatro reglas, y se sostienen</p>
-  <h2 class="reveal">Cómo se da feedback que sirva</h2>
-  <ul class="peach reveal">
-    <li><strong>Se critica el trabajo, nunca a quien lo presenta.</strong> Un tono personal corta la ronda de inmediato.</li>
-    <li><strong>Nada de elogio mutuo.</strong> Un acta con todo en Cumple y sin evidencia escrita le cuesta bandas a un compañero la semana siguiente, y esas bandas son la nota de la clase 15.</li>
-    <li><strong>Mínimo un "ojalá" concreto por acta.</strong> Algo que el equipo revisado pueda cambiar antes de la próxima clase.</li>
-    <li><strong>Hoy no se programa.</strong> Portátil abierto para sustentar, no para arreglar el código. El desarrollo es tarea de la semana.</li>
-  </ul>
-</section>
-
-<section class="slide" data-block="3" data-title="La rotación y la corrección aplicada">
-  <p class="kicker reveal">Entre la primera ronda y la segunda</p>
-  <h2 class="reveal">Aplique al menos una corrección. <em>Y que quede escrito</em></h2>
-  <div class="box acc reveal">
-    <p class="q">El feedback que no se aplica no es feedback: es un comentario.</p>
-    <p>Al rotar, el equipo revisado elige una corrección del acta anterior y la aplica en la ronda siguiente. El nuevo revisor anota si lo hizo. Es la diferencia entre salir de aquí con dos hojas y salir con una versión mejor.</p>
-  </div>
-  <p class="lead reveal">Si su dashboard todavía no está terminado, ensaye igual y con más razón. Lo que se prueba hoy no es el código: es si usted puede sostener el turno y dejar un mensaje. Eso se ensaya con un dashboard a medias; lo que no se puede es improvisarlo el día de la evaluación.</p>
-</section>
-
-<section class="slide" data-block="3" data-title="La clínica: tres preguntas">
-  <p class="kicker reveal">Clínica equipo por equipo</p>
-  <h2 class="reveal">Les voy a hacer tres preguntas, siempre las mismas</h2>
+<section class="slide" data-seg="Los criterios" data-title="El instrumento: tres dimensiones">
+  <p class="kicker reveal">El instrumento</p>
+  <h2 class="reveal">Tres dimensiones, una banda cada una</h2>
   <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Uno</span><h3>El dataset</h3><p>¿Alcanza para lo que están prometiendo? ¿El snapshot está versionado y corre sin internet?</p></div>
-    <div class="card p"><span class="tag">Dos</span><h3>Los gráficos</h3><p>¿Cada gráfico responde una pregunta? ¿Hay alguno que sobre? ¿Falta el heatmap de correlación o el análisis de correlación?</p></div>
-    <div class="card l"><span class="tag">Tres</span><h3>El mensaje central</h3><p>Dígamelo sin el dashboard a la vista. Sujeto, verbo y consecuencia. Si no sale limpia, la escribimos ahí mismo, en el acta.</p></div>
+    <div class="col on">
+      <p class="k">Saber</p>
+      <p><b>Distingue técnicas para la ubicuidad de la información.</b> Conocimiento conceptual: elegir la técnica correcta antes de aplicarla, y leerla bien después.</p>
+    </div>
+    <div class="col on">
+      <p class="k">Ser</p>
+      <p><b>Asocia técnicas y procedimientos de Minería de Datos.</b> Juicio valorativo, responsabilidad, trabajo en equipo y comunicación.</p>
+    </div>
+    <div class="col on">
+      <p class="k">Hacer</p>
+      <p><b>Aplica técnicas de minería de datos para solucionar problemas.</b> Desempeño técnico sobre datos reales.</p>
+    </div>
   </div>
-  <p class="note reveal">Si su dashboard necesita internet para arrancar, es frágil para la clase 12, y eso se descubre hoy.</p>
+  <p class="claim reveal">Las tres <span>pesan lo mismo</span>. No hay criterios con porcentaje, no hay subtotales y no hay hoja de cálculo.</p>
 </section>
 
-<section class="slide" data-block="3" data-title="Salida obligatoria de la clase">
-  <p class="kicker reveal">Con qué se sale de aquí</p>
-  <h2 class="reveal">Un acta firmada por equipo revisor. <em>Idealmente dos</em></h2>
-  <ul class="reveal">
-    <li>Las tres dimensiones marcadas <span class="cpn"><span>C</span><span>P</span><span>N</span></span> con su evidencia escrita.</li>
-    <li>El tiempo real medido en el ensayo, escrito en el acta.</li>
-    <li>Las tres preguntas que le hizo el revisor, y qué respondió.</li>
-    <li>Al menos un compromiso concreto, leído en voz alta al firmar. Compromiso que no se dice en voz alta, no se cumple.</li>
+<section class="slide" data-seg="Los criterios" data-title="Las cinco bandas">
+  <p class="kicker reveal">La escala</p>
+  <h2 class="reveal">Cinco bandas, y se usan esos cinco nombres</h2>
+  <div class="table-wrap reveal">
+
+    <table>
+      <caption>Escala institucional · taxonomía SOLO</caption>
+      <thead><tr><th>Banda</th><th>Nivel SOLO</th><th>Qué significa</th></tr></thead>
+      <tbody>
+        <tr class="on"><th>Excelente</th><td><em>Abstracto ampliado</em></td><td>Supera lo esperado. Decisiones justificadas, no solo ejecutadas. Teoriza, modela, crea</td></tr>
+        <tr><th>Bueno</th><td><em>Relacional (alto)</em></td><td>Cumple todo lo pedido con solvencia. Faltan matices, no faltan piezas</td></tr>
+        <tr><th>Aceptable</th><td><em>Relacional (base)</em></td><td>Cumple el mínimo. Vacíos visibles, base correcta. Necesita revisión, no rehacer</td></tr>
+        <tr><th>Insuficiente</th><td><em>Multiestructural</em></td><td>Faltan elementos importantes. Enumera y describe, pero no relaciona</td></tr>
+        <tr><th>No aceptable</th><td><em>Uniestructural o menos</em></td><td>Ausente o fundamentalmente equivocado</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note reveal">La banda <b>Aceptable</b> arranca en 3.0, la aprobación institucional. Hoy no es nota; en la clase 14 sí. <b>Insuficiente es la banda que reprueba en el Momento 3.</b></p>
+</section>
+
+<section class="slide" data-seg="Los criterios" data-title="Ser: la historia es el entregable">
+  <p class="kicker reveal">Dimensión Ser</p>
+  <p class="claim sm reveal">Una historia tiene <span>una tensión que se resuelve</span>. Una enumeración tiene un orden que se podría alterar sin perder nada.</p>
+  <ul class="bullets reveal">
+    <li class="on">Si dos diapositivas se pueden intercambiar y la presentación funciona igual, <b>no hay narrativa</b>.</li>
+    <li class="on">Las transiciones son causales —&laquo;por eso tuvimos que mirar&raquo;— y no de índice —&laquo;ahora vamos a ver&raquo;—.</li>
+    <li class="on">Se cierra con <b>nombre y verbo</b>: quién decide y qué hace distinto. No con una observación.</li>
+    <li>Un equipo con Hacer impecable y una presentación que solo enumera lo que construyó <b>no pasa de Aceptable en Ser</b>.</li>
   </ul>
-  <p class="note reveal">Me llevo copia de todas. Los hallazgos entran a la valoración de la clase 12.</p>
+  <p class="note reveal">Aquí viven también los insights, el manejo del tiempo, la participación de ambos integrantes y la declaración del uso de asistentes de IA.</p>
 </section>
 
-<!-- ======================= CIERRE ======================= -->
-<section class="slide" data-title="Cierre">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:36vw;height:36vw;background:#D5E6E0;right:-10vw;bottom:-12vw"></span>
+<section class="slide" data-seg="Los criterios" data-title="Hacer: el dashboard y la evolución">
+  <p class="kicker reveal">Dimensión Hacer</p>
+  <h2 class="reveal">Lo que se mira en el dashboard</h2>
+  <ul class="check reveal">
+    <li>Los filtros son los que un decisor <b>real</b> usaría</li>
+    <li>Los KPIs responden preguntas de negocio, no son conteos</li>
+    <li>Los filtros se combinan sin romper la aplicación</li>
+    <li>Los gráficos reaccionan a los filtros de forma coherente</li>
+    <li>El caso de filtro vacío no lanza una excepción</li>
+    <li>Lo importante va arriba</li>
+    <li>El tipo de gráfico corresponde al dato y a la pregunta</li>
+    <li>Los <b>títulos nombran el hallazgo</b>, no la variable</li>
+    <li>Ejes rotulados con nombre de variable y unidad</li>
+    <li>El color se usa con significado, no como decoración</li>
+    <li>Las relaciones analizadas son las que el dashboard deja filtrar</li>
+    <li>Arranca con streamlit run, sin pasos manuales ocultos</li>
+  </ul>
+  <p class="note reveal">La estética de la aplicación no se valora. Un dashboard bonito con filtros que no responden a ninguna pregunta real vale menos que uno feo que sí.</p>
+</section>
+
+<section class="slide" data-seg="Los criterios" data-title="Saber, hoy">
+  <p class="kicker reveal">Dimensión Saber</p>
+  <h2 class="reveal">Los hallazgos que sostienen el dashboard</h2>
+  <ul class="bullets reveal">
+    <li class="on">La medida corresponde a la pregunta y al tipo de dato: correlación para numérica con numérica, comparación de grupos para categórica con numérica. <b>Y la elección se justifica.</b></li>
+    <li class="on">La correlación <b>no se lee como causalidad</b>.</li>
+    <li class="on">Las diferencias entre grupos se reportan con su <b>magnitud</b>, no solo con su dirección.</li>
+    <li>Limitaciones reconocidas.</li>
+    <li>La estadística inferencial se ve en la clase 12 y se valora en el Momento 3: <b>aquí no se exige y su ausencia no penaliza</b>.</li>
+  </ul>
+  <div class="callout reveal"><p><b>Tope que aplica aquí:</b> estadísticos calculados pero no interpretados dejan a Saber en Aceptable como máximo.</p></div>
+</section>
+
+<section class="slide" data-seg="Los criterios" data-title="Topes y banderas rojas">
+  <p class="kicker reveal">Topes y banderas rojas</p>
+  <h2 class="reveal">Lo que pone techo, y lo que hunde</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Situación</th><th>Efecto</th></tr></thead>
+      <tbody>
+        <tr><th>Sin análisis de correlación</th><td>Hacer no pasa de <b>Insuficiente</b></td></tr>
+        <tr><th>Sin heatmap de la matriz</th><td>Hacer no pasa de <b>Aceptable</b></td></tr>
+        <tr><th>Sin estrategia documentada para faltantes</th><td>Hacer no pasa de <b>Aceptable</b></td></tr>
+        <tr><th>El código de preparación no corre</th><td>Hacer no pasa de <b>Aceptable</b>; de Insuficiente si falla más de la mitad</td></tr>
+        <tr><th>Capturas de un dashboard que nunca corrió</th><td>Hacer no sube de <b>Insuficiente</b></td></tr>
+        <tr class="on"><th>Estadísticos calculados pero no interpretados</th><td>Saber no pasa de <b>Aceptable</b></td></tr>
+        <tr class="on"><th>Dataset sin procedencia verificable, o sintético presentado como real</th><td><b>Hacer</b> en Insuficiente o inferior</td></tr>
+        <tr class="on"><th>Menos de tres preguntas de investigación · integrante ausente sin aviso previo</th><td><b>Ser</b> en Insuficiente o inferior</td></tr>
+      </tbody>
+    </table>
   </div>
-  <p class="kicker reveal">Nos vemos en la clase 12</p>
-  <p class="claim reveal">Ensayar aquí es barato.<br><span>No ensayar es caro, y se paga la próxima clase.</span></p>
-  <p class="lead reveal">Traigan aplicado lo que dice el acta. Si dos revisores independientes les dijeron lo mismo y llega igual, eso ya no es un descubrimiento del evaluador: es una decisión del equipo, y pesa en Ser.</p>
+  <p class="note reveal">Los topes son techos, nunca restas, y <b>no se acumulan</b>: si concurren varios sobre la misma dimensión, manda el más bajo.</p>
+</section>
+
+<section class="slide divider" data-seg="La devolución" data-title="Tramo · La devolución">
+  <p class="n reveal">04</p>
+  <div class="rule acc reveal"></div>
+  <p class="kicker reveal">La devolución</p>
+  <h2 class="reveal">Qué recibe cada equipo hoy, y dónde lo recibe</h2>
+  <p class="lead reveal">Es la última retroalimentación antes de la única evaluación calificada del semestre.</p>
+</section>
+
+<section class="slide" data-seg="La devolución" data-title="Qué produce este momento">
+  <p class="kicker reveal">Qué produce hoy</p>
+  <p class="claim reveal">Lo mismo de la clase 6, y <span>por última vez</span>: hoy no hay nota. No se guarda, no se calcula, no existe.</p>
+  <ul class="bullets reveal">
+    <li class="on">Tres bandas —Saber, Ser y Hacer— con la evidencia de cada una, qué falta para la siguiente y una acción por dimensión.</li>
+    <li class="on">Más la <b>comparación explícita contra las bandas del Momento 1</b>: qué subió, qué se mantuvo y qué bajó.</li>
+    <li class="on">Y el reporte de <b>cumplido o no cumplido</b>, que es lo que queda en el sistema institucional.</li>
+    <li>La única nota del semestre nace en la clase 14 y se entrega en la clase 15.</li>
+  </ul>
+  <div class="callout reveal"><p><b>Este es el último momento en el que la retroalimentación todavía les sirve para cambiar algo.</b> Después viene el Momento 3, que es la nota del semestre completa.</p></div>
+</section>
+
+<section class="slide" data-seg="La devolución" data-title="Qué recibe cada equipo, y dónde">
+  <p class="kicker reveal">Dónde se dice cada cosa</p>
+  <h2 class="reveal">Las bandas se dicen en la mesa, no desde el tablero</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Momento</th><th>Qué se dice ahí</th></tr></thead>
+      <tbody>
+        <tr><th>Retroalimentación en vivo, en plenaria</th><td>Patrones transversales de la tanda, <b>anonimizados</b>, contraste de dos dashboards sin nombre de equipo y calibración pública de una dimensión. <b>Aquí no se dice ninguna banda de ningún equipo</b></td></tr>
+        <tr class="on"><th>Clínica, en la mesa del equipo</th><td>Las <b>tres bandas en voz alta</b> con su evidencia; la comparación contra el Momento 1 dimensión por dimensión; qué falta para la banda siguiente; una acción concreta con fecha; y el cumplido o no cumplido. Acta en papel en la mano</td></tr>
+        <tr><th>Por escrito, en 48 horas</th><td>La misma retroalimentación completa, con la sección &laquo;Qué llevar al Momento 3&raquo;</td></tr>
+        <tr><th>Apelación</th><td>Cinco días hábiles desde que reciben el acta. Se apela <b>la banda de una dimensión</b> o el no cumplido</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note reveal">Para preparación de datos y bivariado se dice explícitamente si la banda refleja <b>evolución o estancamiento</b>: &laquo;Aceptable porque no cambió nada&raquo; y &laquo;Aceptable porque cambió y todavía falta&raquo; son mensajes distintos.</p>
+</section>
+
+<section class="slide" data-seg="La devolución" data-title="La regla de habilitación se cierra hoy">
+  <p class="kicker reveal">Habilitación</p>
+  <p class="claim reveal">Hoy es el <span>segundo y último filtro</span> antes del Momento 3.</p>
+  <ul class="bullets reveal">
+    <li class="on">Sustentar el Momento 1 y el Momento 2 es requisito para sustentar el Momento 3. Hoy se cierra la habilitación.</li>
+    <li><b>Cumplido</b> = entregó, sustentó, y ninguna dimensión quedó en No aceptable, que significa ausente, no flojo.</li>
+    <li class="on"><b>Presentarse siempre es mejor que no presentarse.</b> Si algo quedó a medias, preséntense igual: cuesta bandas; no presentarse cuesta el Momento 3 entero, que es el semestre.</li>
+    <li>Si su equipo se saltó la clase 6 y no ha repuesto, <b>hable conmigo hoy</b>, no en la semana de la clase 14.</li>
+    <li>La razón es la misma de siempre: el proyecto es uno solo. El Momento 3 valora el dashboard <b>heredado y corregido</b> de hoy.</li>
+  </ul>
+</section>
+
+<section class="slide" data-seg="Cierre" data-title="Cierre del momento">
+  <p class="kicker reveal">Cierre del Momento 2</p>
+  <p class="claim reveal">Esta banda no es su nota, pero es la banda que sí va a ser su nota si llegan igual a la clase 14. <span>Y ya no hay otro ensayo.</span></p>
+  <p class="lead reveal">Lo que viene: clase 12, estadística inferencial; clase 13, machine learning; clase 14, la evaluación. El Momento 3 es este mismo proyecto con inferencia y un modelo encima. Mínimos: dos intervalos de confianza, una prueba de hipótesis, un modelo y tres recomendaciones.</p>
+  <div class="callout reveal"><p>Aviso que conviene oír hoy: en el Momento 3, <b>Saber pesa lo mismo que Hacer</b>. No basta con que el modelo corra: hay que justificar por qué ese y no otro. Ahí es donde se pierde la nota más seguido.</p></div>
+  <p class="note reveal">Retroalimentación escrita en 48 horas · Apelación: cinco días hábiles sobre la banda de una dimensión o sobre el no cumplido.</p>
 </section>
 
 </main>
 
 <script>
+
 /* ============================================================================
    CONTROLADOR DE DIAPOSITIVAS (invariante 1)
-   Mismos atajos y misma navegación en las 16 clases del curso.
+   Mismos atajos y misma navegación en las 15 clases del curso.
    Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
    swipe táctil · rueda del ratón.
+
+   Única diferencia de las clases evaluativas: no hay bloques 1/2/3, hay tramos
+   de la jornada (data-seg). El chip y el índice se agrupan por tramo.
    ========================================================================= */
 class SlidePresentation {
   constructor(root){
@@ -634,13 +671,7 @@ class SlidePresentation {
     this.dotsNav = document.querySelector('.nav-dots');
     this.chip = document.querySelector('.block-chip');
     this.index = document.querySelector('.slide-index');
-    /* La clase 11 conserva los tres bloques del contrato, con su reparto propio.
-       Los nombres son los de esta clase, no los genéricos. */
-    this.blockNames = {
-      '1':'Bloque 1 · Qué se evalúa realmente',
-      '2':'Bloque 2 · Sustentación de ejemplo',
-      '3':'Bloque 3 · Ensayo, feedback y clínica'
-    };
+    this.marca = document.body.dataset.marca;
 
     this.buildFooters();
     this.buildDots();
@@ -657,9 +688,9 @@ class SlidePresentation {
     this.slides.forEach(s => {
       const f = document.createElement('p');
       f.className = 'slide-footer';
-      const b = s.dataset.block;
-      f.innerHTML = '<span>Analítica de Datos · Clase 11 · M2</span>' +
-        (b ? '<span class="fb">Bloque ' + b + '</span>' : '');
+      const seg = s.dataset.seg;
+      f.innerHTML = '<span>' + this.marca + '</span>' +
+        (seg ? '<span class="fb">' + seg + '</span>' : '');
       s.appendChild(f);
     });
   }
@@ -677,15 +708,15 @@ class SlidePresentation {
 
   buildIndex(){
     const ol = this.index.querySelector('ol');
-    let lastBlock;
+    let lastSeg;
     this.slides.forEach((s, k) => {
-      const b = s.dataset.block || null;
-      if (b !== lastBlock){
+      const seg = s.dataset.seg || null;
+      if (seg !== lastSeg){
         const h = document.createElement('li');
         h.className = 'bk';
-        h.textContent = b ? this.blockNames[b] : (k === 0 ? 'Apertura' : 'Cierre');
+        h.textContent = seg || 'Portada';
         ol.appendChild(h);
-        lastBlock = b;
+        lastSeg = seg;
       }
       const li = document.createElement('li');
       const btn = document.createElement('button');
@@ -710,9 +741,9 @@ class SlidePresentation {
     this.bar.style.width = ((this.i + 1) / this.slides.length * 100) + '%';
     this.dots.forEach((d, k) => d.setAttribute('aria-current', String(k === this.i)));
     const slide = this.slides[this.i];
-    const b = slide.dataset.block;
-    if (b && !slide.classList.contains('divider')){
-      this.chip.textContent = 'Bloque ' + b;
+    const seg = slide.dataset.seg;
+    if (seg && !slide.classList.contains('divider')){
+      this.chip.textContent = seg;
       this.chip.hidden = false;
     } else {
       this.chip.hidden = true;
