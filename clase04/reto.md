@@ -12,7 +12,7 @@ sin justificaciones deja Saber en el suelo.
 
 | Campo | Valor |
 |-------|-------|
-| Archivo de trabajo | `reto_starter.ipynb` |
+| Archivo de trabajo | `reto.ipynb` |
 | Dataset | `../datos/indicadores_salud.csv` |
 | Tareas | 11, comprobadas con `comprobar('TN', ...)` |
 | Tiempo en el salón | 60 minutos |
@@ -181,7 +181,7 @@ encontrar en el dataset de su equipo.
 
 ## Cómo se entrega
 
-1. Complete `reto_starter.ipynb`.
+1. Complete `reto.ipynb`.
 2. Antes de entregar: **Kernel → Restart and Run All**. Si algo revienta, arréglelo. Un cuaderno que
    no corre de arriba a abajo le pone techo a Hacer.
 3. Ejecute el punto de control y deje la salida a la vista.

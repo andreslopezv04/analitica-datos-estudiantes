@@ -1,7 +1,7 @@
 """
 Clase 9 - Reto: adapta este dashboard al dataset de tu equipo.
 
-Como se ejecuta (desde la carpeta clase09/reto/):
+Como se ejecuta (desde una terminal parada en la carpeta donde esta este archivo):
 
     streamlit run streamlit_app_starter.py
 
@@ -33,9 +33,11 @@ import streamlit as st
 # ---------------------------------------------------------------------------
 
 # TODO: apunta a tu propio CSV.
-# Si tu dataset esta en clase09/data/, deja el patron de parents[1].
-# Si esta en otra carpeta, escribe la ruta relativa desde clase09/reto/.
-RUTA_DATOS = Path(__file__).resolve().parents[1] / "data" / "calidad_aire_risaralda.csv"
+# Si tu dataset esta en la carpeta de datos del curso, deja el patron de abajo tal
+# cual y cambia solo el nombre del archivo.
+# Si esta en otra parte, reemplaza la linea entera por la ruta a tu archivo: relativa
+# a la carpeta donde esta ESTE archivo, o absoluta.
+RUTA_DATOS = Path(__file__).resolve().parents[1] / "datos" / "calidad_aire_risaralda.csv"
 
 # TODO: nombres cortos, en minuscula y sin tildes ni espacios, para TUS columnas.
 # La clave es el nombre exacto que trae el archivo. El valor es como lo vas a usar tu.

@@ -2,7 +2,7 @@
 Clase 9 - Demo del profesor
 Dashboard de calidad del aire en Risaralda.
 
-Como se ejecuta (desde la carpeta clase09/demo/):
+Como se ejecuta (desde una terminal parada en la carpeta donde esta este archivo):
 
     streamlit run streamlit_demo.py
 
@@ -23,8 +23,9 @@ import plotly.express as px
 import streamlit as st
 
 # La ruta se arma desde la ubicacion de este archivo, no desde donde se ejecuta la
-# terminal. parents[1] es clase09/, y de ahi entramos a data/.
-RUTA_DATOS = Path(__file__).resolve().parents[1] / "data" / "calidad_aire_risaralda.csv"
+# terminal: por eso la app levanta igual sin importar en que carpeta este parada
+# la terminal. parents[1] sube dos niveles desde el archivo y de ahi baja a los datos.
+RUTA_DATOS = Path(__file__).resolve().parents[1] / "datos" / "calidad_aire_risaralda.csv"
 
 # Limite superior razonable para una medicion de material particulado en ug/m3.
 # El dataset trae cuatro valores absurdos (hasta 45.839) que aplastan todos los graficos.

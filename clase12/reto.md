@@ -191,14 +191,14 @@ Reglas de formato: `p < 0.001` cuando corresponda, tres decimales en el resto, s
 
 | Archivo | Qué es |
 |---------|--------|
-| `reto_starter.ipynb` | Tu punto de partida. Aquí trabajas |
+| `reto.ipynb` | Tu punto de partida. Aquí trabajas |
 | `README.md` | Este documento |
 
 ---
 
 ## Entrega
 
-Sube `reto_starter.ipynb` resuelto al aula virtual.
+Sube `reto.ipynb` resuelto al aula virtual.
 
 Antes de subir:
 

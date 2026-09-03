@@ -11,7 +11,7 @@ en una frase.
 
 | Campo | Valor |
 |-------|-------|
-| Archivo de trabajo | `reto_starter.ipynb` |
+| Archivo de trabajo | `reto.ipynb` |
 | Dataset | `../datos/vehiculos_accidentes.csv` |
 | Tiempo en el salón | 60 minutos |
 | Se termina | En casa (partes 4 y 5) |
@@ -146,7 +146,7 @@ Responda en el notebook, en español, dos o tres frases por pregunta:
 
 ## Cómo se entrega
 
-1. Complete `reto_starter.ipynb`.
+1. Complete `reto.ipynb`.
 2. Antes de entregar: **Kernel → Restart and Run All**. Si algo revienta, arréglelo. Un notebook
    que no corre de arriba a abajo le pone techo a Hacer.
 3. Súbalo al aula virtual con el nombre `clase02_reto_APELLIDO.ipynb`.

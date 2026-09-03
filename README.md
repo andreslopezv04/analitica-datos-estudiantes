@@ -70,6 +70,7 @@ clase01/ ... clase15/     Material de cada clase
   demo.ipynb              Notebook del bloque 2 (demo guiado), con el andamiaje ya escrito
   reto.md                 Consigna del bloque 3: qué hay que entregar y con qué criterios
   reto.ipynb              Notebook de arranque del reto
+  README.md               Índice de la carpeta: qué trae la clase y qué datos usa
 datos/                    Los CSV de todas las clases, en un solo lugar
 requirements.txt          Las librerías del curso
 INSTALACION.md            Cómo montar el entorno. Empiece por aquí
@@ -91,10 +92,14 @@ No todas las clases tienen los cuatro archivos:
 | Clase | Qué trae |
 |-------|----------|
 | 1 | Solo diapositivas. Es la clase de encuadre: no hay demo ni reto |
-| 2, 3, 4, 5, 7, 8, 9, 10, 13, 14 | Diapositivas + demo + reto |
-| 6, 12, 15 | Clases evaluativas. Sustentaciones. No hay demo ni reto |
-| 11 | Laboratorio: se trabaja sobre el proyecto del equipo, no sobre un dataset del curso |
-| 16 | Cierre del semestre |
+| 2, 4, 5, 7, 8, 9, 12, 13 | Diapositivas + demo + reto |
+| 3 | Diapositivas, más un demo y un reto en HTML (no cuadernos) y el catálogo de skills del curso |
+| 6, 11, 14 | Clases evaluativas. Sustentaciones. No hay demo ni reto |
+| 10 | Laboratorio: se trabaja sobre el proyecto del equipo, no sobre un dataset del curso |
+| 15 | Cierre del semestre. Solo diapositivas |
+
+**Cada carpeta `claseXX/` trae su propio `README.md`** con lo que hay ahí, qué datos usa y qué hace
+falta antes de empezar. Es el primer archivo que conviene abrir.
 
 ---
 

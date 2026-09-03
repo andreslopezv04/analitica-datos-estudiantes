@@ -13,7 +13,7 @@
 
    Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
    Todo el CSS, el JS y las dos figuras (SVG inline, generadas a partir de
-   clase09/data/calidad_aire_risaralda.csv) viven en este archivo.
+   datos/calidad_aire_risaralda.csv) viven en este archivo.
    El deck NO carga Plotly: la clase es de Plotly, el deck no lo necesita.
 
    Motivo rector: el control que se enciende. Filas de widgets apagadas y
@@ -628,7 +628,7 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
   <span class="n">02</span>
   <p class="kicker">Bloque dos</p>
   <h2>Demo &middot; Lo recorre usted</h2>
-  <p>Abra <span class="term">demo/demo.ipynb</span> y avance solo, a su ritmo. <b>El código ya está escrito:</b> se corre, se entiende y se responden las preguntas de interpretación. Nadie lo va a dictar desde aquí. Yo camino por el salón resolviendo dudas.</p>
+  <p>Abra <span class="term">demo.ipynb</span> y avance solo, a su ritmo. <b>El código ya está escrito:</b> se corre, se entiende y se responden las preguntas de interpretación. Nadie lo va a dictar desde aquí. Yo camino por el salón resolviendo dudas.</p>
 </section>
 
 <section class="slide" data-block="2" data-title="El dataset del demo">
@@ -636,7 +636,7 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
   <h2 class="reveal">Calidad del aire en Risaralda</h2>
   <div class="table-wrap reveal">
     <table>
-      <caption>clase09/data/calidad_aire_risaralda.csv &middot; 5.047 filas x 5 columnas &middot; una fila = una medición de una estación en un día &middot; origen: datos.gov.co</caption>
+      <caption>datos/calidad_aire_risaralda.csv &middot; 5.047 filas x 5 columnas &middot; una fila = una medición de una estación en un día &middot; origen: datos.gov.co</caption>
       <thead><tr><th scope="col">Columna</th><th scope="col">Qué es</th></tr></thead>
       <tbody>
         <tr><th scope="row"><span class="mono">Municipio</span></th><td>Dosquebradas, Pereira, Santa Rosa de Cabal, La Virginia</td></tr>
@@ -709,7 +709,7 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
     <article class="card on"><span class="k">Lo que sí le toca</span><h3>Preguntas de interpretación</h3>
       <p>Con la respuesta plegada debajo. Se escribe la propia <b>primero</b> y se abre después. Qué significa el resultado, no cuál fue. Escribir código es el bloque 3.</p></article>
     <article class="card warn"><span class="k">La app</span><h3>Terminal, no editor</h3>
-      <p>Se entra a la carpeta <span class="term">clase09/demo</span> y se levanta con <span class="term">streamlit run</span>. Se detiene con <span class="term">Ctrl+C</span> en la terminal: cerrar la pestaña del navegador no la apaga.</p></article>
+      <p>Se abre una terminal parada en la carpeta donde está el archivo y se levanta con <span class="term">streamlit run</span>. Se detiene con <span class="term">Ctrl+C</span> en la terminal: cerrar la pestaña del navegador no la apaga.</p></article>
   </div>
   <div class="callout reveal"><p><strong>Yo estoy caminando.</strong> Levante la mano en el momento en que algo no cuadre, no al final. Y si la app no le levanta, dígalo ya: se resuelve al lado de un compañero que la tenga corriendo, y la instalación se arregla fuera de clase.</p></div>
 </section>
@@ -718,7 +718,7 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
   <span class="n">03</span>
   <p class="kicker">Bloque tres</p>
   <h2>Reto &middot; Ahora usted, con su dataset</h2>
-  <p>Abra <span class="term">reto/README.md</span> y <span class="term">reto/reto_starter.ipynb</span>. Usted decide la pregunta, los controles y los números; yo sigo circulando. Esto es lo que se entrega.</p>
+  <p>Abra <span class="term">reto.md</span> y <span class="term">reto.ipynb</span>. Usted decide la pregunta, los controles y los números; yo sigo circulando. Esto es lo que se entrega.</p>
 </section>
 
 <section class="slide" data-block="3" data-title="El reto: su tablero, su dataset">
@@ -737,11 +737,11 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
   <p class="kicker reveal">No abra el archivo .py primero &middot; es el error que más tiempo cuesta</p>
   <h2 class="reveal">Tres pasos, en este orden</h2>
   <ol class="steps reveal">
-    <li><b>Diseño en papel, en <span class="term">reto_starter.ipynb</span>.</b> Antes de tocar código: la pregunta y a quién le sirve, los tres filtros, los tres KPIs, los tres gráficos. Si no puede escribir la pregunta, todavía no tiene un tablero: tiene un dataset.</li>
+    <li><b>Diseño en papel, en <span class="term">reto.ipynb</span>.</b> Antes de tocar código: la pregunta y a quién le sirve, los tres filtros, los tres KPIs, los tres gráficos. Si no puede escribir la pregunta, todavía no tiene un tablero: tiene un dataset.</li>
     <li><b>Preparar el dataset, en el mismo cuaderno.</b> Renombrar columnas a minúsculas sin tildes ni espacios, una sola vez, en la carga. Convertir fechas con su <span class="term">format</span>. Revisar valores imposibles. Prototipar los tres gráficos ahí, antes de meterlos en la app.</li>
     <li><b>Adaptar <span class="term">streamlit_app_starter.py</span>.</b> Cambiar el bloque de configuración del principio, completar los tres <span class="term"># TU CODIGO AQUI</span> y reescribir los títulos como mensajes.</li>
   </ol>
-  <p class="lead reveal">Se ejecuta desde <span class="term">clase09/reto/</span> con <span class="term">streamlit run streamlit_app_starter.py</span>.</p>
+  <p class="lead reveal">Se ejecuta con <span class="term">streamlit run streamlit_app_starter.py</span>, desde una terminal parada en la carpeta donde está el archivo.</p>
 </section>
 
 <section class="slide" data-block="3" data-title="Requisitos, uno por uno">

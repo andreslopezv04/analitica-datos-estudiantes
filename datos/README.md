@@ -10,7 +10,7 @@ df = pd.read_csv("../datos/HISTORICO_CONSUMO.csv")
 ```
 
 Es una sola carpeta y no una por clase porque varios datasets se usan en más de una sesión
-(`HISTORICO_CONSUMO.csv` aparece en las clases 1, 4, 5 y 14). Una sola copia significa una sola ruta
+(`HISTORICO_CONSUMO.csv` aparece en las clases 5, 8 y 13). Una sola copia significa una sola ruta
 que aprender y ningún riesgo de que dos copias del mismo archivo terminen distintas.
 
 Se llena a medida que avanza el semestre: cada clase trae sus datos cuando se publica.

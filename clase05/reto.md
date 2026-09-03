@@ -11,7 +11,7 @@ Su trabajo: resolver **diez tareas**, y escribir qué significa cada número que
 | Campo | Valor |
 |-------|-------|
 | Bloque | 3 (es el entregable de la clase) |
-| Archivo de trabajo | `reto_starter.ipynb` |
+| Archivo de trabajo | `reto.ipynb` |
 | Dataset | `../datos/evaluaciones_agropecuarias.csv` |
 | Tamaño | 20.000 filas x 17 columnas |
 | Fuente | Evaluaciones Agropecuarias Municipales (EVA), Ministerio de Agricultura, vía datos.gov.co |
@@ -155,7 +155,7 @@ lado a lado, y producción total por departamento en barras horizontales.
 
 ## Cómo se entrega
 
-1. Complete `reto_starter.ipynb`.
+1. Complete `reto.ipynb`.
 2. Antes de entregar: **Kernel → Restart and Run All**. Si algo revienta, arréglelo. Un cuaderno que
    no corre de arriba a abajo le pone techo a Hacer.
 3. Súbalo al aula virtual con el nombre `clase05_reto_APELLIDO.ipynb`.
@@ -195,7 +195,7 @@ no se suman ni se promedian, alimentan una sola banda por dimensión.
 
 ## Enlaces
 
-- El `demo/demo.ipynb` de esta misma clase tiene el marco de 5 pasos completo sobre otro dataset, con
+- El `demo.ipynb` de esta misma clase tiene el marco de 5 pasos completo sobre otro dataset, con
   los recuadros que explican qué es una media, qué mide la desviación estándar y qué es un objeto
   agrupado. Úselo de referencia.
 - Guía de entrega del Momento 1 y qué hace que un dataset sirva:

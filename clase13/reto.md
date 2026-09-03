@@ -175,14 +175,14 @@ no se suman ni se promedian, alimentan una sola banda por dimensión.
 
 | Archivo | Qué es |
 |---------|--------|
-| `reto_starter.ipynb` | Tu punto de partida. Aquí trabajas |
+| `reto.ipynb` | Tu punto de partida. Aquí trabajas |
 | `README.md` | Este documento |
 
 ---
 
 ## Entrega
 
-Sube `reto_starter.ipynb` resuelto al aula virtual.
+Sube `reto.ipynb` resuelto al aula virtual.
 
 Antes de subir:
 

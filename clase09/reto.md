@@ -17,7 +17,7 @@ Lo que empieces hoy es lo que sustentas en la clase 11.
 
 | Archivo | Para qué |
 |---------|----------|
-| `reto_starter.ipynb` | Diseñas el dashboard y preparas tu dataset. **Empieza aquí**. Trae **10 puntos de verificación** (`T1` a `T10`) con pista dirigida |
+| `reto.ipynb` | Diseñas el dashboard y preparas tu dataset. **Empieza aquí**. Trae **10 puntos de verificación** (`T1` a `T10`) con pista dirigida |
 | `streamlit_app_starter.py` | La plantilla de la app. La adaptas a tus columnas. No es un cuaderno: no tiene celdas y no se ejecuta con el botón de play |
 
 La solución no se publica. Si te trabas, pregunta en clase: el reto se resuelve en voz alta en el
@@ -29,7 +29,7 @@ cierre de la sesión.
 
 No abras el `.py` primero. Ese es el error que más tiempo cuesta.
 
-### Paso 1 — Diseño en papel (10 min, en `reto_starter.ipynb`)
+### Paso 1 — Diseño en papel (10 min, en `reto.ipynb`)
 
 Antes de tocar código, escribe:
 
@@ -40,7 +40,7 @@ Antes de tocar código, escribe:
 
 Si no puedes escribir la pregunta, todavía no tienes un dashboard: tienes un dataset.
 
-### Paso 2 — Preparar tu dataset (15 min, en `reto_starter.ipynb`)
+### Paso 2 — Preparar tu dataset (15 min, en `reto.ipynb`)
 
 - Cargar el CSV y verificar `shape` y `dtypes`.
 - Renombrar columnas a minúsculas, sin tildes ni espacios. Una sola vez, en la carga.
@@ -54,7 +54,7 @@ Si no puedes escribir la pregunta, todavía no tienes un dashboard: tienes un da
 2. Completar los tres `# TU CODIGO AQUI`: el tercer KPI, el tercer gráfico y el `st.info`.
 3. Cambiar los títulos de los gráficos por mensajes, no etiquetas.
 
-Ejecutar desde `clase09/reto/`:
+Ejecutar desde una terminal parada en la carpeta donde está `streamlit_app_starter.py`:
 
 ```
 streamlit run streamlit_app_starter.py
