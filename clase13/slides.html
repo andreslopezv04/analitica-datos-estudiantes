@@ -670,6 +670,24 @@ svg.fig .arrow.acc{stroke:var(--accent)}
   <p class="lead reveal"><span class="term">max_depth</span> es cuántas preguntas seguidas se permiten. Pocas: no alcanza a captar el patrón. Demasiadas: una pregunta por fila, que es memorizar.</p>
 </section>
 
+<section class="slide" data-block="1" data-title="Las cuatro preguntas, sobre un modelo">
+  <p class="kicker reveal">De la clase 3 &middot; el mismo criterio, otro objeto</p>
+  <h2 class="reveal">Un R2 no sabe si el modelo sirve</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Las cuatro preguntas del analista, traducidas a lo que sale de un modelo. Se le hacen al resultado, no al código.</caption>
+      <thead><tr><th scope="col">La pregunta</th><th scope="col">Qué significa cuando lo que salió es una métrica</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">¿La métrica tiene sentido?</th><td>Un R2 de 0.98 en un problema del mundo real no se celebra: se sospecha. Casi siempre es la respuesta metida en X.</td></tr>
+        <tr class="on"><th scope="row">¿La forma cuadra?</th><td>Cuántas filas entraron a entrenar y cuántas a evaluar. Un conjunto de prueba de veinte casos no evalúa nada, por buena que se vea la cifra.</td></tr>
+        <tr class="no"><th scope="row">¿Responde lo que pregunté?</th><td>R2 mide una cosa y accuracy otra, y ninguna de las dos responde "¿qué decisión soporta esto?". Una métrica alta sobre la variable equivocada es una métrica alta.</td></tr>
+        <tr class="no"><th scope="row">¿Cambió algo?</th><td class="d">La más útil de las cuatro hoy: <b>¿le gana al modelo que siempre responde el promedio?</b> Si no le gana, no hay modelo, por bueno que se vea su R2.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn reveal"><p>Las cuatro se contestan mirando la salida, no leyendo el código. Y si alguna falla, <b>se vuelve a especificar</b>: se replantea qué se está prediciendo y para qué, no se cambia el parámetro hasta que la cifra suba.</p></div>
+</section>
+
 <section class="slide" data-block="1" data-title="Resumen del bloque 1">
   <p class="kicker reveal">Lo que hay que llevarse aunque se olvide todo lo demás</p>
   <h2 class="reveal">Resumen del bloque</h2>
@@ -776,16 +794,18 @@ svg.fig .arrow.acc{stroke:var(--accent)}
   <div class="callout warn reveal"><p><b>Que un modelo salga malo no es un error suyo. No reportarlo sí lo es.</b> El semestre pasado varios escondieron el gap, y eso es lo único de esta lista que sí cuenta como falla.</p></div>
 </section>
 
-<section class="slide" data-block="3" data-title="Las cuatro partes del reto">
+<section class="slide" data-block="3" data-title="Las partes del reto">
   <p class="kicker reveal">Se trabaja en clase con acompañamiento; lo que quede se cierra en casa</p>
   <h2 class="reveal">Qué hay que entregar</h2>
   <ol class="steps reveal">
+    <li><b>Especificar.</b> Objetivo, alcance, insumos, criterio de aceptación <b>y el piso contra el que va a comparar</b>, escritos antes de entrenar nada.</li>
     <li><b>Cargar, explorar y partir.</b> 80/20 con <span class="term">random_state=42</span>, y por escrito: ¿regresión o clasificación, y por qué?</li>
     <li><b>Curva de overfitting.</b> Un árbol por cada <span class="term">max_depth</span> en 2, 3, 5, 10, 20 y None. Tabla con gap, gráfico de las dos curvas, y la profundidad elegida <b>justificada con el gap</b>.</li>
     <li><b>Clasificador.</b> Terciles con <span class="term">pd.qcut</span>, tres profundidades, y la accuracy contra el punto de referencia: adivinar acierta un tercio.</li>
     <li><b>Importancia de variables.</b> Gráfico ordenado, e interpretación que diga <b>explícitamente que no es causalidad</b>.</li>
+    <li><b>Ganarle al modelo tonto, y validar.</b> Los comandos vienen sin el orden. Y al final, las cuatro preguntas contra el criterio que escribió al principio.</li>
   </ol>
-  <p class="lead reveal">Opcional, para cerrar en casa: <span class="term">min_samples_leaf</span> como segunda palanca contra el sobreajuste, la comparación contra el modelo tonto y dibujar el árbol con <span class="term">plot_tree</span>.</p>
+  <p class="lead reveal">Opcional, para cerrar en casa: <span class="term">min_samples_leaf</span> como segunda palanca contra el sobreajuste, y dibujar el árbol con <span class="term">plot_tree</span>.</p>
 </section>
 
 <section class="slide" data-block="3" data-title="Dónde se va a atascar">
@@ -801,6 +821,18 @@ svg.fig .arrow.acc{stroke:var(--accent)}
       <p>Clasificación usa <span class="term">accuracy_score</span>; regresión usa <span class="term">r2_score</span> y <span class="term">mean_absolute_error</span>.</p></div>
   </div>
   <div class="callout reveal"><p><b>Para el segundo:</b> el starter trae escrita, en un comentario, la línea de impresión que envuelve la profundidad en <span class="term">str()</span> antes de darle formato. No hay que inventarla: hay que leerla.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="El bucle, sobre este reto">
+  <p class="kicker reveal">El método de la clase 3, sin volver a explicarlo</p>
+  <h2 class="reveal">Qué haría bueno a este modelo se escribe antes de entrenarlo</h2>
+  <div class="cols c4 reveal">
+    <div class="col on"><span class="k">Especificar</span><h3><span class="term">especifica-encargo</span></h3><p>Qué se predice, para qué decisión, y el <b>criterio de aceptación</b>: qué resultado haría que este modelo sirva. Antes de la primera celda.</p></div>
+    <div class="col"><span class="k">Planear</span><h3><span class="term">planea-trabajo</span></h3><p>Ya está hecho: el plan es el orden de las siete tareas del cuaderno.</p></div>
+    <div class="col"><span class="k">Ejecutar</span><h3><span class="term">ejecuta-plan</span></h3><p>Una tarea por vez, con su comprobación. La última no trae el orden: ese ensamblaje es el ejercicio.</p></div>
+    <div class="col on"><span class="k">Validar</span><h3><span class="term">valida-resultado</span></h3><p>El veredicto contra ese criterio. Y encima, las cuatro preguntas, con la cuarta convertida en la comparación contra el modelo tonto.</p></div>
+  </div>
+  <div class="callout warn reveal"><p><b>Por qué en esta clase.</b> Entrenar un modelo produce una métrica con cara de resultado <b>aunque nadie haya decidido qué haría bueno a ese modelo</b>. Escrito el criterio antes, un R2 mediocre es un hallazgo reportable; escrito después, se vuelve una decepción que se esconde. Es la diferencia entre las dos sustentaciones que se vieron el semestre pasado.</p></div>
 </section>
 
 <section class="slide" data-block="3" data-title="Cómo se valora el reto">
@@ -820,14 +852,14 @@ svg.fig .arrow.acc{stroke:var(--accent)}
 <!-- ======================= CIERRE ======================= -->
 <section class="slide" data-title="Cierre: la capa de ML del Momento 3">
   <p class="kicker reveal">La sección de machine learning de su proyecto final</p>
-  <h2 class="reveal">Cuatro preguntas, y son la plantilla</h2>
+  <h2 class="reveal">Las cuatro preguntas del reporte de modelo</h2>
   <ol class="steps reveal">
     <li><b>¿Qué predijo?</b> La variable objetivo, y por qué le importa a alguien.</li>
     <li><b>¿Es regresión o clasificación?</b> Y por qué esa y no la otra.</li>
     <li><b>¿Cómo evaluó?</b> La métrica sobre el conjunto de <b>prueba</b>, más el gap contra entrenamiento.</li>
     <li><b>¿Qué decisión soporta la predicción?</b> Si no soporta ninguna, el modelo sobra.</li>
   </ol>
-  <div class="callout reveal"><p><b>La estructura del Momento 2 se conserva.</b> El machine learning es una capa que se agrega a la narrativa que ya tienen, no un reemplazo. El dashboard y el modelo son el medio; la historia sigue siendo el entregable.</p></div>
+  <div class="callout reveal"><p><b>No confundirlas con las cuatro preguntas del analista</b>, las de la clase 3: aquellas se le hacen a <em>un resultado cualquiera</em> para saber si es de fiar; estas cuatro son la <em>estructura del informe</em> de la capa de ML. Se usan las dos, y en ese orden. <b>La estructura del Momento 2 se conserva.</b> El machine learning es una capa que se agrega a la narrativa que ya tienen, no un reemplazo. El dashboard y el modelo son el medio; la historia sigue siendo el entregable.</p></div>
 </section>
 
 <section class="slide" data-title="Los tres errores que hunden la sustentación">

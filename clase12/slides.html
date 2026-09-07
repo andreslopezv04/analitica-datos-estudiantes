@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clase 12 · Estadística inferencial | Analítica de Datos</title>
-<meta name="description" content="Clase 12 de Analítica de Datos: estadística inferencial. Muestra y población, distribuciones, intervalos de confianza y lo que el 95% sí significa, pruebas de hipótesis con la analogía del tribunal, p-valor y sus tres malinterpretaciones, errores tipo I y II, y por qué significativo no es importante. Demo con scipy sobre indicadores educativos del MEN y reto de inferencia con reporte en lenguaje de negocio.">
+<meta name="description" content="Clase 12 de Analítica de Datos: estadística inferencial. Muestra y población, distribuciones, intervalos de confianza y lo que el 95% sí significa, pruebas de hipótesis con la analogía del tribunal, p-valor y sus tres malinterpretaciones, errores tipo I y II, y por qué significativo no es importante. Las cuatro preguntas del analista traducidas a un resultado estadístico. Demo con scipy sobre indicadores educativos del MEN y reto de inferencia recorrido con el bucle de la clase 3 —especificar, planear, ejecutar, validar—, con el criterio de aceptación escrito antes del cálculo y reporte en lenguaje de negocio.">
 <style>
 /* ============================================================================
    CLASE 12 — "TINTA NOCTURNA"
@@ -15,7 +15,7 @@
    Todo el CSS, el JS y las cuatro figuras (SVG inline) viven en este archivo.
 
    Motivo rector: Paper & Ink invertido. La clase 5 fue pergamino y tinta —
-   describir lo que se midió. La 13 es la misma familia tipográfica a fondo de
+   describir lo que se midió. La 12 es la misma familia tipográfica a fondo de
    tinta: ahora se afirma algo sobre lo que NO se midió, y se afirma a oscuras.
    Dos colores con significado fijo en todo el deck, y nunca otro:
      verdigris (--hit)  = el método acertó / evidencia a favor
@@ -663,6 +663,24 @@ pre .e{color:#D4703F}      /* lo que está mal */
   <div class="callout reveal"><p>Bajar alfa de 0,05 a 0,01 reduce el tipo I y <b>aumenta</b> el tipo II. Un tamizaje de cáncer prefiere el tipo I: asustar a alguien sano se corrige después; mandar a la casa a alguien enfermo, no. Un sistema judicial prefiere lo contrario. <b>La estadística no decide eso: lo decide quien asume el costo.</b></p></div>
 </section>
 
+<section class="slide" data-block="1" data-title="Las cuatro preguntas, sobre un resultado estadístico">
+  <p class="kicker reveal">De la clase 3 &middot; el mismo criterio, otro objeto</p>
+  <h2 class="reveal">Un p-valor no sabe de dónde vino</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Las cuatro preguntas del analista, traducidas a lo que se hace hoy. Se le hacen al resultado, no al código.</caption>
+      <thead><tr><th scope="col">La pregunta</th><th scope="col">Qué significa cuando lo que salió es un intervalo o un p-valor</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">¿El número tiene sentido?</th><td>Un intervalo de veinte puntos de ancho sobre cientos de filas no es un error de sintaxis: es la desviación estándar donde iba el error estándar. Nada se queja.</td></tr>
+        <tr class="on"><th scope="row">¿La forma cuadra?</th><td>El n. Un grupo con cuatro filas no sostiene ninguna conclusión, por bajo que salga el p-valor. Los conteos se miran <b>antes</b> que el resultado.</td></tr>
+        <tr class="no"><th scope="row">¿Responde lo que pregunté?</th><td>La más peligrosa. "Significativo" contesta "¿es real?". Nadie preguntó eso solo: preguntaron <b>de cuánto</b>. Con muestra grande, casi todo sale significativo.</td></tr>
+        <tr class="no"><th scope="row">¿Cambió algo?</th><td>Si el efecto es tan pequeño que nadie haría nada distinto con él, no hay hallazgo: hay un cálculo. Un resultado que no cambia ninguna decisión no es un resultado.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal"><p>Y la mitad que se olvida: <b>si la validación falla, se vuelve a especificar.</b> No se parcha el resultado. Un análisis que contesta otra cosa casi siempre viene de una pregunta que pedía otra cosa.</p></div>
+</section>
+
 <section class="slide" data-block="1" data-title="Resumen del bloque 1">
   <p class="kicker reveal">Seis frases &middot; si algo se les olvida hoy, que no sea esto</p>
   <h2 class="reveal">Lo que hay que poder decir sin apuntes</h2>
@@ -766,7 +784,7 @@ pre .e{color:#D4703F}      /* lo que está mal */
 </section>
 
 <section class="slide" data-block="3" data-title="Qué hay que entregar">
-  <p class="kicker reveal">Cuatro partes &middot; lo que no se cierre en clase se cierra en casa</p>
+  <p class="kicker reveal">Cuatro partes de cálculo, más especificar al principio y validar al final</p>
   <h2 class="reveal">Cuatro partes, y la tercera es la que más pesa en la práctica</h2>
   <div class="cols c4 reveal">
     <div class="col on"><span class="k">Parte 1</span><h3>Tres intervalos</h3><p>Al 95 % para cobertura neta, aprobación y repitencia. Con n, media, desviación <b>y una frase de interpretación correcta</b> por cada uno.</p></div>
@@ -774,7 +792,19 @@ pre .e{color:#D4703F}      /* lo que está mal */
     <div class="col on"><span class="k">Parte 3</span><h3>Resumen ejecutivo</h3><p>De cinco a siete frases para un funcionario. <b>Sin</b> las palabras p-valor, hipótesis nula, significativo ni t-test. Con números y con recomendación.</p></div>
     <div class="col on"><span class="k">Parte 4</span><h3>Dos figuras</h3><p>Barras de error con los tres intervalos, y boxplot comparativo con la anotación del resultado.</p></div>
   </div>
-  <div class="callout reveal"><p>En las barras de error, <span class="term">yerr</span> es la <b>mitad</b> del ancho del intervalo, no el intervalo completo. Es el atasco de todos los semestres.</p></div>
+  <div class="callout reveal"><p>Antes de la Parte 1 va <b>especificar</b>, y después de la Parte 4 va <b>validar</b>. En las barras de error, <span class="term">yerr</span> es la <b>mitad</b> del ancho del intervalo, no el intervalo completo. Es el atasco de todos los semestres.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="El bucle, sobre este reto">
+  <p class="kicker reveal">El método de la clase 3, sin volver a explicarlo</p>
+  <h2 class="reveal">El criterio de aceptación se escribe antes de que exista el número</h2>
+  <div class="cols c4 reveal">
+    <div class="col on"><span class="k">Especificar</span><h3><span class="term">especifica-encargo</span></h3><p>Objetivo, alcance, insumos y <b>criterio de aceptación</b>, escritos antes de ejecutar una celda. Es la primera sección del cuaderno.</p></div>
+    <div class="col"><span class="k">Planear</span><h3><span class="term">planea-trabajo</span></h3><p>Ya está hecho: el plan es el orden de las ocho tareas. Hoy no gastan tiempo aquí.</p></div>
+    <div class="col"><span class="k">Ejecutar</span><h3><span class="term">ejecuta-plan</span></h3><p>Una tarea por vez, con su comprobación. Parar y mirar antes de seguir, no las ocho de un tirón.</p></div>
+    <div class="col on"><span class="k">Validar</span><h3><span class="term">valida-resultado</span></h3><p>El veredicto contra ese criterio, condición por condición. Y encima, las cuatro preguntas.</p></div>
+  </div>
+  <div class="callout warn reveal"><p><b>Por qué en esta clase más que en ninguna.</b> Un p-valor sale con tres decimales y cara de verdad venga de una pregunta bien planteada o de una mal planteada. El criterio escrito <b>antes</b> es lo único que impide que un número bonito se cuele como hallazgo; escrito después, se acomoda solo al resultado y nadie se entera.</p></div>
 </section>
 
 <section class="slide" data-block="3" data-title="La advertencia: p-hacking">
@@ -820,6 +850,7 @@ pre .e{color:#D4703F}      /* lo que está mal */
   <h2 class="reveal">Esto que hicieron hoy es una sección de su entrega final</h2>
   <p class="claim reveal">Mínimo <span>dos intervalos de confianza y una prueba de hipótesis</span> sobre su propio dataset.</p>
   <p class="lead reveal">Reportados con el formato de hoy: tamaño del efecto, intervalo, p-valor y conclusión en lenguaje llano. Vayan pensando desde ya <b>cuáles dos variables</b> de su proyecto se prestan para esto: no todas se prestan, y descubrirlo en la clase 14 es tarde.</p>
+  <div class="callout reveal"><p>Y escriban el criterio de aceptación de su proyecto <b>ahora</b>, no la semana de la sustentación. Una hipótesis planteada después de ver el resultado no es una hipótesis: es una explicación.</p></div>
 </section>
 
 <section class="slide" data-title="Cierre">

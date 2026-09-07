@@ -61,10 +61,33 @@ Lo viste en el demo. La limpieza mínima ya viene escrita en el starter:
 
 ---
 
+## El bucle, antes de las cuatro partes
+
+Este reto se recorre con el bucle de la clase 3 —**especificar, planear, ejecutar, validar**— y con
+las skills que instalaste allá. No es una clase de IA: el bucle es andamiaje, y aquí se usa sin
+volver a explicarlo.
+
+| Tramo | Skill | Dónde vive en este reto |
+|-------|-------|--------------------------|
+| **Especificar** | `especifica-encargo` | La sección "Antes del código" del starter: objetivo, alcance, insumos y **criterio de aceptación**, escritos antes de ejecutar una sola celda |
+| **Planear** | `planea-trabajo` | Ya está hecho: el plan es el orden de las ocho tareas |
+| **Ejecutar** | `ejecuta-plan` | Las partes A a D, una tarea por vez, con su comprobación |
+| **Validar** | `valida-resultado` | La Parte E: el veredicto contra el criterio, y encima **las cuatro preguntas del analista** |
+
+**Por qué aquí importa más que en cualquier otra clase.** Una prueba de hipótesis siempre devuelve un
+número, y ese número se ve igual de serio venga de una pregunta bien planteada o de una mal planteada.
+Escribir el criterio de aceptación **antes** es literalmente lo que impide que un p-valor bonito se
+cuele como hallazgo. Escrito después, el criterio se acomoda al resultado y nadie se entera.
+
+Las skills están en `clase03/skills/`. Si no las instalaste, funcionan igual pegando el contenido del
+`SKILL.md` en el chatbot que uses.
+
+---
+
 ## Qué hay que entregar
 
-Cuatro partes. Se trabajan en clase con acompañamiento; lo que quede se cierra
-en casa.
+Cuatro partes de cálculo, más la validación del final. Se trabajan en clase con acompañamiento; lo que
+quede se cierra en casa.
 
 ### Parte 1 · Tres intervalos de confianza al 95%
 
@@ -126,6 +149,21 @@ No puede:
 Ejes rotulados, título que diga el hallazgo (no "Gráfico 1"), y unidades visibles. Las reglas de la
 clase 7 siguen vigentes.
 
+### Parte 5 · Validar: las cuatro preguntas, traducidas a la inferencia
+
+Ocho comprobaciones en verde no significan que el análisis esté bien: un cuaderno entero correcto puede
+estar respondiendo la pregunta equivocada. Antes de entregar, se cierra el bucle contra el criterio de
+aceptación que escribiste al principio, y encima van las cuatro preguntas de la clase 3:
+
+| La pregunta | Qué mirar hoy |
+|-------------|---------------|
+| **¿El número tiene sentido?** | Los tres intervalos son porcentajes. ¿Algún límite se sale de un rango posible? ¿Un intervalo de veinte puntos de ancho es creíble con 462 filas? |
+| **¿La forma cuadra?** | Los `n`. ¿Cuadran con los faltantes que imprimió el paso 0? Un grupo con cuatro filas no sostiene ninguna conclusión, por bajo que salga el p-valor |
+| **¿Responde lo que pregunté?** | La pregunta era "¿difiere, y **de cuánto**?". "Significativo" solo responde la primera mitad, y con muestra grande casi todo sale significativo |
+| **¿Cambió algo?** | El intervalo de la diferencia. Si contiene el cero, o si el efecto es tan pequeño que nadie haría nada distinto con él, no hay hallazgo: hay un cálculo |
+
+**Si la validación falla, se vuelve a especificar. No se parcha el resultado.**
+
 ---
 
 ## Opcional (no se hace en clase, se cierra en casa si te sobra tiempo)
@@ -151,7 +189,7 @@ no se suman ni se promedian, alimentan una sola banda por dimensión.
 | Dimensión | Qué se mira en este reto |
 |-----------|--------------------------|
 | **Saber** | Los 4 pasos con H0 y H1 escritas **antes** del cálculo, y la interpretación: ninguna de las tres malinterpretaciones del p-valor, ninguna aceptación de H0 |
-| **Ser** | Honestidad: el resultado no significativo se reporta como tal, sin maquillarlo. Y el resumen ejecutivo, sin jerga, con números y con recomendación |
+| **Ser** | Honestidad: el resultado no significativo se reporta como tal, sin maquillarlo, y la validación de la Parte 5 se hace contra el criterio de aceptación escrito **antes**, no contra lo que salió. Y el resumen ejecutivo, sin jerga, con números y con recomendación |
 | **Hacer** | Corrección técnica (`dropna()` aplicado, error estándar en `scale`, `equal_var=False`, `n` reportado) y visualizaciones legibles solas, rotuladas, con la anotación de significancia |
 
 **Topes por omisión** (techo a la banda, nunca resta, y no se acumulan):
@@ -161,6 +199,9 @@ no se suman ni se promedian, alimentan una sola banda por dimensión.
 - Escribir "se acepta H0" o "se demostró que no hay diferencia": **Saber** no pasa de Insuficiente.
 - Reportar solo el p-valor, sin tamaño del efecto: **Saber** no pasa de Aceptable.
 - Evidencia de p-hacking en la prueba B: **Ser** no pasa de Insuficiente.
+- Criterio de aceptación escrito **después** de ver los resultados, o reescrito para que encaje con
+  ellos: **Ser** no pasa de Insuficiente.
+- Las cuatro preguntas de la Parte 5 sin responder: **Saber** no pasa de Aceptable.
 - Notación científica en el resumen ejecutivo (`p = 5.4e-12` en vez de `p < 0.001`): **Ser** no pasa
   de Bueno.
 
@@ -203,11 +244,13 @@ Sube `reto.ipynb` resuelto al aula virtual.
 Antes de subir:
 
 - [ ] Kernel > Restart & Run All corre sin errores de punta a punta.
+- [ ] El criterio de aceptación está escrito, y está escrito **antes** que los resultados.
 - [ ] Los tres intervalos están calculados **y** interpretados.
 - [ ] Las dos pruebas tienen H0 y H1 escritas.
 - [ ] El resumen ejecutivo no contiene la palabra "p-valor".
 - [ ] Las dos visualizaciones tienen título, ejes rotulados y unidades.
 - [ ] El `n` de cada cálculo está reportado.
+- [ ] Las cuatro preguntas de la Parte 5 están respondidas.
 
 ---
 

@@ -13,6 +13,27 @@ Lo que empieces hoy es lo que sustentas en la clase 11.
 
 ---
 
+## "Pero en la clase 3 ya hice un tablero de Streamlit"
+
+Sí, y salió corriendo sin que supieras Plotly ni Streamlit. Ese era el punto: **en la clase 3
+aprendiste el método** —especificar, planear, ejecutar, validar— y lo probaste sobre algo que no
+sabías construir.
+
+Lo que no tenías entonces es lo de hoy: **el criterio.** Qué gráfico responde qué pregunta, qué
+filtro vale la pena y cuál sobra, qué número cambia una decisión y cuál es decoración.
+
+| Clase 3 | Clase 9 |
+|---------|---------|
+| Cómo se dirige el trabajo | Qué se le pide al trabajo |
+| El bucle, sobre cualquier objeto | Las decisiones propias de un tablero |
+| Salió una app | Sabes si esa app sirve |
+
+**Una IA te entrega un tablero en dos minutos. Saber si sirve es otra cosa**, y es lo único que no
+puedes pedir prestado. El método sin criterio produce doce filtros bien programados que no responden
+ninguna pregunta.
+
+---
+
 ## Archivos
 
 | Archivo | Para qué |
@@ -29,7 +50,11 @@ cierre de la sesión.
 
 No abras el `.py` primero. Ese es el error que más tiempo cuesta.
 
-### Paso 1 — Diseño en papel (10 min, en `reto.ipynb`)
+Es el bucle de la clase 3, aplicado a un tablero. Si vas a usar las skills que instalaste entonces,
+van en este orden: `especifica-encargo`, `planea-trabajo`, `ejecuta-plan`, `valida-resultado`. Y si
+prefieres hacerlo a mano, los pasos son los mismos: **el bucle es el andamio, no la herramienta.**
+
+### Paso 1 — Especificar: diseño en papel (en `reto.ipynb`)
 
 Antes de tocar código, escribe:
 
@@ -40,7 +65,7 @@ Antes de tocar código, escribe:
 
 Si no puedes escribir la pregunta, todavía no tienes un dashboard: tienes un dataset.
 
-### Paso 2 — Preparar tu dataset (15 min, en `reto.ipynb`)
+### Paso 2 — Planear y preparar tu dataset (en `reto.ipynb`)
 
 - Cargar el CSV y verificar `shape` y `dtypes`.
 - Renombrar columnas a minúsculas, sin tildes ni espacios. Una sola vez, en la carga.
@@ -48,7 +73,7 @@ Si no puedes escribir la pregunta, todavía no tienes un dashboard: tienes un da
 - Revisar valores imposibles. Un outlier extremo aplasta todos tus gráficos.
 - Prototipar los 3 gráficos con Plotly **en el notebook**, antes de meterlos en la app.
 
-### Paso 3 — Adaptar la app (25 min, en `streamlit_app_starter.py`)
+### Paso 3 — Ejecutar: adaptar la app (en `streamlit_app_starter.py`)
 
 1. Cambiar el bloque `CONFIGURACION` del principio: ruta, `RENOMBRES`, etiquetas.
 2. Completar los tres `# TU CODIGO AQUI`: el tercer KPI, el tercer gráfico y el `st.info`.
@@ -59,6 +84,22 @@ Ejecutar desde una terminal parada en la carpeta donde está `streamlit_app_star
 ```
 streamlit run streamlit_app_starter.py
 ```
+
+### Paso 4 — Validar: las cuatro preguntas, con la app abierta
+
+Este es el paso que se salta todo el mundo, y es el único que descubre que el tablero contesta otra
+cosa. Se hace **moviendo controles**, no releyendo el archivo.
+
+| La pregunta | Qué haces con la app abierta |
+|-------------|------------------------------|
+| **¿El número tiene sentido?** | Mira cada KPI contra el rango que conoces de tu dominio. Un promedio fuera de ese rango no es un error de sintaxis: es un dato que no era un dato |
+| **¿La forma cuadra?** | Filtra por un solo valor y mira el conteo. Si sigue apareciendo el total, el filtro no filtró. Si aparece cero, filtró de más |
+| **¿Responde lo que pregunté?** | Vuelve a la pregunta que escribiste en el paso 1. ¿La responde, o responde la que fue fácil de graficar? |
+| **¿Cambió algo?** | Mueve cada control uno por uno. Un indicador que no se mueve nunca está desconectado: es el criterio que ya está en los requisitos |
+
+**Y la regla que viene con el bucle: si la validación falla, se vuelve a especificar.** No se parcha
+el gráfico. Un tablero que responde otra cosa casi siempre viene de una pregunta mal escrita en el
+paso 1, y arreglar la salida esconde el problema hasta la sustentación.
 
 ---
 
@@ -109,11 +150,12 @@ Para detener la app: `Ctrl+C` en la terminal. Cerrar la pestaña del navegador n
 
 ## Qué hacer en casa
 
-En 60 minutos asistidos alcanzas a tener la app corriendo con lo mínimo. El cierre es en casa:
+En el bloque asistido alcanzas a tener la app corriendo con lo mínimo. El cierre es en casa:
 
 - [ ] Revisar que los 3 KPIs sean los que importan, no los que fueron fáciles de calcular.
 - [ ] Reescribir los 3 títulos como mensajes.
-- [ ] Probar la app con filtros extremos: todo seleccionado, nada seleccionado, un solo valor.
+- [ ] Recorrer las cuatro preguntas del paso 4 con la app abierta, y probarla además con filtros
+      extremos: todo seleccionado, nada seleccionado, un solo valor.
 
 **Opcional, no se evalúa hoy:** `st.tabs` para organizar secciones, `st.download_button` para
 exportar el filtrado, temas y colores personalizados, mapas con `px.scatter_map`, despliegue en

@@ -43,6 +43,47 @@ Las nueve tareas están repartidas en tres partes:
 
 **La parte C es la que más pesa**, y es la única donde no se te da el orden de los comandos.
 
+Antes de la parte A hay un **Paso 0.5** que no tiene código y que sin embargo decide el resto: dos
+frases donde escribes a quién le hablas y qué decisión debe habilitar tu deck. Después de la parte A
+hay un cierre donde escribes **una frase por cifra**, en español y sin nombrar columnas: tres números
+en verde no son tres hallazgos.
+
+## El bucle que ya tienes instalado
+
+Nada de esto es método nuevo. Es el bucle de la clase 3 —**especificar, planear, ejecutar,
+validar**— con las tareas de hoy repartidas en sus cuatro tramos:
+
+| Tramo | La skill | Qué es hoy |
+|-------|----------|------------|
+| **Especificar** | `especifica-encargo` | El Paso 0.5: audiencia y decisión, antes de calcular nada |
+| **Planear** | `planea-trabajo` | Qué tres cifras hacen falta y en qué orden salen |
+| **Ejecutar** | `ejecuta-plan` | T1 a T7, una por una, comprobando cada una |
+| **Validar** | `valida-resultado` | T8, T9 y la autoevaluación del final |
+
+**Por qué aquí pesa más que en las clases de cálculo.** Una cifra mal calculada se cae sola: revienta
+o es absurda. Un deck sin especificar **no se cae**: sale correcto, bonito y sin destinatario, y eso
+se descubre cuando ya lo presentaste. Especificar antes de dibujar es lo que evita la secuencia de
+gráficos correctos que no le sirve a nadie.
+
+**Y si la validación falla, se vuelve a especificar.** Un deck que no le cambia nada a nadie casi
+nunca se arregla reescribiendo la slide 4: se arregla volviendo al Paso 0.5.
+
+## Las cuatro preguntas, sobre un deck
+
+Las mismas cuatro de la clase 3, aplicadas a una historia en vez de a un número:
+
+| La pregunta | Qué miras aquí | Quién la contesta |
+|-------------|----------------|-------------------|
+| ¿El número tiene sentido? | La cifra de tu título, en la magnitud de tu dominio | T9, contra el archivo |
+| ¿La forma cuadra? | Cuatro slides, una idea por slide, hallazgo con cifra, implicación que no repite | `revisar_titulo` y `revisar_historia` |
+| ¿Responde lo que pregunté? | ¿Tu slide 4 cierra la pregunta que abrió tu slide 1? | Tú, en la autoevaluación |
+| ¿Cambió algo? | ¿Alguien haría algo distinto el lunes por haberte escuchado? | Tú, en la autoevaluación |
+
+**Las dos últimas son la prueba del intercambio**, la que este curso usa desde el bloque 1: si
+intercambias dos slides y la presentación funciona igual, no estabas respondiendo una pregunta ni
+cambiando nada. Eran una lista. No son un criterio aparte: son cómo se ven esas dos preguntas cuando
+el resultado es un deck, y por eso ninguna máquina las revisa.
+
 ## Cómo se verifica un reto que no tiene respuesta correcta
 
 Esto es distinto a los retos de las clases 2, 4 y 5, y conviene decirlo claro para que nadie crea que

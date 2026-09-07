@@ -41,6 +41,22 @@ función. La técnica se guía; el criterio no, y el criterio es lo que se eval�
 `comprobar(...)` comparan una huella digital de su resultado con la esperada: nunca revelan la
 respuesta, y escribir cualquier cosa hasta que pasen es engañarse en el propio entregable.
 
+## El bucle de la clase 3, aquí
+
+Usted ya tiene el bucle **especificar → planear → ejecutar → validar** y las cuatro skills del
+catálogo. Este cuaderno le trae puestos dos tramos —la pregunta de cada tarea es la especificación, y
+los pasos numerados son el plan— y le deja los dos que se evalúan:
+
+| Tramo | Dónde pesa en este reto |
+|-------|-------------------------|
+| **Especificar** | La parte 6 llega en español y sin respuesta. Antes de teclear: qué tabla quiere, con qué columnas, ordenada por qué. Eso es un criterio de aceptación, y sin él la tarea solo se puede terminar, no validar |
+| **Planear** | Ahí mismo: los comandos están listados, la secuencia no. El plan es esa secuencia, con lo que hay que mirar en cada paso |
+| **Ejecutar** | Un paso, su salida impresa, y parar. Diez tareas de un tirón es lo que esa skill existe para impedir |
+| **Validar** | Las cuatro preguntas del analista sobre la tabla resumen. **Diez comprobaciones en verde no son una validación**: dicen que el número coincide, no que la lectura sea correcta |
+
+Pedirle a una IA el análisis completo es legítimo y así quedó dicho en la clase 3. Lo que no se puede
+pedir prestado es la lectura, y la entrega pide tres frases **sin ningún número**.
+
 ---
 
 ## El dataset
@@ -144,6 +160,8 @@ orden**. Es deliberado: en los momentos evaluativos nadie le va a dar la secuenc
 
 - **La tabla resumen:** las tres variables en una sola vista, más una frase por variable **sin ningún
   número**.
+- **La validación:** las cuatro preguntas del analista sobre esa tabla, una frase cada una. Es la
+  celda que separa "el cuaderno corrió" de "la lectura es correcta".
 - **Tres preguntas de reflexión**, una de ellas sobre el dataset del proyecto de su equipo.
 
 ### Opcional · Solo si terminó todo
@@ -158,8 +176,10 @@ lado a lado, y producción total por departamento en barras horizontales.
 1. Complete `reto.ipynb`.
 2. Antes de entregar: **Kernel → Restart and Run All**. Si algo revienta, arréglelo. Un cuaderno que
    no corre de arriba a abajo le pone techo a Hacer.
-3. Súbalo al aula virtual con el nombre `clase05_reto_APELLIDO.ipynb`.
-4. Fecha límite: antes del inicio de la clase 6.
+3. Verifique que la tabla resumen, sus tres frases sin números y la validación de las cuatro
+   preguntas están escritas.
+4. Súbalo al aula virtual con el nombre `clase05_reto_APELLIDO.ipynb`.
+5. Fecha límite: antes del inicio de la clase 6.
 
 ## Cómo se valora
 

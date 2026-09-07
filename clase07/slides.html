@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clase 07 · Principios de visualización | Analítica de Datos</title>
-<meta name="description" content="Clase 7 de Analítica de Datos: criterio visual. Data-ink ratio, la regla de los cinco segundos, elegir el gráfico a partir de la pregunta, color y accesibilidad, títulos que dicen la conclusión y cuatro tradeoffs no obvios. Demo de rediseño y reto de cinco figuras publication-ready sobre ejecución del Presupuesto General de la Nación.">
+<meta name="description" content="Clase 7 de Analítica de Datos: criterio visual. Data-ink ratio, la regla de los cinco segundos, elegir el gráfico a partir de la pregunta, color y accesibilidad, títulos que dicen la conclusión y cuatro tradeoffs no obvios. Demo de rediseño y reto de cinco figuras publication-ready sobre ejecución del Presupuesto General de la Nación, cada una recorriendo el bucle de la clase 3 —especificar, planear, ejecutar, validar— y validada con las cuatro preguntas del analista traducidas a una figura.">
 <style>
 /* ============================================================================
    CLASE 07 — "RETÍCULA SUIZA"
@@ -378,7 +378,7 @@ svg.fig .line-bad{stroke:var(--accent);stroke-width:3;fill:none}
     <li><b>Escribir un título que enuncia la conclusión</b> en lugar de describir los ejes, y que es verdadero.</li>
     <li><b>Producir figuras publication-ready</b> con paleta consistente, exportadas a 300 DPI.</li>
   </ol>
-  <p class="lead reveal">Hoy hay entregable: las cinco figuras del último bloque. Y hoy la estética deja de ser gusto y pasa a ser criterio verificable.</p>
+  <p class="lead reveal">Hoy hay entregable: las cinco figuras del último bloque. Y hoy la estética deja de ser gusto y pasa a ser criterio verificable: una figura se valida como se valida un número, con las cuatro preguntas de la clase 3.</p>
 </section>
 
 <!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
@@ -870,6 +870,24 @@ svg.fig .line-bad{stroke:var(--accent);stroke-width:3;fill:none}
   <p class="lead reveal">Son cinco, y el bloque es uno. <b>Si se le va medio bloque en la primera, no va a terminar.</b> La primera es la que ya sabe hacer: hágala rápido y siga.</p>
 </section>
 
+<section class="slide" data-block="3" data-title="Especificar antes de dibujar">
+  <p class="kicker reveal">El bucle de la clase 3, sobre un artefacto que no es un número</p>
+  <p class="claim reveal">Un gráfico bonito que no responde nada<br><span>salió de un encargo que no preguntaba nada.</span></p>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Especificar &middot; planear &middot; ejecutar &middot; validar &middot; una vuelta por figura</caption>
+      <thead><tr><th scope="col">Tramo</th><th scope="col">Qué se escribe, y cuándo</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">Especificar</th><td>La pregunta que la figura responde, quién la mira, y <b>el título que esperan poder escribir al final</b>. Va antes de dibujar, no después</td></tr>
+        <tr><th scope="row">Planear</th><td>El tipo de gráfico y por qué ese y no el vecino, el recorte, la unidad del eje, el elemento que se resalta</td></tr>
+        <tr><th scope="row">Ejecutar</th><td>La figura. Es el tramo que se delega entero, y sigue siendo el único</td></tr>
+        <tr class="on"><th scope="row">Validar</th><td>El título contra la tabla. Si no es verdadero, no se parcha el título: <b>se vuelve a especificar</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">Las cuatro skills están instaladas desde la clase 3 &mdash; <span class="term">especifica-encargo</span>, <span class="term">planea-trabajo</span>, <span class="term">ejecuta-plan</span>, <span class="term">valida-resultado</span> &mdash; y hoy no se vuelven a explicar: se usan. <b>Cinco figuras son cinco vueltas, no una.</b></p>
+</section>
+
 <section class="slide" data-block="3" data-title="Requisitos no negociables">
   <p class="kicker reveal">Cinco requisitos, y el primero es lo primero que se mira al calificar</p>
   <ol class="steps reveal">
@@ -922,17 +940,29 @@ svg.fig .line-bad{stroke:var(--accent);stroke-width:3;fill:none}
 </section>
 
 <!-- ======================= CIERRE ======================= -->
-<section class="slide" data-title="Cierre: escriba el skill de la checklist">
-  <p class="kicker reveal">Lo más rentable que pueden hacer esta semana</p>
-  <h2 class="reveal">El skill que hoy sí saben qué debe decir</h2>
-  <p class="lead reveal">En la clase 3 aprendieron a escribir skills. Escriban uno nuevo: <b>un verificador de la checklist de diez puntos.</b> Le pasan el código de una figura y les dice qué puntos incumple. Hoy es el día en que saben exactamente qué debe revisar, y lo van a usar en las clases 8, 9 y 11.</p>
-  <div class="callout reveal"><p>Y recuerden por qué esta clase importa aunque usen IA: si le piden "un gráfico bonito", les da algo genérico. Si le piden "barras horizontales ordenadas, top 10, todas en gris salvo la primera, con etiquetas directas, eje desde cero y sin bordes", les da exactamente eso. <b>La diferencia entre las dos peticiones es lo que aprendieron hoy.</b></p></div>
+<section class="slide" data-title="Cierre: las cuatro preguntas, sobre una figura">
+  <p class="kicker reveal">Validar un gráfico es lo mismo que validar un número, con otro objeto</p>
+  <h2 class="reveal">Las cuatro preguntas, y dónde caen en la checklist</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Las mismas cuatro de la clase 3 &middot; aquí el resultado no es un número, es una figura</caption>
+      <thead><tr><th scope="col">La pregunta</th><th scope="col">Sobre la figura</th><th scope="col">Checklist</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">¿El número tiene sentido?</th><td>Lea el valor en el eje y búsquelo en la tabla. Un eje que dice <span class="mono">1e13</span> no es un número: es una notación</td><td><em>9 y 10</em></td></tr>
+        <tr class="on"><th scope="row">¿La forma cuadra?</th><td>Barras desde cero, paneles con la misma escala, ninguna línea sobre categorías. <b>Aquí la forma es la escala</b></td><td><em>3 y 4</em></td></tr>
+        <tr class="on"><th scope="row">¿Responde lo que pregunté?</th><td>Cinco segundos con alguien de otro equipo, sin explicarle nada. Lo que le devuelva tiene que ser la pregunta que usted escribió al especificar</td><td><em>1, 2 y 8</em></td></tr>
+        <tr><th scope="row">¿Cambió algo?</th><td>Compare con el gráfico por defecto. Si el lector entiende lo mismo, no rediseñó: maquilló</td><td><em>5, 6 y 7</em></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">La checklist es el <b>qué</b>: diez cosas que revisar. Las cuatro preguntas son el <b>orden</b> en que se revisan, y son las mismas que usaron en la clase 3 sobre un número. <b>Un skill que verifique los diez puntos es lo más rentable que pueden escribir esta semana</b>, y lo van a usar en las clases 8, 9 y 11.</p>
 </section>
 
 <section class="slide" data-title="Cierre">
   <p class="kicker reveal">Nos vemos en la clase 8</p>
   <p class="claim reveal">Ya saben hacer figuras que no mienten.<br><span>Ahora hay que contar la historia.</span></p>
   <p class="lead reveal">Hoy cada figura respondió una pregunta suelta. La próxima clase, sobre este mismo dataset, esas figuras se encadenan: una tensión que se resuelve, no una lista de gráficos. Y ahí la narrativa deja de ser un extra y pasa a ser el entregable.</p>
+  <div class="callout reveal"><p>Y por qué esta clase importa aunque le pidan la figura a una IA: a "un gráfico bonito" le responde algo genérico; a "barras horizontales ordenadas, top 10, todas en gris salvo la primera, con etiquetas directas, eje desde cero y sin bordes" le responde exactamente eso. <b>La diferencia entre las dos peticiones es el tramo de especificar, y es lo que aprendieron hoy.</b></p></div>
 </section>
 
 </main>

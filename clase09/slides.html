@@ -401,6 +401,7 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
     <li><b>Levantar una app</b> desde la terminal y entender por qué el archivo se ejecuta completo en cada clic.</li>
     <li><b>Filtrar un DataFrame con controles</b> y proteger la app de filtros vacíos.</li>
     <li><b>Cumplir el mínimo de tres filtros, tres KPIs y tres gráficos</b> sobre el dataset de su equipo.</li>
+    <li><b>Validar su propio tablero</b> con las cuatro preguntas de la clase 3, moviendo los controles: sentido, forma, pregunta, cambio.</li>
   </ol>
   <p class="lead reveal">Hoy hay entregable, y no es un entregable cualquiera: lo que empiece en el bloque 3 es exactamente lo que sustenta en la clase 11.</p>
 </section>
@@ -418,6 +419,18 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
   <p class="kicker reveal">La pregunta con la que abrimos</p>
   <p class="claim reveal">¿Cuántos tableros han visto que se ven muy bien <span>y no sirven para nada</span>?</p>
   <p class="lead reveal">Doce filtros, veinte gráficos, ni una frase escrita. Nadie sabe quién lo usa ni para qué. Un tablero que no cambia ninguna decisión es un protector de pantalla caro.</p>
+</section>
+
+<section class="slide" data-block="1" data-title="Ustedes ya construyeron un tablero">
+  <p class="kicker reveal">La objeción honesta &middot; y hay que responderla antes de seguir</p>
+  <p class="claim reveal">En la clase 3 ya salió un tablero de Streamlit. <span>Nadie sabía todavía si servía.</span></p>
+  <div class="cards c2 reveal">
+    <article class="card"><span class="k">Clase 3</span><h3>El método</h3>
+      <p>Cómo se dirige un trabajo: especificar, planear, ejecutar, validar. Salió una app corriendo <b>sin saber Plotly ni Streamlit</b>, y ese era exactamente el punto.</p></article>
+    <article class="card on"><span class="k">Clase 9</span><h3>El criterio</h3>
+      <p>Qué gráfico, qué filtro, qué número, <b>y por qué esos y no otros</b>. Lo que se pone en el encargo antes de que exista el encargo.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Una IA le entrega un tablero. Saber si sirve es otra cosa.</strong> El método sin criterio produce doce filtros bien programados que no responden ninguna pregunta. <b>Hoy se aprende lo que hay que saber para escribir el encargo</b>, y para rechazar lo que vuelva cuando no lo cumple.</p></div>
 </section>
 
 <section class="slide" data-block="1" data-title="Analogía: el tablero del carro">
@@ -611,14 +624,33 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
   <div class="callout warn reveal"><p><strong>Y el techo, que importa igual:</strong> más de cinco filtros o más de cinco gráficos se penaliza. <b>Lo que se evalúa es elegir.</b> Si necesita seis filtros, probablemente son dos tableros distintos.</p></div>
 </section>
 
+<section class="slide" data-block="1" data-title="Las cuatro preguntas, sobre un tablero">
+  <p class="kicker reveal">Las de la clase 3 &middot; ahora sobre algo que se mira, no sobre un número suelto</p>
+  <h2 class="reveal">Cómo se revisa un tablero antes de mostrarlo</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Cuatro preguntas al resultado &middot; se hacen moviendo controles, no leyendo el archivo</caption>
+      <thead><tr><th scope="col">La pregunta</th><th scope="col">Qué se mira en el tablero</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">¿El número tiene sentido?</th><td>El KPI, contra el rango que usted conoce del dominio. Un promedio fuera de ese rango no es un error de sintaxis: <b>es un dato que no era un dato</b></td></tr>
+        <tr><th scope="row">¿La forma cuadra?</th><td>Filtre por un solo valor y mire el conteo. Si sigue apareciendo el total, <b>el filtro no filtró</b>. Si aparece cero, filtró de más</td></tr>
+        <tr><th scope="row">¿Responde lo que pregunté?</th><td>La pregunta del paso 1, no la que resultó fácil de graficar. <b>El caso más peligroso de los cuatro:</b> la app levanta, se ve bien y contesta otra cosa</td></tr>
+        <tr class="on"><th scope="row">¿Cambió algo?</th><td>Mueva cada control, uno por uno. Es la línea que ya está en el esquema: <b>un indicador que no se mueve nunca está desconectado</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">Un tablero se rompe callando: el gráfico sale igual de bonito con el filtro roto que con el filtro bueno. <strong>Por eso se revisa tocándolo, y lo hace usted antes que nadie.</strong></p>
+</section>
+
 <section class="slide" data-block="1" data-title="Resumen del bloque 1">
   <p class="kicker reveal">Lo que se lleva de este bloque</p>
-  <h2 class="reveal">Cuatro ideas, cero sintaxis</h2>
+  <h2 class="reveal">Cinco ideas, cero sintaxis</h2>
   <ol class="steps reveal">
     <li><b>Un tablero se juzga por las decisiones que cambia</b>, no por la cantidad de cosas que muestra.</li>
     <li><b>Interactivo significa que el lector elige la vista.</b> El mensaje tiene que sobrevivir a cualquier combinación que él elija.</li>
     <li><b>Cada filtro es una pregunta anticipada.</b> Los que no responden ninguna solo estorban.</li>
     <li><b>Plotly pinta, Streamlit expone.</b> Y el orden de trabajo es pregunta, filtros, métricas, gráficos.</li>
+    <li><b>Un tablero se revisa moviéndolo:</b> sentido, forma, pregunta, cambio. Las mismas cuatro de siempre, ahora sobre controles.</li>
   </ol>
   <p class="lead reveal">Todo lo que sigue es cómo se escribe esto. Si el bloque 1 quedó claro, lo demás es teclear y leer errores.</p>
 </section>
@@ -735,13 +767,14 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
 
 <section class="slide" data-block="3" data-title="El orden importa">
   <p class="kicker reveal">No abra el archivo .py primero &middot; es el error que más tiempo cuesta</p>
-  <h2 class="reveal">Tres pasos, en este orden</h2>
+  <h2 class="reveal">Cuatro pasos, en este orden</h2>
   <ol class="steps reveal">
-    <li><b>Diseño en papel, en <span class="term">reto.ipynb</span>.</b> Antes de tocar código: la pregunta y a quién le sirve, los tres filtros, los tres KPIs, los tres gráficos. Si no puede escribir la pregunta, todavía no tiene un tablero: tiene un dataset.</li>
-    <li><b>Preparar el dataset, en el mismo cuaderno.</b> Renombrar columnas a minúsculas sin tildes ni espacios, una sola vez, en la carga. Convertir fechas con su <span class="term">format</span>. Revisar valores imposibles. Prototipar los tres gráficos ahí, antes de meterlos en la app.</li>
-    <li><b>Adaptar <span class="term">streamlit_app_starter.py</span>.</b> Cambiar el bloque de configuración del principio, completar los tres <span class="term"># TU CODIGO AQUI</span> y reescribir los títulos como mensajes.</li>
+    <li><b>Especificar, en <span class="term">reto.ipynb</span>.</b> La pregunta y a quién le sirve, los tres filtros, los tres KPIs, los tres gráficos. Si no puede escribir la pregunta, no tiene un tablero: tiene un dataset.</li>
+    <li><b>Planear y preparar el dataset, ahí mismo.</b> Renombrar columnas una sola vez en la carga, convertir fechas, revisar valores imposibles y prototipar los tres gráficos antes de meterlos en la app.</li>
+    <li><b>Ejecutar sobre <span class="term">streamlit_app_starter.py</span>.</b> El bloque de configuración, los tres <span class="term"># TU CODIGO AQUI</span> y los títulos reescritos como mensajes.</li>
+    <li><b>Validar, con la app corriendo.</b> Las cuatro preguntas, moviendo controles. <b>No es el paso que sobra cuando falta tiempo:</b> es el único que descubre que el tablero contesta otra cosa.</li>
   </ol>
-  <p class="lead reveal">Se ejecuta con <span class="term">streamlit run streamlit_app_starter.py</span>, desde una terminal parada en la carpeta donde está el archivo.</p>
+  <p class="lead reveal">Es el bucle de la clase 3, sobre un tablero: <span class="term">especifica-encargo</span>, <span class="term">planea-trabajo</span>, <span class="term">ejecuta-plan</span>, <span class="term">valida-resultado</span>. <strong>Lo que la skill no trae son las cuatro preguntas: esas las pone usted, y hoy ya tiene con qué.</strong></p>
 </section>
 
 <section class="slide" data-block="3" data-title="Requisitos, uno por uno">
@@ -790,8 +823,8 @@ svg.fig .chip.on{fill:none;stroke:var(--accent);stroke-width:2.5}
       <p>No los que fueron fáciles de calcular. Y que cada uno traiga su ancla: un número sin referencia no decide nada.</p></article>
     <article class="card on"><span class="k">Reescribir</span><h3>Los tres títulos como mensajes</h3>
       <p>Un título que describe los ejes no dice nada que no se vea. El título es donde vive la conclusión.</p></article>
-    <article class="card on"><span class="k">Probar</span><h3>Con filtros extremos</h3>
-      <p>Todo seleccionado, nada seleccionado, un solo valor. Si algo revienta, ahí falta una guarda.</p></article>
+    <article class="card on"><span class="k">Validar</span><h3>Moviendo los controles</h3>
+      <p>Todo seleccionado, nada seleccionado, un solo valor. <b>Y las cuatro preguntas:</b> si un indicador no se mueve nunca, está desconectado. Si algo revienta, ahí falta una guarda.</p></article>
   </div>
   <div class="callout reveal"><p><strong>Opcional y no se evalúa hoy:</strong> pestañas, botón de descarga, temas y colores, mapas, y publicar la app en Streamlit Community Cloud. <b>Publicar no es requisito del curso:</b> el material asume la app corriendo en su máquina. Nada de eso suma si lo básico no corre.</p></div>
 </section>

@@ -45,6 +45,22 @@ probable. Escribir cualquier cosa hasta que pasen es engañarse en el propio ent
 **El cuaderno se ejecuta en orden y una sola vez.** Las tareas modifican el DataFrame una encima de
 la otra, así que repetir una celda cambia los números. Si se enreda: Kernel → Restart and Run All.
 
+## El bucle de la clase 3, aquí
+
+Usted ya tiene el bucle **especificar → planear → ejecutar → validar** y las cuatro skills del
+catálogo. Este cuaderno le trae puestos dos tramos —la pregunta de cada tarea es la especificación, y
+los pasos numerados son el plan— y le deja los dos que se evalúan:
+
+| Tramo | Dónde pesa en este reto |
+|-------|-------------------------|
+| **Especificar** | Tareas 3, 5 y 10: hay más de un camino defendible. El criterio de aceptación se escribe **antes** de teclear, y es lo que después permite validar en vez de solo terminar |
+| **Ejecutar** | Un paso, su conteo impreso, y parar. Por eso cada tarea cierra en un `print` y no en la línea que hizo el trabajo |
+| **Validar** | Las cuatro preguntas del analista sobre el antes y el después de la parte 7. **Once comprobaciones en verde no son una validación**: dicen que el número coincide, no que el dataset quedó bien |
+
+Pedirle a una IA el bloque de limpieza completo es legítimo y así quedó dicho en la clase 3. Lo que
+no se puede pedir prestado son las cuatro preguntas, y aquí la primera tiene nombre propio:
+**¿cuáles columnas de este dataset no son porcentajes?**
+
 ---
 
 ## El dataset
@@ -160,6 +176,8 @@ suyo. Es deliberado: en los momentos evaluativos nadie le va a dar la secuencia.
 - **Antes y después.** Compare `df_original` con `df` en seis dimensiones: filas, celdas vacías,
   duplicados, departamentos únicos y los tipos de `ano` y `cod_municipio`. La salida **es** la
   evidencia de que la limpieza sirvió.
+- **La validación.** Sobre esas doce cifras, las cuatro preguntas del analista, una frase cada una.
+  Es la celda que separa "el cuaderno corrió" de "el dataset quedó bien".
 11. **Una pregunta de verdad.** Los 5 municipios con mayor `mortalidad_infantil`. Y la pregunta
     incómoda: ¿cuánto confía en ese ranking, sabiendo que usted rellenó cerca del 11% de esa columna?
 

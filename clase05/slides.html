@@ -395,7 +395,7 @@ svg.fig .t.hd{fill:var(--muted);letter-spacing:.06em}
     <li><b>Aplicar el marco univariado de 5 pasos</b> completo sobre una variable que nunca vio.</li>
     <li><b>Contar los outliers</b> con la regla 1.5xIQR y <b>argumentar</b> si se eliminan o no.</li>
   </ol>
-  <p class="lead reveal">El entregable es el reto del último bloque, sobre 20.000 registros del campo colombiano.</p>
+  <p class="lead reveal">Y cerrar cada número con las <strong>cuatro preguntas de la clase 3</strong>: el marco dice qué calcular, ellas dicen si el resultado se puede firmar. El entregable es el reto del último bloque, sobre 20.000 registros del campo colombiano.</p>
 </section>
 
 <!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
@@ -766,15 +766,34 @@ svg.fig .t.hd{fill:var(--muted);letter-spacing:.06em}
   <p class="lead reveal">Los pasos 4 y 5 son los únicos que ninguna función responde por usted. Son, exactamente, los que se evalúan.</p>
 </section>
 
+<section class="slide" data-block="1" data-title="Y después del paso 5, las cuatro preguntas">
+  <p class="kicker reveal">Las cuatro preguntas de la clase 3, aterrizadas en un número</p>
+  <h2 class="reveal">El marco produce números. Las cuatro preguntas dicen si sirven</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Las mismas cuatro de la clase 3, sobre lo que va a salir hoy</caption>
+      <thead><tr><th scope="col">La pregunta</th><th scope="col">Qué caza al describir una variable</th></tr></thead>
+      <tbody>
+        <tr class="on"><th scope="row">¿El número tiene sentido?</th><td>Una media de 5.140 con mediana de 501. Las dos son ciertas; reportar solo la primera es cierto y engañoso</td></tr>
+        <tr><th scope="row">¿La forma cuadra?</th><td>Se agrupó por una columna de nueve categorías y volvieron treinta filas. El texto no estaba estandarizado</td></tr>
+        <tr class="alt"><th scope="row">¿Responde lo que pregunté?</th><td>Se preguntó quién consume más y se contestó con una suma. Una suma grande puede ser solo un grupo grande</td></tr>
+        <tr><th scope="row">¿Cambió algo?</th><td>Se filtraron los outliers y la mediana salió idéntica al decimal. O no filtró, o se filtró sobre una copia</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">El marco de cinco pasos dice <strong>qué calcular</strong>. Estas cuatro dicen <strong>si el resultado se puede firmar</strong>, y son las únicas que no responde ninguna función. En la clase 3 se dijo así: el skill da el procedimiento, la disciplina da las preguntas.</p>
+</section>
+
 <section class="slide" data-block="1" data-title="Resumen del bloque 1">
   <p class="kicker reveal">Lo que se lleva de este bloque</p>
-  <h2 class="reveal">Cinco ideas, cero sintaxis</h2>
+  <h2 class="reveal">Seis ideas, cero sintaxis</h2>
   <ol class="steps reveal">
     <li><b>La media se deja arrastrar y la mediana resiste.</b> Calcule las dos y divida: si se aleja del 20% de 1, reporte la mediana.</li>
     <li><b>La desviación estándar mide consistencia</b>, en las unidades de la variable. La varianza es un paso intermedio que no se reporta.</li>
     <li><b>Un percentil es una posición en la fila</b>, y siempre se puede decir en una frase. El IQR es el rango del 50% central.</li>
     <li><b>GroupBy son tres decisiones:</b> por cuál separo, cuál resumo, con cuál operación.</li>
     <li><b>Un outlier es un candidato, no un condenado.</b> Se investiga y la decisión se escribe.</li>
+    <li><b>Cada número producido se pasa por las cuatro preguntas.</b> El marco dice qué calcular; ellas dicen si el resultado se puede firmar.</li>
   </ol>
   <p class="lead reveal">Todo lo que sigue es aprender a escribirlo. Si el bloque 1 quedó claro, el bloque 2 es teclear.</p>
 </section>
@@ -898,6 +917,24 @@ svg.fig .t.hd{fill:var(--muted);letter-spacing:.06em}
       <p>Cuál es, y por qué esa y no las otras dos, <b>es la tarea 1</b>. El paso 1 del marco existe justamente para que aparezcan.</p></article>
   </div>
   <div class="callout reveal"><p><strong>Este dataset no se limpia hoy.</strong> Viene sin el problema de separadores de miles del archivo de Empocaldas. Lo que hay que hacer es <b>mirarlo antes de calcular</b>, que es el paso que todo el mundo se salta.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="El bucle de la clase 3, sobre este reto">
+  <p class="kicker reveal">La herramienta que ya tienen instalada, y dónde sirve hoy</p>
+  <h2 class="reveal">Especificar, planear, ejecutar, validar &mdash; sobre tres variables</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Las cuatro skills del catálogo, aterrizadas en las diez tareas</caption>
+      <thead><tr><th scope="col">Tramo</th><th scope="col">Dónde pesa en este reto</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Especificar</th><td>La parte 6 llega escrita en español y sin respuesta. Antes de teclear: qué tabla quiere, con qué columnas, ordenada por qué. Eso es un criterio de aceptación</td></tr>
+        <tr><th scope="row">Planear</th><td>Ahí mismo: los comandos están listados, la secuencia no. El plan es la secuencia, y cada paso con lo que hay que mirar para saber que salió</td></tr>
+        <tr class="alt"><th scope="row">Ejecutar</th><td>Un paso, su salida impresa, y parar. Diez tareas de un tirón es exactamente lo que esa skill existe para impedir</td></tr>
+        <tr class="on"><th scope="row">Validar</th><td>Las cuatro preguntas sobre la tabla resumen. <b>Diez comprobaciones en verde no son una validación:</b> dicen que el número coincide, no que la lectura sea correcta</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn reveal"><p><strong>Si le pide el análisis completo a una IA, hágalo de frente:</strong> es una herramienta legítima y así quedó dicho en la clase 3. Lo que no se puede pedir prestado es la lectura. La entrega de hoy pide tres frases <b>sin ningún número</b>, y ahí se ve en dos segundos quién miró los datos.</p></div>
 </section>
 
 <section class="slide" data-block="3" data-title="Las tareas: partes 1 a 3">

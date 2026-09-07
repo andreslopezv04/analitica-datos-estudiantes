@@ -396,7 +396,7 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
     <li><b>Convertir tipos, eliminar duplicados y estandarizar texto</b>, sabiendo por qué el orden importa.</li>
     <li><b>Recorrer el workflow completo</b> sobre un dataset que no vio antes.</li>
   </ol>
-  <p class="lead reveal">El entregable es el cuaderno del último bloque. Y una advertencia que vale para todo el semestre: aquí el código correcto sin la justificación escrita no alcanza.</p>
+  <p class="lead reveal">Y cerrar cada paso con las <strong>cuatro preguntas de la clase 3</strong>, que hoy dejan de ser un concepto y se vuelven la rutina del día. El entregable es el cuaderno del último bloque, y una advertencia que vale para todo el semestre: aquí el código correcto sin la justificación escrita no alcanza.</p>
 </section>
 
 <!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
@@ -554,14 +554,33 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
   </div>
 </section>
 
+<section class="slide" data-block="1" data-title="Cómo se sabe que un paso de limpieza sirvió">
+  <p class="kicker reveal">Las cuatro preguntas de la clase 3, aterrizadas aquí</p>
+  <h2 class="reveal">Después de cada paso, cuatro preguntas al resultado</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Las mismas cuatro de la clase pasada, con lo que cazan hoy</caption>
+      <thead><tr><th scope="col">La pregunta</th><th scope="col">Qué caza en una limpieza</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">¿El número tiene sentido?</th><td>Una cobertura del 118% después de "corregir" la columna. Es el problema 5, y solo lo ve quien sabe qué mide esa columna</td></tr>
+        <tr><th scope="row">¿La forma cuadra?</th><td>Se estandarizaron los nombres y de un país entero quedaron cuatro departamentos. Se limpió de más</td></tr>
+        <tr class="on"><th scope="row">¿Responde lo que pregunté?</th><td>Se pidió eliminar las filas a las que les falta <em>un</em> dato y se fue media tabla. El comando corrió; contestó otra cosa</td></tr>
+        <tr><th scope="row">¿Cambió algo?</th><td>Cero duplicados eliminados y cero nulos rellenados casi nunca significa "estaba limpio": suele significar que el paso no corrió</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead reveal">Ninguna de las cuatro se contesta leyendo el código: se contestan mirando la salida. Por eso cada paso de hoy termina con un conteo impreso, y no con la línea que lo hizo.</p>
+</section>
+
 <section class="slide" data-block="1" data-title="Resumen del bloque 1">
   <p class="kicker reveal">Lo que se lleva de este bloque</p>
-  <h2 class="reveal">Cuatro ideas, cero sintaxis</h2>
+  <h2 class="reveal">Cinco ideas, cero sintaxis</h2>
   <ol class="steps reveal">
     <li><b>Cinco problemas, y dos de ellos no avisan.</b> Duplicados y texto inconsistente corren sin error y devuelven números equivocados.</li>
     <li><b>Un nulo es desconocido</b>, no cero y no vacío. Rellenar con cero es afirmar algo que probablemente es falso.</li>
     <li><b>Cuántos faltan decide qué se hace</b>, y los umbrales orientan; no deciden por usted.</li>
     <li><b>Limpiar es iterativo.</b> Arreglar una cosa destapa otra, y por eso se vuelve a verificar después de cada paso.</li>
+    <li><b>Verificar es hacerse las cuatro preguntas</b>, siempre sobre el resultado impreso. Es el único paso que no se puede delegar.</li>
   </ol>
   <p class="lead reveal">Todo lo que sigue es aprender cómo se escribe esto. Si el bloque 1 quedó claro, el bloque 2 es teclear con criterio.</p>
 </section>
@@ -653,7 +672,7 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
     <article class="card"><span class="k">Tres</span><h3>Las cajas de fundamento</h3>
       <p>"Para entender qué está pasando" explica el piso de programación que hay debajo. Si ya programó, sáltelas; si no, son la diferencia entre entender y copiar.</p></article>
   </div>
-  <div class="callout reveal"><p><strong>Si algo no cuadra, la respuesta casi siempre está escrita una celda más arriba.</strong> Yo estoy circulando: levante la mano en el momento en que se atasque, no al final del bloque.</p></div>
+  <div class="callout reveal"><p><strong>Fíjense en un patrón que se repite seis veces:</strong> ningún paso termina en el comando que lo hizo, termina en un conteo impreso. Ese conteo está ahí para contestar <b>¿cambió algo?</b>, que es la cuarta de las preguntas de la clase 3. Si algo no cuadra, la respuesta casi siempre está una celda más arriba; y yo estoy circulando, así que levante la mano cuando se atasque, no al final del bloque.</p></div>
 </section>
 
 <!-- ======================= DIVISORIA BLOQUE 3 ======================= -->
@@ -695,6 +714,24 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
       <p>Compruébelo usted en la parte 5: ya está consistente. Estandarizar por reflejo una columna que no lo necesita es <b>tan mal criterio</b> como no estandarizar la que sí.</p></article>
   </div>
   <div class="callout reveal"><p><strong>Y la frase de la clase:</strong> el workflow se copia, <b>la lista de columnas no</b>. Aquí no existe <span class="term">desercion</span>. Si copia la lista del demo, va a ver un error con el nombre de una columna que no existe, y va a ser lo mejor que le pase hoy.</p></div>
+</section>
+
+<section class="slide" data-block="3" data-title="El bucle de la clase 3, sobre este reto">
+  <p class="kicker reveal">La herramienta que ya tienen instalada, y dónde sirve hoy</p>
+  <h2 class="reveal">Especificar, planear, ejecutar, validar &mdash; sobre una limpieza</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Las cuatro skills del catálogo, aterrizadas en las once tareas de hoy</caption>
+      <thead><tr><th scope="col">Tramo</th><th scope="col">Dónde pesa en este reto</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Especificar</th><td>En las partes 2 y 6, donde hay dos caminos defendibles y ninguno es "el correcto". El criterio de aceptación se escribe <b>antes</b>: qué tiene que quedar cierto cuando termine</td></tr>
+        <tr><th scope="row">Planear</th><td>En la parte 7, la única sin orden dado. El plan es la lista de operaciones, y cada una con su comprobación</td></tr>
+        <tr class="on"><th scope="row">Ejecutar</th><td>Un paso, su conteo, y parar. Es lo que ya hace el cuaderno tarea por tarea: hoy el andamiaje viene puesto</td></tr>
+        <tr><th scope="row">Validar</th><td>Las cuatro preguntas sobre el antes y el después de la parte 7. Once comprobaciones en verde no son una validación</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn reveal"><p><strong>Y la tentación que quedó anunciada la clase pasada:</strong> pedirle a una IA el bloque de limpieza completo y seguir. Pídalo si quiere, es una herramienta legítima. Lo que no se puede pedir prestado son las cuatro preguntas, y hoy la primera tiene nombre propio: <b>¿cuáles columnas de este dataset no son porcentajes?</b></p></div>
 </section>
 
 <section class="slide" data-block="3" data-title="Las tareas: partes 1 a 4">

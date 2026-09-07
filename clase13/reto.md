@@ -70,9 +70,33 @@ La conclusión correcta de este reto **no** es "encontré el mejor modelo". Es a
 
 ---
 
+## El bucle, antes de las partes
+
+Este reto se recorre con el bucle de la clase 3 —**especificar, planear, ejecutar, validar**— y con las
+skills que instalaste allá. No es una clase de IA: el bucle es andamiaje, y aquí se usa sin volver a
+explicarlo.
+
+| Tramo | Skill | Dónde vive en este reto |
+|-------|-------|--------------------------|
+| **Especificar** | `especifica-encargo` | La sección "Antes del código" del starter: objetivo, alcance, insumos, **criterio de aceptación** y **el piso contra el que vas a comparar**, todo escrito antes de entrenar |
+| **Planear** | `planea-trabajo` | Ya está hecho: el plan es el orden de las siete tareas |
+| **Ejecutar** | `ejecuta-plan` | Las partes 1 a 5, una tarea por vez, con su comprobación |
+| **Validar** | `valida-resultado` | La Parte 6: el veredicto contra el criterio, y encima **las cuatro preguntas del analista** |
+
+**Por qué aquí importa.** `fit` y `predict` corren igual de bien sobre un modelo honesto que sobre uno
+inútil, y las dos celdas se ven idénticas. Al final sale una métrica con tres decimales que no trae
+ninguna marca de si el modelo sirve. Escribir **antes** qué haría bueno a este modelo es lo que
+convierte un R2 mediocre en un hallazgo reportable, en vez de en una decepción que se esconde.
+
+Las skills están en `clase03/skills/`. Si no las instalaste, funcionan igual pegando el contenido del
+`SKILL.md` en el chatbot que uses.
+
+---
+
 ## Qué hay que entregar
 
-Cuatro partes. Se trabajan en clase con acompañamiento; lo que quede se cierra en casa.
+Seis partes: cinco de trabajo y una de validación. Se trabajan en clase con acompañamiento; lo que
+quede se cierra en casa.
 
 ### Parte 1 · Cargar, explorar y partir
 
@@ -129,16 +153,41 @@ métrica es distinta?**
 
 La interpretación tiene que mencionar explícitamente que la importancia **no es causalidad**.
 
+### Parte 5 · ¿Le gana tu modelo a no tener modelo?
+
+Compara tu árbol de `max_depth=3` contra `DummyRegressor(strategy="mean")`, que siempre predice la
+media sin mirar ninguna medición. **Si tu modelo no le gana a eso, no tienes modelo: tienes un promedio
+caro.**
+
+Esta parte rompe el patrón de las anteriores a propósito: **te damos los comandos sin el orden**. El
+ensamblaje es el ejercicio, y es lo que te va a tocar hacer en el proyecto final, donde nadie te va a
+numerar los pasos.
+
+### Parte 6 · Validar: las cuatro preguntas, traducidas a un modelo
+
+Siete comprobaciones en verde no dicen que el modelo sirva: dicen que los números coinciden. Antes de
+entregar se cierra el bucle contra el criterio de aceptación que escribiste al principio, y encima van
+las cuatro preguntas de la clase 3:
+
+| La pregunta | Qué mirar hoy |
+|-------------|---------------|
+| **¿La métrica tiene sentido?** | Un R2 alto en un problema real se sospecha antes de celebrarse. Aquí el riesgo es el contrario: 0.33 es bajo, y decirlo es parte del trabajo |
+| **¿La forma cuadra?** | 353 pacientes para entrenar y 89 para evaluar. Una métrica sobre 89 casos se mueve mucho, y esa fragilidad va en el informe |
+| **¿Responde lo que pregunté?** | Ni R2 ni accuracy responden "¿qué decisión soporta esto?". Vuelve al objetivo que escribiste antes de entrenar |
+| **¿Cambió algo?** | La Parte 5 ya lo contestó con un número: ¿le ganó al modelo tonto, y por cuánto? Si la ventaja es mínima, el modelo no cambia ninguna decisión |
+
+**Si la validación falla, se vuelve a especificar. No se parcha el resultado.** Aquí eso tiene una
+forma muy concreta: mover `max_depth` hasta que la cifra suba no es replantear nada, es buscar el
+número que querías.
+
 ---
 
 ## Opcional (no se hace en clase, se cierra en casa)
 
-Marcado como `OPCIONAL` en el starter. No entra en la nota mínima.
+Marcado como `OPCIONAL` en el starter. No entra en la retroalimentación mínima.
 
 - **`min_samples_leaf`** como segunda palanca contra el sobreajuste. Prueba 1, 5, 10, 20 y 50 con
-  `max_depth=5` y mira qué le pasa al gap.
-- **El modelo tonto.** Compara tu mejor modelo contra `DummyRegressor(strategy="mean")`, que siempre
-  predice la media. Si tu modelo no le gana, no tienes modelo.
+  `max_depth=5` y mira qué le pasa al gap. Hay una sorpresa ahí.
 - **Dibujar el árbol** con `sklearn.tree.plot_tree` para un `max_depth=3`. Es la ventaja de este
   algoritmo: se puede leer.
 
@@ -155,7 +204,7 @@ no se suman ni se promedian, alimentan una sola banda por dimensión.
 | Dimensión | Qué se mira en este reto |
 |-----------|--------------------------|
 | **Saber** | La profundidad elegida se justifica con el gap, no con el máximo del test. Y la lectura correcta de las importancias: asociación, no causalidad |
-| **Ser** | Honestidad: el sobreajuste se reporta, y no hay métricas de entrenamiento presentadas como resultado |
+| **Ser** | Honestidad: el sobreajuste se reporta, no hay métricas de entrenamiento presentadas como resultado, y la validación de la Parte 6 se hace contra el criterio de aceptación escrito **antes** de entrenar, no contra lo que salió |
 | **Hacer** | Partición 80/20 con `random_state` y evaluación **solo** sobre prueba, curva de overfitting con las seis profundidades (tabla, gráfico y columna de gap), clasificador con terciles bien construidos y accuracy comparada contra el 33%, y gráfico de importancias ordenado |
 
 **Topes por omisión** (techo a la banda, nunca resta, y no se acumulan):
@@ -168,6 +217,9 @@ no se suman ni se promedian, alimentan una sola banda por dimensión.
   pasa de Insuficiente.
 - Usar `r2_score` para el clasificador o `accuracy_score` para el regresor: **Hacer** no pasa de
   Aceptable.
+- Criterio de aceptación escrito **después** de ver las métricas, o reescrito para que encaje con
+  ellas: **Ser** no pasa de Insuficiente.
+- Las cuatro preguntas de la Parte 6 sin responder: **Saber** no pasa de Aceptable.
 
 ---
 
@@ -187,18 +239,24 @@ Sube `reto.ipynb` resuelto al aula virtual.
 Antes de subir:
 
 - [ ] Kernel > Restart & Run All corre sin errores de punta a punta.
+- [ ] El criterio de aceptación está escrito, y está escrito **antes** que las métricas.
 - [ ] La tabla de la Parte 2 tiene las seis profundidades y la columna de gap.
 - [ ] El gráfico de la curva tiene ejes rotulados y leyenda.
 - [ ] La profundidad elegida está justificada con el gap.
 - [ ] La Parte 3 compara la accuracy contra el 33% de referencia.
 - [ ] La interpretación de la Parte 4 dice explícitamente que no es causalidad.
 - [ ] Ninguna métrica de entrenamiento está presentada como resultado del modelo.
+- [ ] La Parte 5 compara el modelo contra el piso, y la comparación está interpretada.
+- [ ] Las cuatro preguntas de la Parte 6 están respondidas.
 
 ---
 
 ## Conexión con el Momento 3
 
-La sección de machine learning de tu proyecto final tiene que responder cuatro preguntas:
+La sección de machine learning de tu proyecto final tiene que responder **las cuatro preguntas del
+reporte de modelo**, que no son las cuatro preguntas del analista de la Parte 6: aquellas sirven para
+saber si un resultado es de fiar, estas son la estructura del informe. Se usan las dos.
+
 
 1. **¿Qué predijiste?** La variable objetivo, y por qué le importa a alguien.
 2. **¿Es regresión o clasificación?** Y por qué esa y no la otra.
