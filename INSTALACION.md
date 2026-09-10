@@ -818,7 +818,7 @@ Un **CLI de IA** es un programa de terminal que puede leer los archivos de su pr
 notebook, el error real que le dio pandas. A diferencia de un chat web, que solo ve lo que usted le
 pegue, un CLI trabaja sobre su carpeta.
 
-En la clase 7 usted escribe archivos `SKILL.md`: instrucciones reutilizables con un formato de salida
+En la clase 3 usted escribe archivos `SKILL.md`: instrucciones reutilizables con un formato de salida
 fijo. Esos archivos se escriben, se leen y se revisan sin ejecutar nada, y eso es lo que hace la
 clase. Un CLI le permite además **ejecutarlos** y ver la salida real.
 
@@ -915,7 +915,7 @@ Después, abra la herramienta desde la carpeta donde está `.gemini/` y pídale 
 Usa el skill diccionario-de-datos sobre el archivo ../datos/HISTORICO_CONSUMO.csv
 ```
 
-Y haga el ejercicio que vale la pena, que es el mismo del Bloque 2 de la clase 7:
+Y haga el ejercicio que vale la pena, que es el mismo del Bloque 2 de la clase 3:
 
 1. Ponga la salida al lado de su `SKILL.md`.
 2. Marque cada sección de la salida que **no** corresponde a lo que su formato prometía.
@@ -925,17 +925,21 @@ Y haga el ejercicio que vale la pena, que es el mismo del Bloque 2 de la clase 7
 
 ### 12.7 Antes de instalar un skill de otra persona
 
-La regla de seguridad del curso, que **sí** es materia evaluable de la clase 7 aunque la instalación
-no lo sea. Un skill es un archivo de instrucciones que usted le entrega a un programa con permiso de
+La regla de seguridad del curso se explica en la clase 3, y vale aunque usted nunca instale un CLI:
+el día que instale un skill ajeno va a ser sin el profesor al lado. No se evalúa en ningún momento
+del curso. Un skill es un archivo de instrucciones que usted le entrega a un programa con permiso de
 leer y escribir en su computador.
 
-Las cinco banderas rojas:
+Las seis banderas rojas:
 
-1. Le pide al modelo leer `.env`, credenciales, llaves SSH o el historial del shell.
+1. Le pide al modelo leer archivos de configuración y contraseñas de su máquina: llaves de acceso,
+   claves guardadas, el historial de lo que usted ha tecleado.
 2. Instruye enviar contenido a una URL externa.
-3. Pide tokens, contraseñas o llaves de API.
+3. Pide contraseñas o claves de acceso a otros servicios "para funcionar mejor".
 4. La descripción es vaga sobre lo que realmente hace.
 5. El autor es desconocido, sin historial ni repositorio público.
+6. Le dice al modelo que actúe sin pedir confirmación. Una regla que le quita frenos al modelo no
+   es una regla.
 
 Y el procedimiento: leer el `SKILL.md` **completo**, preguntarse si pide archivos sensibles,
 preguntarse si manda datos a algún lado, y ante cualquier duda **no instalarlo**.

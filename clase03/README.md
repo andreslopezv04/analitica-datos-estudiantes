@@ -28,8 +28,9 @@ Cuatro skills generales, que sirven para cualquier trabajo y no solo para datos:
 | `ejecuta-plan` | Ejecutar | Ejecuta un paso por vez, con su comprobación y su resumen |
 | `valida-resultado` | Validar | Contrasta el resultado con el criterio de aceptación, condición por condición |
 
-Se instalan copiando las carpetas (o descomprimiendo los ZIP) en `.claude/skills/`. El
-procedimiento exacto, con su verificador, está en `demo.html`.
+Se instalan copiando las carpetas (o descomprimiendo los ZIP) en la carpeta de skills de su
+herramienta. Si no tiene ninguna, use `.gemini/skills/` igual. El procedimiento exacto, con su
+verificador, está en `demo.html`.
 
 ## Datos
 
@@ -47,5 +48,7 @@ procedimiento exacto, con su verificador, está en `demo.html`.
 ## Antes de empezar
 
 - El entorno del curso montado ([`../INSTALACION.md`](../INSTALACION.md)).
-- Claude Code instalado y funcionando: es la herramienta con la que se instalan y se usan las skills.
-- El demo recorrido antes de abrir el reto. El reto asume que el catálogo ya quedó instalado.
+- **Nada más.** No hace falta instalar ningún CLI de IA, ni tener cuenta en nada: el demo y el
+  reto se recorren con un editor de texto y, para el último tramo, cualquier chatbot en el
+  navegador.
+- El demo recorrido antes de abrir el reto. El reto asume que el catálogo ya está copiado.
