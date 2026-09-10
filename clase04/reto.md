@@ -216,7 +216,7 @@ no se suman ni se promedian, alimentan una sola banda por dimensión.
 
 | Dimensión | Qué se mira en este reto |
 |-----------|--------------------------|
-| **Saber** | El diagnóstico de la parte 1 y la **justificación escrita de cada decisión**, incluida la de por qué no tocó las columnas de mortalidad |
+| **Saber** | El diagnóstico de la parte 1 y la **justificación escrita de cada decisión**: qué combinación de columnas identifica una fila antes de borrar duplicados, qué hizo con los códigos que no se pudieron convertir, y por qué no tocó las columnas de mortalidad |
 | **Ser** | La reflexión final: reconocer qué decisión propia podría cambiar una conclusión posterior, y anticipar qué problemas espera en el dataset de su equipo |
 | **Hacer** | Las once tareas correctas (el punto de control final las cuenta), la parte 7 armada por usted, y el cuaderno corriendo completo con Restart & Run All |
 

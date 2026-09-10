@@ -17,9 +17,13 @@
    Motivo rector: la hoja rayada del cuaderno de la lavandería, con la pestaña
    de sección al borde derecho. El deck arranca con el margen "sucio" (rojo
    óxido) y el acento limpio (verde jabón) va tomando el mando bloque a bloque.
-   La regla del bloque 1 se respeta por construcción: `pre` y `code` solo
-   aparecen en slides con data-block="2" o "3". En el bloque 1 los nombres de
-   funciones van con `.term`, que es texto corrido, no un bloque de código.
+   La regla del bloque 1 se respeta por construcción, y es más dura que el
+   contrato: `pre` y `code` solo aparecen en slides con data-block="2" o "3",
+   y en el bloque 1 NO va ningún nombre de método, función ni parámetro, ni
+   siquiera dentro de `.term`. Titular una tarjeta con el nombre de un método
+   es enseñar sintaxis igual, solo que sin las llaves. Lo único que `.term`
+   admite en el bloque 1 es vocabulario que el estudiante lee y no teclea:
+   un tipo de objeto (NaN) o un valor que viene dentro del archivo.
    ========================================================================= */
 
 /* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
@@ -157,7 +161,6 @@ ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--fo
   grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
 .cards.c4{grid-template-columns:repeat(4,1fr)}
 .cards.c3{grid-template-columns:repeat(3,1fr)}
-.cards.c2{grid-template-columns:repeat(2,1fr)}
 .card{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line);
   border-radius:2px;padding:clamp(.55rem,1.1vw,1.15rem);display:flex;flex-direction:column;
   gap:.45em;min-width:0}
@@ -184,7 +187,10 @@ th,td{border-bottom:1px solid var(--line);padding:clamp(.28rem,.68vw,.62rem) cla
 thead th{font-family:var(--font-mono);font-weight:500;font-size:.86em;letter-spacing:.1em;
   text-transform:uppercase;color:var(--accent);border-bottom:2px solid var(--accent)}
 tbody th{font-weight:700;color:var(--fg)}
-tbody th .mono,td .mono{font-family:var(--font-mono);font-size:.92em}
+/* .mono es tipografia, no semantica: marca un valor o un nombre de archivo que el
+   estudiante lee tal cual viene. Se usa dentro de tablas y tambien en prosa, por eso
+   el selector no esta anclado a la tabla. No confundir con .term, que es vocabulario. */
+.mono{font-family:var(--font-mono);font-size:.92em}
 tbody tr.on td,tbody tr.on th{background:#E4EFEC}
 td em{font-style:normal;color:var(--muted)}
 td b{color:var(--fg)}
@@ -244,17 +250,17 @@ pre .e{color:#FF8E7A}      /* lo que revienta */
 
 /* ---- Diagrama SVG ---- */
 .fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
-svg.fig{width:100%;height:auto;max-height:52vh;display:block}
-svg.fig .band{stroke:var(--line);stroke-width:2}
-svg.fig .band.lo{fill:#DDEAE6}
-svg.fig .band.mid{fill:#F3E4D4}
-svg.fig .band.hi{fill:#EFD9CE}
-svg.fig .t{font-family:var(--font-body);font-size:22px;fill:var(--fg)}
-svg.fig .t.small{font-size:19px;fill:var(--muted)}
-svg.fig .lbl{font-family:var(--font-mono);font-size:20px;fill:var(--accent);letter-spacing:.08em}
+svg.fig{width:100%;height:auto;max-height:66vh;display:block}
+svg.fig .band,svg.fig .hd{stroke:var(--line);stroke-width:2}
+svg.fig .lo{fill:#DDEAE6}
+svg.fig .mid{fill:#F3E4D4}
+svg.fig .hi{fill:#EFD9CE}
+svg.fig .t{font-family:var(--font-body);font-size:27px;font-weight:600;fill:var(--fg)}
+svg.fig .t.small{font-size:22px;font-weight:400;fill:var(--muted)}
+svg.fig .lbl{font-family:var(--font-mono);font-size:22px;fill:var(--accent);letter-spacing:.06em}
 svg.fig .lbl.warn{fill:var(--dirty)}
 svg.fig .axis{stroke:var(--fg);stroke-width:2}
-svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
+svg.fig .tick{font-family:var(--font-mono);font-size:21px;fill:var(--muted)}
 
 /* ---- Navegación (invariante 1) ---- */
 .progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
@@ -313,7 +319,7 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
 }
 @media (max-width:900px){.cards.c4{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:600px){
-  .cards.c4,.cards.c3,.cards.c2{grid-template-columns:1fr}
+  .cards.c4,.cards.c3{grid-template-columns:1fr}
   .slide-index ol{columns:1}
 }
 
@@ -330,6 +336,24 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
    El bloque de código pasa de fondo oscuro a fondo claro: en papel, negro
    sólido es tóner y es ilegible.
    ========================================================================= */
+/* ---- Invariante 6 · piso de 22px reales para el TEXTO DE CONTENIDO ----
+   El piso no lo cumple solo `body`: lo cumple todo lo que el estudiante lee
+   como frase o como dato desde la ultima fila. Celdas de tabla (cuerpo y
+   encabezado), texto de tarjeta y de columna, listas, notas, citas y terminos
+   en linea entran aqui. Los rotulos de interfaz —kicker, pie institucional,
+   `caption`, chips, indice— tienen su propio piso, mas bajo y argumentado, en
+   design/CONTRATO.md. `max()` respeta el tamano original cuando ya es mayor,
+   y el bloque vive bajo `min-width:1200px` igual que el de `body`: por debajo
+   de esa marca el deck ya no esta en un proyector. */
+@media (min-width:1200px){
+  caption{font-size:max(22px,var(--fs-micro))}
+  table{font-size:max(22px,clamp(.72rem,1.06vw,1rem))}
+  thead th{font-size:max(22px,.86em)}
+  .mono{font-size:max(22px,.92em)}
+  .term{font-size:max(22px,.86em)}
+  .card p{font-size:max(22px,clamp(.76rem,1.12vw,1.02rem))}
+}
+
 @media print{
   @page{size:landscape;margin:0}
   :root{--bg:#fff;--surface:#fff;--surface-2:#f0ede4;--line:#c9c9c9;--rule:#e8e8e8;
@@ -355,7 +379,7 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
   pre{background:#f4f3ef!important;color:#111!important;border:1px solid #c9c9c9;border-left:5px solid #0A544A}
   pre .c{color:#666!important} pre .k{color:#0A544A!important} pre .s{color:#8A5A00!important}
   pre .n{color:#8C3416!important} pre .e{color:#8C3416!important}
-  svg.fig .band.lo{fill:#eef4f2} svg.fig .band.mid{fill:#f5efe6} svg.fig .band.hi{fill:#f3e6e0}
+  svg.fig .lo{fill:#eef4f2} svg.fig .mid{fill:#f5efe6} svg.fig .hi{fill:#f3e6e0}
   .progress-bar,.nav-dots,.slide-index,.block-tab{display:none!important}
   .reveal{opacity:1!important;transform:none!important}
   *{animation:none!important;transition:none!important}
@@ -421,18 +445,6 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
   <p class="lead reveal">Seguimos en el mismo oficio de la clase 2: <strong>EDA</strong>, análisis exploratorio de datos, cuyos verbos son entender, limpiar y organizar, describir y relacionar. Hoy no preguntamos por qué pasó ni qué va a pasar; eso llega en las clases 12 y 13.</p>
 </section>
 
-<section class="slide" data-block="1" data-title="Deuda de la clase 2: dos formas de filtrar">
-  <p class="kicker reveal">Antes de empezar &middot; lo que quedó pendiente de la clase 2</p>
-  <h2 class="reveal">Dos herramientas de filtrado que faltaban</h2>
-  <div class="cards c2 reveal">
-    <article class="card"><span class="k">Uno</span><h3><span class="term">.str.contains()</span></h3>
-      <p>Responde "¿esta celda <b>contiene</b> este fragmento?". Sirve para lo que la igualdad no puede: encontrar los dos departamentos cuyo nombre lleva SANTANDER, o los registros de un año cuando la fecha está guardada como texto.</p></article>
-    <article class="card"><span class="k">Dos</span><h3><span class="term">.query()</span></h3>
-      <p>La misma condición escrita como una frase entre comillas, sin repetir el nombre de la tabla. Ahí sí se usan las palabras <b>y</b> y <b>o</b>. Es más corto de leer, y cuando falla el mensaje de error es peor. Por eso se aprende segundo.</p></article>
-  </div>
-  <div class="callout warn reveal"><p><strong>La pregunta incómoda de la primera:</strong> ¿qué debe responder una búsqueda de texto en una fila que <b>no tiene texto sino un hueco</b>? Ni sí ni no. Por eso existe <span class="term">na=False</span>, que significa "lo que falta cuenta como que no". No se escribe para esquivar un error: se escribe para <b>decidir usted</b> qué pasa con lo que falta, en vez de heredar el criterio de la versión instalada.</p></div>
-</section>
-
 <section class="slide" data-block="1" data-title="Hook: la lavandería">
   <p class="kicker reveal">La analogía madre de toda la clase</p>
   <p class="claim reveal">Limpiar datos <span>es hacer la lavandería</span>.</p>
@@ -449,8 +461,27 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
   <p class="lead reveal">No es un defecto del oficio: es el oficio. Un modelo entrenado con datos sucios produce conclusiones sucias, y <strong>nadie va a auditar el modelo: van a auditar la conclusión</strong>.</p>
 </section>
 
+<!-- Encuadre de la demostracion en vivo en Google Sheets. Va ANTES de la tabla de
+     los cinco problemas a proposito: si la lista se da primero, el salon reconoce en
+     vez de descubrir. Aqui la diapositiva prepara la mirada y no da la respuesta.
+     Una hoja de calculo no es sintaxis, asi que la restriccion del bloque 1 se
+     respeta: no hay ni un nombre de metodo, y lo unico en tipografia mono es el
+     nombre del archivo. La herramienta no se nombra en pantalla a proposito: si el
+     plan B se activa (sin internet, el CSV proyectado en el editor), la diapositiva
+     sigue siendo verdad. El guion de las doce paradas vive en professor_notes.md. -->
+<section class="slide" data-block="1" data-title="La bolsa, vaciada sobre la mesa">
+  <p class="kicker reveal">Antes de nombrar nada &middot; la inspección, en vivo y proyectada</p>
+  <p class="claim reveal">Treinta filas reales. <span>¿A cuáles no les creería?</span></p>
+  <ul class="bullets reveal">
+    <li><b>Mire una columna completa antes de mirar una fila.</b> Lo que está mal casi nunca es un dato suelto: es una columna que no se comporta como debería comportarse.</li>
+    <li><b>Decida qué es posible antes de mirar lo que hay.</b> Un valor imposible solo salta a la vista de quien ya sabe qué mide esa columna. Ese saber no lo trae el archivo.</li>
+    <li><b>Cuando algo le incomode, señálelo y diga por qué.</b> No hace falta ponerle nombre todavía: ponerle nombre es exactamente lo que viene después.</li>
+  </ul>
+  <div class="callout reveal"><p><strong>Es un recorte, no un montaje.</strong> Son <b>todas</b> las filas de dos departamentos del archivo real de estadísticas de educación, copiadas sin quitar, sin cambiar y sin agregar nada; lo único que se redujo fueron las columnas, de treinta y siete a siete, para que quepan proyectadas. El archivo se llama <span class="mono">muestra_sucia_educacion.csv</span> y queda publicado con el material de hoy. <b>Así llegan los datos: esto no se preparó para la clase.</b></p></div>
+</section>
+
 <section class="slide" data-block="1" data-title="Los cinco problemas de calidad">
-  <p class="kicker reveal">La bolsa de ropa, vaciada sobre la mesa</p>
+  <p class="kicker reveal">Lo que acaban de encontrar, ahora con nombre propio</p>
   <h2 class="reveal">Los cinco problemas de calidad</h2>
   <div class="table-wrap reveal">
     <table>
@@ -510,35 +541,58 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
   <p class="kicker reveal">El concepto que se evalúa &middot; no es un código, es un criterio</p>
   <h2 class="reveal">Cuántos faltan decide qué se hace</h2>
   <div class="fig-wrap reveal">
-    <svg class="fig" viewBox="0 0 1000 330" role="img"
-         aria-label="Barra horizontal que representa el porcentaje de nulos de una columna, de 0 a 100 por ciento, dividida en tres bandas. De 0 a 5 por ciento: eliminar las filas afectadas, porque se pierde poquísimo y no se inventa nada. De 5 a 50 por ciento: rellenar con criterio de dominio, la zona donde vive el criterio profesional. Más de 50 por ciento: considerar eliminar la columna, porque hay más huecos que datos.">
-      <rect class="band lo"  x="40"  y="70" width="90"  height="86"></rect>
-      <rect class="band mid" x="130" y="70" width="380" height="86"></rect>
-      <rect class="band hi"  x="510" y="70" width="450" height="86"></rect>
+    <!-- Rediseño. La versión anterior ponía los tres textos largos DENTRO de una
+         barra continua de 0 a 100%, anclados al inicio de su banda: a 1280x720 el
+         texto de la banda del medio terminaba en x=528 y el de la banda de la
+         derecha empezaba en x=510, o sea 18px de solape, y el de la izquierda
+         desbordaba su banda en 60px. La escala continua no era el problema de
+         fondo: el ancho de una banda es su rango de porcentaje, y no tiene por qué
+         alcanzar para el texto de la decisión que vive en ella. Ahora la escala
+         vive arriba, delgada y sin más texto que los cortes, y las tres decisiones
+         viven abajo en columnas iguales, que es lo que son: tres regímenes
+         comparables. El color amarra cada columna con su tramo de la escala. -->
+    <svg class="fig" viewBox="0 0 1000 400" role="img"
+         aria-label="Escala del porcentaje de nulos de una columna, de 0 a 100 por ciento, partida en tres tramos por los cortes en 5 y en 50 por ciento, y debajo las tres decisiones en columnas del mismo tamaño. Menos del 5 por ciento: elimine las filas afectadas, se pierde poquísimo y no se inventa nada. Entre 5 y 50 por ciento: rellene, y con qué lo decide el dominio, porque botar tantas filas es demasiado y hay que estimar y declararlo. Más del 50 por ciento: considere eliminar la columna, porque hay más huecos que datos y lo que rellene es invento, no dato.">
+      <!-- La escala: proporcional de verdad, y sin una sola palabra adentro -->
+      <rect class="band lo"  x="0"   y="10" width="50"  height="26"></rect>
+      <rect class="band mid" x="50"  y="10" width="450" height="26"></rect>
+      <rect class="band hi"  x="500" y="10" width="500" height="26"></rect>
+      <line class="axis" x1="0" y1="36" x2="1000" y2="36"></line>
+      <!-- Sin marca de 0%: el borde izquierdo de la barra ya es el cero, y la
+           etiqueta quedaba pegada a la del 5% (el corte está a 50 de 1000). -->
+      <line class="axis" x1="50"  y1="36" x2="50"  y2="46"></line>
+      <line class="axis" x1="500" y1="36" x2="500" y2="46"></line>
+      <text class="tick" text-anchor="middle"  x="50"   y="76">5%</text>
+      <text class="tick" text-anchor="middle"  x="500"  y="76">50%</text>
+      <text class="tick" text-anchor="end"     x="1000" y="76">100%</text>
 
-      <line class="axis" x1="40" y1="166" x2="960" y2="166"></line>
-      <text class="tick" x="34"  y="196">0%</text>
-      <text class="tick" x="112" y="196">5%</text>
-      <text class="tick" x="490" y="196">50%</text>
-      <text class="tick" x="918" y="196">100%</text>
+      <!-- Las tres decisiones: columnas iguales, porque son tres casos comparables -->
+      <rect class="hd lo"  x="0"   y="112" width="320" height="54"></rect>
+      <rect class="hd mid" x="340" y="112" width="320" height="54"></rect>
+      <rect class="hd hi"  x="680" y="112" width="320" height="54"></rect>
+      <text class="lbl"      x="16"  y="148">MENOS DEL 5%</text>
+      <text class="lbl"      x="356" y="148">ENTRE 5% Y 50%</text>
+      <text class="lbl warn" x="696" y="148">MÁS DEL 50%</text>
 
-      <text class="lbl" x="40"  y="56">MENOS DE 5%</text>
-      <text class="lbl" x="130" y="56">ENTRE 5% Y 50%</text>
-      <text class="lbl warn" x="510" y="56">MÁS DE 50%</text>
+      <text class="t" x="0"   y="222">Elimine las</text>
+      <text class="t" x="0"   y="256">filas afectadas</text>
+      <text class="t small" x="0" y="310">Se pierde poquísimo</text>
+      <text class="t small" x="0" y="340">y no se inventa nada</text>
 
-      <text class="t" x="40"  y="240">Elimine las filas</text>
-      <text class="t small" x="40" y="268">Pierde poquísimo</text>
-      <text class="t small" x="40" y="292">y no inventa nada</text>
+      <text class="t" x="340" y="222">Rellene, y con qué</text>
+      <text class="t" x="340" y="256">lo decide el dominio</text>
+      <text class="t small" x="340" y="310">Botar tantas filas es</text>
+      <text class="t small" x="340" y="340">demasiado: hay que estimar,</text>
+      <text class="t small" x="340" y="370">y hay que declararlo</text>
 
-      <text class="t" x="130" y="240">Rellene, y el con qué depende del dominio</text>
-      <text class="t small" x="130" y="268">Perder ese porcentaje de filas es demasiado:</text>
-      <text class="t small" x="130" y="292">hay que estimar, y hay que declararlo</text>
-
-      <text class="t" x="510" y="240">Considere eliminar la columna</text>
-      <text class="t small" x="510" y="268">Más huecos que datos. Cualquier cosa</text>
-      <text class="t small" x="510" y="292">que rellene es invento, no dato</text>
+      <text class="t" x="680" y="222">Considere eliminar</text>
+      <text class="t" x="680" y="256">la columna</text>
+      <text class="t small" x="680" y="310">Más huecos que datos:</text>
+      <text class="t small" x="680" y="340">lo que rellene es invento,</text>
+      <text class="t small" x="680" y="370">no dato</text>
     </svg>
   </div>
+  <p class="lead reveal">La cuenta se hace <strong>columna por columna</strong>, no sobre la tabla entera: cada columna cae en su tramo y recibe su propia decisión. Y los cortes en 5% y 50% <strong>orientan</strong>; no deciden por usted.</p>
 </section>
 
 <section class="slide" data-block="1" data-title="Tres advertencias sobre el marco">
@@ -548,9 +602,27 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
     <article class="card warn"><span class="k">Uno</span><h3>Son umbrales orientativos, no leyes</h3>
       <p>Una columna con muchísimos huecos que es <b>el corazón de su pregunta</b> no se bota: se busca otra fuente. Una columna casi completa pero irrelevante se puede botar entera sin drama.</p></article>
     <article class="card"><span class="k">Dos</span><h3>La zona del medio es criterio profesional</h3>
-      <p>Rellenar con la mediana no es "la respuesta correcta", es una decisión. Se prefiere sobre el promedio porque <b>un solo valor extremo arrastra el promedio y no arrastra la mediana</b>: es el salario del CEO otra vez.</p></article>
+      <p>Rellenar con la mediana no es "la respuesta correcta", es una decisión. La mediana es <b>el valor que queda justo en la mitad al ordenar</b>, y se prefiere sobre el promedio porque un solo valor extremo arrastra el promedio y a ella no. La clase 5 va a fondo con eso.</p></article>
     <article class="card on"><span class="k">Tres</span><h3>Toda decisión se escribe</h3>
       <p>No en un comentario críptico: en una celda de texto, en español, diciendo qué hizo y por qué. <b>Es lo que separa una limpieza defendible de una limpieza mágica</b>, y en el Momento 1 se califica.</p></article>
+  </div>
+</section>
+
+<section class="slide" data-block="1" data-title="La pregunta que decide, problema por problema">
+  <p class="kicker reveal">Los nulos ya tienen la suya &middot; los otros cuatro también tienen una</p>
+  <h2 class="reveal">Cada problema se decide con una pregunta distinta</h2>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Ninguna se contesta mirando la columna sola</caption>
+      <thead><tr><th scope="col">Problema</th><th scope="col">La pregunta que decide</th><th scope="col">Por qué no basta el procedimiento</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1 &middot; Nulos</th><td>¿Cuánto falta?</td><td>El porcentaje manda, y los umbrales orientan sin decidir</td></tr>
+        <tr><th scope="row">2 &middot; Tipos</th><td>¿Se convierte, o está mal de origen?</td><td>Una palabra en una columna de números no es un número mal escrito: es un dato que falta</td></tr>
+        <tr class="on"><th scope="row">3 &middot; Duplicados</th><td>¿Qué representa una fila?</td><td>Un departamento por año no se repite. Una venta sí: ahí borrar es perder plata</td></tr>
+        <tr><th scope="row">4 &middot; Texto</th><td>¿Lo mismo escrito distinto, o dos cosas parecidas?</td><td>Unificar de menos reparte el número. Unificar de más funde dos categorías reales</td></tr>
+        <tr><th scope="row">5 &middot; Dominio</th><td>¿Imposible, o solo raro?</td><td>Lo imposible se corrige. Lo raro puede ser el hallazgo: la jirafa en el parque de perros</td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
@@ -578,7 +650,7 @@ svg.fig .tick{font-family:var(--font-mono);font-size:18px;fill:var(--muted)}
   <ol class="steps reveal">
     <li><b>Cinco problemas, y dos de ellos no avisan.</b> Duplicados y texto inconsistente corren sin error y devuelven números equivocados.</li>
     <li><b>Un nulo es desconocido</b>, no cero y no vacío. Rellenar con cero es afirmar algo que probablemente es falso.</li>
-    <li><b>Cuántos faltan decide qué se hace</b>, y los umbrales orientan; no deciden por usted.</li>
+    <li><b>Cada problema tiene su propia pregunta que decide.</b> En los nulos es cuánto falta, y los umbrales orientan sin decidir por usted. En los otros cuatro es qué mide la columna y qué representa una fila.</li>
     <li><b>Limpiar es iterativo.</b> Arreglar una cosa destapa otra, y por eso se vuelve a verificar después de cada paso.</li>
     <li><b>Verificar es hacerse las cuatro preguntas</b>, siempre sobre el resultado impreso. Es el único paso que no se puede delegar.</li>
   </ol>
