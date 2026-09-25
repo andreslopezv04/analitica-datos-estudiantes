@@ -1,4 +1,4 @@
----
+NO---
 name: Especifica el encargo
 description: Convierte una peticion suelta, escrita como la diria una persona, en un encargo con objetivo, alcance, insumos y criterio de aceptacion, antes de que exista una sola linea de resultado. Usela al empezar cualquier trabajo, sea un analisis, un informe, una presentacion o un programa
 version: 3.0.0
